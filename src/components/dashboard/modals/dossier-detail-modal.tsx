@@ -60,7 +60,7 @@ export function DossierDetailModal() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && closeModal()}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <div className="flex items-center justify-between gap-3 pr-8">
             <div>
