@@ -48,6 +48,7 @@ const statuts: ("Tous" | StatutDossier)[] = [
 
 export function CandidaturesView() {
   const openModal = useAppStore((s) => s.openModal);
+  const openDossier = useAppStore((s) => s.openDossier);
   const candidatures = useDataStore((s) => s.candidatures);
   const [search, setSearch] = useState("");
   const [filtreStatut, setFiltreStatut] = useState<string>("Tous");
@@ -184,9 +185,7 @@ export function CandidaturesView() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        openModal({ type: "dossier-detail", dossierId: c.id })
-                      }
+                      onClick={() => openDossier(c.id)}
                     >
                       <Eye className="size-4" />
                       Détails

@@ -8,6 +8,7 @@ import { LoginView } from "@/components/dashboard/login-view";
 import { ModalHost } from "@/components/dashboard/modals/modal-host";
 import { DashboardView } from "@/components/dashboard/views/dashboard-view";
 import { CandidaturesView } from "@/components/dashboard/views/candidatures-view";
+import { DossierDetailView } from "@/components/dashboard/views/dossier-detail-view";
 import { EtudiantsView } from "@/components/dashboard/views/etudiants-view";
 import { EnseignantsView } from "@/components/dashboard/views/enseignants-view";
 import { SuiviView } from "@/components/dashboard/views/suivi-view";
@@ -17,6 +18,7 @@ import { FilieresView } from "@/components/dashboard/views/filieres-view";
 import { UtilisateursView } from "@/components/dashboard/views/utilisateurs-view";
 import { AuditView } from "@/components/dashboard/views/audit-view";
 import { ParametresView } from "@/components/dashboard/views/parametres-view";
+import { useDataStore } from "@/lib/data-store";
 import { roleViews, type ViewKey } from "@/components/dashboard/data";
 
 const views: Record<ViewKey, React.ComponentType> = {
@@ -36,6 +38,8 @@ const views: Record<ViewKey, React.ComponentType> = {
 export default function Home() {
   const session = useAuthStore((s) => s.session);
   const view = useAppStore((s) => s.view);
+  const selectedDossierId = useAppStore((s) => s.selectedDossierId);
+  const candidatures = useDataStore((s) => s.candidatures);
 
   // RBAC côté rendu : si la vue courante n'est pas autorisée pour le rôle,
   // on affiche la première vue autorisée (sans écrire dans le store pendant le rendu).
@@ -46,6 +50,27 @@ export default function Home() {
   // Non authentifié → écran de connexion
   if (!session) {
     return <LoginView />;
+  }
+
+  // Sous-vue détail de dossier (page pleine largeur au lieu de modale)
+  if (safeView === "candidatures" && selectedDossierId) {
+    const dossier = candidatures.find((c) => c.id === selectedDossierId);
+    if (dossier) {
+      return (
+        <div className="flex h-screen bg-gray-50 text-gray-900 overflow-hidden">
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Header />
+            <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8">
+              <div className="mx-auto w-full max-w-[1200px]">
+                <DossierDetailView dossier={dossier} />
+              </div>
+            </main>
+          </div>
+          <ModalHost />
+        </div>
+      );
+    }
   }
 
   const ActiveView = views[safeView] ?? DashboardView;
@@ -66,3 +91,4 @@ export default function Home() {
     </div>
   );
 }
+

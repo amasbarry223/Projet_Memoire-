@@ -1,7 +1,6 @@
 "use client";
 
 import { useAppStore } from "@/lib/view-store";
-import { DossierDetailModal } from "./dossier-detail-modal";
 import { TraitementDossierModal } from "./traitement-dossier-modal";
 import { UtilisateurModal } from "./utilisateur-modal";
 import { FiliereModal } from "./filiere-modal";
@@ -13,8 +12,6 @@ export function ModalHost() {
   const type = useAppStore((s) => s.modal.type);
 
   switch (type) {
-    case "dossier-detail":
-      return <DossierDetailModal />;
     case "traitement-dossier":
       return <TraitementDossierModal />;
     case "utilisateur":

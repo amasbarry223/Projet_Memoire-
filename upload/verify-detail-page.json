@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS  \n**Layout Description**:  \n1. **Breadcrumb**: Present at top (\"← Candidatures > CAND-2024-048\").  \n2. **Header Card**: Contains candidate avatar (initials \"KK\"), name \"Kadiatou Konaté\", status badge (\"En attente\"), dossier ID (\"CAND-2024-048\"), submission date (\"01 Nov 2024\"), and 3 action buttons (orange \"Marquer incomplet\", red \"Rejeter\", green \"Valider\").  \n3. **Colored Top Border**: Orange border on the header card.  \n4. **Stat Pills**: 4 pills (\"Filière\", \"Niveau\", \"Pièces fournies\", \"Complétude IA\").  \n5. **2-Column Layout**:  \n   - **Left**: \"Informations personnelles\" (6 info cards) + \"Pièces justificatives\" (grid of files).  \n   - **Right**: \"Synthèse analyse IA\" (amber card with completeness bar) + \"Historique des actions\" (timeline with dots).  \n6. **No Modal/Overlay**: Full-page view within dashboard (sidebar visible).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783288261,
+  "id": "20260706055057770086bca03b4613",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706055057770086bca03b4613",
+  "usage": {
+    "completion_tokens": 248,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1206,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1454
+  }
+}
