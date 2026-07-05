@@ -102,13 +102,7 @@ export function LoginView() {
         <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-emerald-900/5 sm:p-8">
           {/* Logo centré */}
           <div className="flex flex-col items-center text-center">
-            <Logo size={64} showText={false} />
-            <h1 className="mt-3 text-2xl font-bold text-gray-900">
-              ESG<span className="text-emerald-500">ic</span>
-            </h1>
-            <p className="mt-1 text-sm text-gray-500">
-              École Supérieure de Gestion, d&apos;Informatique et de Comptabilité
-            </p>
+            <Logo size={140} showText={false} />
           </div>
 
           {/* Séparateur */}
