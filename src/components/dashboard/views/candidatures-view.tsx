@@ -38,6 +38,7 @@ import {
   StatusBadge,
   statutBadge,
 } from "./shared";
+import { usePagination, DataTablePagination } from "./data-table-pagination";
 
 const statuts: ("Tous" | StatutDossier)[] = [
   "Tous",
@@ -61,6 +62,8 @@ export function CandidaturesView() {
       filtreStatut === "Tous" || c.statut === filtreStatut;
     return matchSearch && matchStatut;
   });
+
+  const pagination = usePagination(filtered, 10);
 
   // Indicateurs F3.4
   const compteurs = {
@@ -133,7 +136,7 @@ export function CandidaturesView() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((c) => (
+            {pagination.paged.map((c) => (
               <TableRow key={c.id} className="border-gray-50">
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -241,7 +244,7 @@ export function CandidaturesView() {
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+            {pagination.paged.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-gray-400">
                   Aucune candidature ne correspond à votre recherche.
@@ -250,6 +253,17 @@ export function CandidaturesView() {
             )}
           </TableBody>
         </Table>
+
+        <DataTablePagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          start={pagination.start}
+          end={pagination.end}
+          onPageChange={pagination.setPage}
+          onPageSizeChange={pagination.setPageSize}
+        />
       </Panel>
     </div>
   );

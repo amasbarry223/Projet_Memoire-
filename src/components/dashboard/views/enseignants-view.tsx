@@ -25,6 +25,7 @@ import {
   type Enseignant,
 } from "@/components/dashboard/data";
 import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
+import { usePagination, DataTablePagination } from "./data-table-pagination";
 import { EnseignantFormModal } from "../modals/enseignant-form-modal";
 import { EnseignantDeleteDialog } from "../modals/enseignant-delete-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -44,6 +45,8 @@ export function EnseignantsView() {
       .toLowerCase()
       .includes(search.toLowerCase())
   );
+
+  const pagination = usePagination(filtered);
 
   function handleAdd() {
     setEditing(null);
@@ -151,7 +154,7 @@ export function EnseignantsView() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((e) => (
+            {pagination.paged.map((e) => (
               <TableRow key={e.id} className="border-gray-50">
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -233,7 +236,7 @@ export function EnseignantsView() {
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+            {pagination.paged.length === 0 && (
               <TableRow>
                 <TableCell colSpan={5} className="py-12 text-center text-gray-400">
                   Aucun enseignant trouvé.
@@ -242,6 +245,17 @@ export function EnseignantsView() {
             )}
           </TableBody>
         </Table>
+
+        <DataTablePagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          start={pagination.start}
+          end={pagination.end}
+          onPageChange={pagination.setPage}
+          onPageSizeChange={pagination.setPageSize}
+        />
       </Panel>
 
       <EnseignantFormModal

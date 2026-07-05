@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { auditLog } from "@/components/dashboard/data";
 import { PageHeader, Toolbar, Panel } from "./shared";
+import { usePagination, DataTablePagination } from "./data-table-pagination";
 
 const actionsUniques = ["Toutes", ...Array.from(new Set(auditLog.map((a) => a.action)))];
 
@@ -57,6 +58,8 @@ export function AuditView() {
       filtreAction === "Toutes" || a.action === filtreAction;
     return matchSearch && matchAction;
   });
+
+  const pagination = usePagination(filtered, 10);
 
   return (
     <div>
@@ -98,7 +101,7 @@ export function AuditView() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((a) => (
+            {pagination.paged.map((a) => (
               <TableRow key={a.id} className="border-gray-50">
                 <TableCell className="font-mono text-xs text-gray-400">
                   {a.id}
@@ -127,10 +130,20 @@ export function AuditView() {
           </TableBody>
         </Table>
 
+        <DataTablePagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          start={pagination.start}
+          end={pagination.end}
+          onPageChange={pagination.setPage}
+          onPageSizeChange={pagination.setPageSize}
+        />
+
         <div className="mt-4 flex items-center justify-between rounded-lg bg-gray-50 p-3 text-xs text-gray-500">
           <span>
-            {filtered.length} entrée{filtered.length > 1 ? "s" : ""} affichée
-            {filtered.length > 1 ? "s" : ""} sur {auditLog.length}
+            {pagination.total} entrée{pagination.total > 1 ? "s" : ""} au total
           </span>
           <span>Conformité R5 : journalisation automatique</span>
         </div>

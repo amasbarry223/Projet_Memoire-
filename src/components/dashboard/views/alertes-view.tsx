@@ -27,6 +27,7 @@ import {
   StatusBadge,
   niveauBadge,
 } from "./shared";
+import { usePagination, DataTablePagination } from "./data-table-pagination";
 
 function statutBadgeClass(statut: string) {
   switch (statut) {
@@ -54,6 +55,8 @@ export function AlertesView() {
       filtre === "Toutes" || a.statut === filtre;
     return matchSearch && matchFiltre;
   });
+
+  const pagination = usePagination(filtered);
 
   const compteurs = {
     "Nouvelle": alertesIAComplete.filter((a) => a.statut === "Nouvelle").length,
@@ -118,7 +121,7 @@ export function AlertesView() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((a) => (
+            {pagination.paged.map((a) => (
               <TableRow key={a.id} className="border-gray-50">
                 <TableCell className="font-mono text-xs text-gray-400">
                   {a.id}
@@ -161,6 +164,17 @@ export function AlertesView() {
             ))}
           </TableBody>
         </Table>
+
+        <DataTablePagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          start={pagination.start}
+          end={pagination.end}
+          onPageChange={pagination.setPage}
+          onPageSizeChange={pagination.setPageSize}
+        />
       </Panel>
     </div>
   );

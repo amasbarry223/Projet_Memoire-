@@ -41,6 +41,7 @@ import {
   type Etudiant,
 } from "@/components/dashboard/data";
 import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
+import { usePagination, DataTablePagination } from "./data-table-pagination";
 import { EtudiantFormModal } from "../modals/etudiant-form-modal";
 import { EtudiantDetailModal } from "../modals/etudiant-detail-modal";
 import { EtudiantDeleteDialog } from "../modals/etudiant-delete-dialog";
@@ -86,6 +87,8 @@ export function EtudiantsView() {
     const matchFiliere = filiere === "Toutes" || e.filiere === filiere;
     return matchSearch && matchFiliere;
   });
+
+  const pagination = usePagination(filtered);
 
   // ─── Actions CRUD ──────────────────────────────────────────────────────
 
@@ -190,7 +193,7 @@ export function EtudiantsView() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((e) => (
+            {pagination.paged.map((e) => (
               <TableRow key={e.id} className="border-gray-50">
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -288,7 +291,7 @@ export function EtudiantsView() {
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+            {pagination.paged.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} className="py-12 text-center">
                   <div className="flex flex-col items-center gap-3 text-gray-400">
@@ -318,6 +321,17 @@ export function EtudiantsView() {
             )}
           </TableBody>
         </Table>
+
+        <DataTablePagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          start={pagination.start}
+          end={pagination.end}
+          onPageChange={pagination.setPage}
+          onPageSizeChange={pagination.setPageSize}
+        />
       </Panel>
 
       {/* Modales CRUD */}

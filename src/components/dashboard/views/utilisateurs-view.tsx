@@ -35,6 +35,7 @@ import {
   type Utilisateur,
 } from "@/components/dashboard/data";
 import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
+import { usePagination, DataTablePagination } from "./data-table-pagination";
 import { UtilisateurFormModal } from "../modals/utilisateur-form-modal";
 import { UtilisateurDeleteDialog } from "../modals/utilisateur-delete-dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -85,6 +86,8 @@ export function UtilisateursView() {
     const matchRole = filtreRole === "Tous" || u.role === filtreRole;
     return matchSearch && matchRole;
   });
+
+  const pagination = usePagination(filtered);
 
   function handleAdd() {
     setEditing(null);
@@ -203,7 +206,7 @@ export function UtilisateursView() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((u) => (
+            {pagination.paged.map((u) => (
               <TableRow key={u.id} className="border-gray-50">
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -282,7 +285,7 @@ export function UtilisateursView() {
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
+            {pagination.paged.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} className="py-12 text-center text-gray-400">
                   Aucun utilisateur trouvé.
@@ -291,6 +294,17 @@ export function UtilisateursView() {
             )}
           </TableBody>
         </Table>
+
+        <DataTablePagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalPages={pagination.totalPages}
+          total={pagination.total}
+          start={pagination.start}
+          end={pagination.end}
+          onPageChange={pagination.setPage}
+          onPageSizeChange={pagination.setPageSize}
+        />
       </Panel>
 
       <div className="mt-4 flex items-center justify-center">

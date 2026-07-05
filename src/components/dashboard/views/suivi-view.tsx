@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAppStore } from "@/lib/view-store";
 import { notesGrille, absences } from "@/components/dashboard/data";
 import { PageHeader, Panel, StatusBadge } from "./shared";
+import { usePagination, DataTablePagination } from "./data-table-pagination";
 
 function noteColor(n: number) {
   if (n >= 14) return "text-emerald-600";
@@ -26,6 +27,9 @@ function noteColor(n: number) {
 export function SuiviView() {
   const openModal = useAppStore((s) => s.openModal);
   const [tab, setTab] = useState("notes");
+
+  const notesPagination = usePagination(notesGrille);
+  const absencesPagination = usePagination(absences);
 
   return (
     <div>
@@ -71,7 +75,7 @@ export function SuiviView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {notesGrille.map((n, idx) => (
+                {notesPagination.paged.map((n, idx) => (
                   <TableRow key={idx} className="border-gray-50">
                     <TableCell className="font-medium text-gray-900">
                       {n.etudiant}
@@ -99,6 +103,16 @@ export function SuiviView() {
                 ))}
               </TableBody>
             </Table>
+            <DataTablePagination
+              page={notesPagination.page}
+              pageSize={notesPagination.pageSize}
+              totalPages={notesPagination.totalPages}
+              total={notesPagination.total}
+              start={notesPagination.start}
+              end={notesPagination.end}
+              onPageChange={notesPagination.setPage}
+              onPageSizeChange={notesPagination.setPageSize}
+            />
           </Panel>
         </TabsContent>
 
@@ -119,7 +133,7 @@ export function SuiviView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {absences.map((a, idx) => (
+                {absencesPagination.paged.map((a, idx) => (
                   <TableRow key={idx} className="border-gray-50">
                     <TableCell className="font-medium text-gray-900">
                       {a.etudiant}
@@ -144,6 +158,16 @@ export function SuiviView() {
                 ))}
               </TableBody>
             </Table>
+            <DataTablePagination
+              page={absencesPagination.page}
+              pageSize={absencesPagination.pageSize}
+              totalPages={absencesPagination.totalPages}
+              total={absencesPagination.total}
+              start={absencesPagination.start}
+              end={absencesPagination.end}
+              onPageChange={absencesPagination.setPage}
+              onPageSizeChange={absencesPagination.setPageSize}
+            />
             <div className="mt-4 flex items-center gap-4 rounded-lg bg-gray-50 p-3 text-xs text-gray-500">
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="size-4 text-emerald-500" /> Absences justifiées
