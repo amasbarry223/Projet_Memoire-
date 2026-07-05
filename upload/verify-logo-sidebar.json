@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS. The logo in the sidebar is the \"ESGic\" text (in green) at the top, accompanied by a shield with a laurel wreath icon to its left. It is properly sized and not distorted.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783295190,
+  "id": "202607060746287871f5d3df5d4d05",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607060746287871f5d3df5d4d05",
+  "usage": {
+    "completion_tokens": 49,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1049,
+    "prompt_tokens_details": {
+      "cached_tokens": 6
+    },
+    "total_tokens": 1098
+  }
+}

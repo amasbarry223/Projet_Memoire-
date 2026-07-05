@@ -70,12 +70,12 @@ export function ParametresView() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="eta-nom">Nom</Label>
-              <Input id="eta-nom" defaultValue="Institut ScolaFlow du Mali" />
+              <Input id="eta-nom" defaultValue="École Supérieure ESGic" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="eta-email">Email contact</Label>
-                <Input id="eta-email" type="email" defaultValue="contact@scolaflow.ml" />
+                <Input id="eta-email" type="email" defaultValue="contact@esgic.ml" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="eta-tel">Téléphone</Label>
@@ -169,7 +169,7 @@ export function ParametresView() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="n8n-url">URL du webhook n8n</Label>
-              <Input id="n8n-url" defaultValue="https://n8n.local/webhook/scolaflow" />
+              <Input id="n8n-url" defaultValue="https://n8n.local/webhook/esgic" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="ia-key">Modèle IA (Claude)</Label>

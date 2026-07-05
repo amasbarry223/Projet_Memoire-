@@ -1,8 +1,9 @@
 "use client";
 
-import { GraduationCap, ChevronRight, LogOut } from "lucide-react";
+import { ChevronRight, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems, roleLabels } from "./data";
+import { Logo } from "./logo";
 import { useAppStore } from "@/lib/view-store";
 import { useAuthStore } from "@/lib/auth-store";
 
@@ -20,13 +21,8 @@ export function Sidebar() {
   return (
     <aside className="hidden lg:flex w-[260px] shrink-0 flex-col border-r border-gray-100 bg-white">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-gray-100 px-6">
-        <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-500 text-white">
-          <GraduationCap className="size-5" />
-        </div>
-        <span className="text-xl font-bold text-gray-900">
-          Scola<span className="text-emerald-500">Flow</span>
-        </span>
+      <div className="flex h-16 items-center border-b border-gray-100 px-6">
+        <Logo size={36} />
       </div>
 
       {/* Nav items */}

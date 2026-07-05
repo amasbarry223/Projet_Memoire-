@@ -14,12 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ScolaFlow · Gestion des Inscriptions et Suivi Pédagogique",
+  title: "ESGic · Gestion des Inscriptions et Suivi Pédagogique",
   description: "Interface web centralisée pour la gestion des inscriptions, le suivi pédagogique et l'automatisation avec n8n et l'IA.",
-  keywords: ["ScolaFlow", "Inscriptions", "Suivi pédagogique", "RBAC", "n8n", "IA", "Éducation"],
-  authors: [{ name: "ScolaFlow" }],
+  keywords: ["ESGic", "Inscriptions", "Suivi pédagogique", "RBAC", "n8n", "IA", "Éducation"],
+  authors: [{ name: "ESGic" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo-esgic.png",
   },
 };
 

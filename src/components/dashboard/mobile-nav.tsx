@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, GraduationCap, ChevronRight, LogOut } from "lucide-react";
+import { Menu, ChevronRight, LogOut } from "lucide-react";
 import {
   Sheet,
   SheetTrigger,
@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { navItems, roleLabels } from "./data";
+import { Logo } from "./logo";
 import { useAppStore } from "@/lib/view-store";
 import { useAuthStore } from "@/lib/auth-store";
 
@@ -52,13 +53,8 @@ export function MobileNav() {
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0 flex flex-col">
         <SheetHeader className="px-6 py-4">
-          <SheetTitle className="flex items-center gap-2 text-left">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-500 text-white">
-              <GraduationCap className="size-5" />
-            </div>
-            <span className="text-xl font-bold text-gray-900">
-              Scola<span className="text-emerald-500">Flow</span>
-            </span>
+          <SheetTitle className="text-left">
+            <Logo size={36} />
           </SheetTitle>
         </SheetHeader>
         <nav className="flex-1 overflow-y-auto px-3 py-2">

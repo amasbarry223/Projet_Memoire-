@@ -83,7 +83,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: "scolaflow-session",
+      name: "esgic-session",
       partialize: (state) => ({ session: state.session }),
     }
   )

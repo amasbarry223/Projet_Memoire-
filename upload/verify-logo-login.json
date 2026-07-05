@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS. The logo visible at the top of the card is the ESGic logo (a shield with laurel wreath + \"ESGic\" text), the brand name \"ESGic\" is displayed, and the subtitle \"École Supérieure de Gestion, d'Informatique et de Comptabilité\" is visible. The logo matches the ESGic institution logo.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783295166,
+  "id": "202607060746019155b15f2ec14c99",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607060746019155b15f2ec14c99",
+  "usage": {
+    "completion_tokens": 83,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1094,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1177
+  }
+}

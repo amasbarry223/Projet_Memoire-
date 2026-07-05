@@ -102,7 +102,7 @@ export function UtilisateurFormModal({
               name="email"
               type="email"
               defaultValue={utilisateur?.email ?? ""}
-              placeholder="d.coulibaly@scolaflow.ml"
+              placeholder="d.coulibaly@esgic.ml"
             />
           </div>
           <div className="space-y-2">

@@ -115,9 +115,9 @@ export type DemoAccount = {
 };
 
 export const demoAccounts: DemoAccount[] = [
-  { email: "amadou.toure@scolaflow.ml", password: "admin", role: "admin", nom: "Touré", prenom: "Amadou" },
-  { email: "rokia.keita@scolaflow.ml", password: "resp", role: "responsable", nom: "Keïta", prenom: "Rokia" },
-  { email: "d.coulibaly@scolaflow.ml", password: "ens", role: "enseignant", nom: "Coulibaly", prenom: "Drissa" },
+  { email: "amadou.toure@esgic.ml", password: "admin", role: "admin", nom: "Touré", prenom: "Amadou" },
+  { email: "rokia.keita@esgic.ml", password: "resp", role: "responsable", nom: "Keïta", prenom: "Rokia" },
+  { email: "d.coulibaly@esgic.ml", password: "ens", role: "enseignant", nom: "Coulibaly", prenom: "Drissa" },
   { email: "moussa.diabate@etu.ml", password: "etu", role: "etudiant", nom: "Diabaté", prenom: "Moussa" },
   { email: "kadiatou.konate@email.ml", password: "cand", role: "candidat", nom: "Konaté", prenom: "Kadiatou" },
 ];
@@ -681,14 +681,14 @@ export type Utilisateur = {
 };
 
 export const utilisateurs: Utilisateur[] = [
-  { id: "U-1", nom: "Touré", prenom: "Amadou", email: "amadou.toure@scolaflow.ml", role: "admin", statut: "Actif", derniereConnexion: "01 Nov 2024 08:00" },
-  { id: "U-2", nom: "Keïta", prenom: "Rokia", email: "rokia.keita@scolaflow.ml", role: "responsable", statut: "Actif", derniereConnexion: "01 Nov 2024 07:42" },
-  { id: "U-3", nom: "Coulibaly", prenom: "Drissa", email: "d.coulibaly@scolaflow.ml", role: "enseignant", statut: "Actif", derniereConnexion: "31 Oct 2024 18:15" },
-  { id: "U-4", nom: "Traoré", prenom: "Aminata", email: "a.traore@scolaflow.ml", role: "enseignant", statut: "Actif", derniereConnexion: "31 Oct 2024 16:30" },
+  { id: "U-1", nom: "Touré", prenom: "Amadou", email: "amadou.toure@esgic.ml", role: "admin", statut: "Actif", derniereConnexion: "01 Nov 2024 08:00" },
+  { id: "U-2", nom: "Keïta", prenom: "Rokia", email: "rokia.keita@esgic.ml", role: "responsable", statut: "Actif", derniereConnexion: "01 Nov 2024 07:42" },
+  { id: "U-3", nom: "Coulibaly", prenom: "Drissa", email: "d.coulibaly@esgic.ml", role: "enseignant", statut: "Actif", derniereConnexion: "31 Oct 2024 18:15" },
+  { id: "U-4", nom: "Traoré", prenom: "Aminata", email: "a.traore@esgic.ml", role: "enseignant", statut: "Actif", derniereConnexion: "31 Oct 2024 16:30" },
   { id: "U-5", nom: "Diabaté", prenom: "Moussa", email: "moussa.diabate@etu.ml", role: "etudiant", statut: "Actif", derniereConnexion: "31 Oct 2024 14:20" },
   { id: "U-6", nom: "Sangaré", prenom: "Korotoumou", email: "k.sangare@etu.ml", role: "etudiant", statut: "Actif", derniereConnexion: "30 Oct 2024 11:05" },
   { id: "U-7", nom: "Konaté", prenom: "Kadiatou", email: "kadiatou.konate@email.ml", role: "candidat", statut: "Actif", derniereConnexion: "01 Nov 2024 09:12" },
-  { id: "U-8", nom: "Sidibé", prenom: "Salimata", email: "s.sidibe@scolaflow.ml", role: "enseignant", statut: "Désactivé", derniereConnexion: "12 Oct 2024 10:00" },
+  { id: "U-8", nom: "Sidibé", prenom: "Salimata", email: "s.sidibe@esgic.ml", role: "enseignant", statut: "Désactivé", derniereConnexion: "12 Oct 2024 10:00" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────

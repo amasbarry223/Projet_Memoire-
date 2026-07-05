@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  GraduationCap,
   Mail,
   Lock,
   LogIn,
@@ -18,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/lib/auth-store";
+import { Logo } from "./logo";
 import { useAppStore } from "@/lib/view-store";
 import {
   demoAccounts,
@@ -31,7 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 const roleIcons: Record<Role, React.ComponentType<{ className?: string }>> = {
   admin: ShieldCheck,
   responsable: Users,
-  enseignant: GraduationCap,
+  enseignant: Users,
   etudiant: Workflow,
   candidat: BrainCircuit,
 };
@@ -102,14 +102,12 @@ export function LoginView() {
         <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-emerald-900/5 sm:p-8">
           {/* Logo centré */}
           <div className="flex flex-col items-center text-center">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
-              <GraduationCap className="size-7" />
-            </div>
-            <h1 className="mt-4 text-2xl font-bold text-gray-900">
-              Scola<span className="text-emerald-500">Flow</span>
+            <Logo size={64} showText={false} />
+            <h1 className="mt-3 text-2xl font-bold text-gray-900">
+              ESG<span className="text-emerald-500">ic</span>
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Gestion des inscriptions et suivi pédagogique
+              École Supérieure de Gestion, d&apos;Informatique et de Comptabilité
             </p>
           </div>
 
@@ -133,7 +131,7 @@ export function LoginView() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="amadou.toure@scolaflow.ml"
+                  placeholder="amadou.toure@esgic.ml"
                   className="h-11 pl-10"
                   autoComplete="email"
                   required
@@ -248,7 +246,7 @@ export function LoginView() {
 
         {/* Pied */}
         <p className="mt-6 text-center text-xs text-gray-400">
-          © 2024 ScolaFlow — Projet de mémoire · Vercel × Supabase × n8n × Claude
+          © 2024 ESGic — Projet de mémoire · Vercel × Supabase × n8n × Claude
         </p>
       </div>
     </div>
