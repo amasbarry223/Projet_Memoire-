@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu, GraduationCap, ChevronRight, LifeBuoy, LogOut } from "lucide-react";
+import { Menu, GraduationCap, ChevronRight, LogOut } from "lucide-react";
 import {
   Sheet,
   SheetTrigger,
@@ -101,17 +101,6 @@ export function MobileNav() {
             })}
           </ul>
         </nav>
-        <div className="p-3">
-          <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 text-white">
-            <div className="flex items-center gap-2">
-              <LifeBuoy className="size-4" />
-              <p className="text-sm font-semibold">Besoin d&apos;aide ?</p>
-            </div>
-            <p className="mt-1 text-xs text-white/80">
-              Consultez la documentation technique.
-            </p>
-          </div>
-        </div>
         <div className="border-t border-gray-100 p-3">
           <button
             type="button"

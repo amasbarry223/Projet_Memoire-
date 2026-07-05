@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS. At the bottom of the left sidebar, there is a \"Déconnexion\" (Logout) button with a circular icon to its left. There is no 'Besoin d'aide?' card (green gradient box with lifebuoy icon and 'Voir la documentation' button) present in the sidebar.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783285166,
+  "id": "202607060459238089437ad18e460d",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607060459238089437ad18e460d",
+  "usage": {
+    "completion_tokens": 66,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1059,
+    "prompt_tokens_details": {
+      "cached_tokens": 6
+    },
+    "total_tokens": 1125
+  }
+}

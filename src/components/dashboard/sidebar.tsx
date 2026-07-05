@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap, ChevronRight, LifeBuoy, LogOut } from "lucide-react";
+import { GraduationCap, ChevronRight, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems, roleLabels } from "./data";
 import { useAppStore } from "@/lib/view-store";
@@ -64,22 +64,6 @@ export function Sidebar() {
           })}
         </ul>
       </nav>
-
-      {/* Help card */}
-      <div className="p-3">
-        <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 text-white">
-          <div className="flex items-center gap-2">
-            <LifeBuoy className="size-4" />
-            <p className="text-sm font-semibold">Besoin d&apos;aide ?</p>
-          </div>
-          <p className="mt-1 text-xs text-white/80">
-            Consultez la documentation technique et les guides RBAC.
-          </p>
-          <button className="mt-3 w-full rounded-lg bg-white/15 py-2 text-xs font-semibold backdrop-blur-sm transition hover:bg-white/25">
-            Voir la documentation
-          </button>
-        </div>
-      </div>
 
       {/* Déconnexion */}
       <div className="border-t border-gray-100 p-3">
