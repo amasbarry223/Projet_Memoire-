@@ -5,17 +5,17 @@ import { cn } from "@/lib/utils";
 import { tabsList } from "./data";
 
 export function WelcomeSection() {
-  const [activeTab, setActiveTab] = useState("Students");
+  const [activeTab, setActiveTab] = useState("Candidatures");
 
   return (
     <div className="mb-6">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back! Here&apos;s what&apos;s happening today
+            Bonjour ! Voici l&apos;activité du jour
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Thursday, November 1, 2024 · School is in session
+            Jeudi 1er Novembre 2024 · Session en cours · 5 espaces actifs
           </p>
         </div>
       </div>

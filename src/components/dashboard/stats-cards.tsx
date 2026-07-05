@@ -25,13 +25,14 @@ export function StatsCards() {
                   "size-2.5 rounded-full ring-4 ring-emerald-50",
                   stat.statusColor
                 )}
-                title="Live"
+                title="En direct"
               />
             </div>
             <p className="mt-4 text-2xl font-bold text-gray-900">{stat.value}</p>
-            <p className="mt-1 text-xs font-medium text-gray-500">
+            <p className="mt-1 text-xs font-medium text-gray-700">
               {stat.label}
             </p>
+            <p className="text-[11px] text-gray-400">{stat.hint}</p>
           </div>
         );
       })}

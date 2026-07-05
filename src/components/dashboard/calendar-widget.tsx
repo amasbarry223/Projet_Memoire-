@@ -4,9 +4,10 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
+// Semaine commençant le lundi (format français)
+const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
 
-// Special event markers: day -> dot color
+// Marqueurs d'événements : jour -> couleur du point
 const EVENT_DAYS: Record<number, string> = {
   3: "bg-amber-400",
   8: "bg-orange-500",
@@ -19,8 +20,9 @@ const EVENT_DAYS: Record<number, string> = {
 export function CalendarWidget() {
   const [currentDay, setCurrentDay] = useState(1);
 
-  // November 2024 starts on a Friday (day index 5)
-  const startDay = 5; // Friday
+  // Novembre 2024 : le 1er est un vendredi.
+  // Semaine commençant le lundi => 4 cases vides (lun, mar, mer, jeu) avant le 1.
+  const startDay = 4;
   const daysInMonth = 30;
   const cells: (number | null)[] = [];
   for (let i = 0; i < startDay; i++) cells.push(null);
@@ -31,23 +33,23 @@ export function CalendarWidget() {
     <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <p className="text-xs text-gray-400">November, 1 Thursday</p>
+          <p className="text-xs text-gray-400">Novembre, Jeudi 1</p>
           <h3 className="text-base font-semibold text-gray-900">
-            November 2024
+            Novembre 2024
           </h3>
         </div>
         <div className="flex items-center gap-1">
           <button
             type="button"
             className="flex size-7 items-center justify-center rounded-md text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Previous month"
+            aria-label="Mois précédent"
           >
             <ChevronLeft className="size-4" />
           </button>
           <button
             type="button"
             className="flex size-7 items-center justify-center rounded-md text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Next month"
+            aria-label="Mois suivant"
           >
             <ChevronRight className="size-4" />
           </button>
@@ -100,13 +102,13 @@ export function CalendarWidget() {
 
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-gray-100 pt-3 text-xs text-gray-500">
         <span className="flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-amber-400" /> Event
+          <span className="size-2 rounded-full bg-amber-400" /> Événement
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-orange-500" /> Meeting
+          <span className="size-2 rounded-full bg-orange-500" /> Réunion
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-red-500" /> Exam
+          <span className="size-2 rounded-full bg-red-500" /> Examen
         </span>
       </div>
     </div>

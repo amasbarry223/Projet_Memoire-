@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "### Verification Report: ScolaFlow Dashboard (French)\n\n#### (1) Left Sidebar\n- **PASS**: Logo \"ScolaFlow\" (with \"Flow\" in emerald) and label \"Espace Administrateur\" are present.  \n- **PASS**: 11 nav items are correctly listed:  \n  `Tableau de bord`, `Candidatures`, `Étudiants`, `Enseignants`, `Suivi pédagogique`, `Alertes IA`, `Rapports`, `Filières & Classes`, `Utilisateurs`, `Journal d'audit`, `Paramètres`.  \n- **PASS**: \"Tableau de bord\" is highlighted (active) with emerald background.\n\n#### (2) Header\n- **PASS**: Search placeholder: `Rechercher un étudiant, un dossier, une classe...` (French).  \n- **PASS**: Profile: `Admin Principal / Administrateur` (French).\n\n#### (3) Welcome Section\n- **PASS**: Heading: `Bonjour ! Voici l'activité du jour` (French).  \n- **PASS**: Date: `Jeudi 1er Novembre 2024` (French).  \n- **PASS**: 6 tabs: `Candidatures` (active, emerald underline), `Étudiants`, `Enseignants`, `Notes`, `Absences`, `Alertes` (all French).\n\n#### (4) Stat Cards\n- **PASS**: 6 cards with correct French labels and values:  \n  - `Total Étudiants: 2,458`  \n  - `Nouvelles Candidatures: 48`  \n  - `Dossiers Validés: 156`  \n  - `Dossiers Incomplets: 12`  \n  - `Alertes IA Actives: 7`  \n  - `Taux d'Assiduité: 91%`\n\n#### (5) Bar Chart\n- **PASS**: Title: `Évolution des inscriptions` (French).  \n- **PASS**: Emerald bars (consistent with design).\n\n#### (6) Area Chart\n- **PASS**: Title: `Taux d'absentéisme` (French).  \n- **PASS**: Amber gradient (consistent with design).\n\n#### (7) Emerald Card\n- **PASS**: Title: `Automatisation n8n` (French).  \n- **PASS**: Buttons: `Workflows actifs` + `Historique` (French).  \n- **PASS**: Stats: `8/1243` (matches design).\n\n#### (8) White Card\n- **PASS**: Title: `Dossiers récents` (French).  \n- **PASS**: Candidates with status badges: `En attente`, `Validé`, `Incomplet`, `Rejeté` (French).\n\n#### (9) Right Sidebar\n- **PASS**: Calendar: November 2024 (French weekday labels: `L M M J V S D`).  \n- **PASS**: Day 1 highlighted in emerald.  \n- **PASS**: Section: `Alertes IA récentes` (French).  \n- **PASS**: 4 students with risk badges: `Élevé`, `Moyen`, `Faible` (French).\n\n### Overall Result: **PASS**  \nAll elements are present, correctly rendered, and in French. No missing/broken/wrong-language issues detected.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783266110,
+  "id": "2026070523412621268c61c16143cd",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "2026070523412621268c61c16143cd",
+  "usage": {
+    "completion_tokens": 709,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2758,
+    "prompt_tokens_details": {
+      "cached_tokens": 7
+    },
+    "total_tokens": 3467
+  }
+}

@@ -14,10 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GLearn · School Management Dashboard",
-  description: "Comprehensive school management dashboard for students, teachers, attendance, transport, fees and more.",
-  keywords: ["GLearn", "School", "Dashboard", "Management", "Education"],
-  authors: [{ name: "GLearn Team" }],
+  title: "ScolaFlow · Gestion des Inscriptions et Suivi Pédagogique",
+  description: "Interface web centralisée pour la gestion des inscriptions, le suivi pédagogique et l'automatisation avec n8n et l'IA.",
+  keywords: ["ScolaFlow", "Inscriptions", "Suivi pédagogique", "RBAC", "n8n", "IA", "Éducation"],
+  authors: [{ name: "ScolaFlow" }],
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },

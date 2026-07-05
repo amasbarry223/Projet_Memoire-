@@ -11,7 +11,7 @@ export function Header() {
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
         <input
           type="text"
-          placeholder="Search students, teachers, classes..."
+          placeholder="Rechercher un étudiant, un dossier, une classe…"
           className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-4 text-sm text-gray-700 placeholder:text-gray-400 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/10"
         />
       </div>
@@ -30,14 +30,14 @@ export function Header() {
         <div className="hidden sm:flex items-center gap-3 rounded-lg border border-gray-100 py-1.5 pl-1.5 pr-3">
           <Avatar className="size-8 border border-gray-100">
             <AvatarFallback className="bg-emerald-500 text-xs font-semibold text-white">
-              AU
+              AP
             </AvatarFallback>
           </Avatar>
           <div className="text-left">
             <p className="text-sm font-semibold leading-tight text-gray-900">
-              Admin User
+              Admin Principal
             </p>
-            <p className="text-xs leading-tight text-gray-400">Super Admin</p>
+            <p className="text-xs leading-tight text-gray-400">Administrateur</p>
           </div>
           <ChevronDown className="size-4 text-gray-400" />
         </div>
