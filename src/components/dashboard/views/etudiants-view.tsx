@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, Eye, ClipboardEdit } from "lucide-react";
+import {
+  GraduationCap,
+  Eye,
+  Pencil,
+  ClipboardEdit,
+  Trash2,
+  MoreVertical,
+  UserPlus,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -18,9 +26,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAppStore } from "@/lib/view-store";
-import { etudiants } from "@/components/dashboard/data";
+import {
+  etudiants as initialEtudiants,
+  filieres,
+  type Etudiant,
+} from "@/components/dashboard/data";
 import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
+import { EtudiantFormModal } from "../modals/etudiant-form-modal";
+import { EtudiantDetailModal } from "../modals/etudiant-detail-modal";
+import { EtudiantDeleteDialog } from "../modals/etudiant-delete-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 function moyenneColor(m: number) {
   if (m >= 14) return "text-emerald-600";
@@ -36,15 +60,26 @@ function assiduiteColor(a: number) {
 
 export function EtudiantsView() {
   const openModal = useAppStore((s) => s.openModal);
+  const { toast } = useToast();
+
+  const [list, setList] = useState<Etudiant[]>(initialEtudiants);
   const [search, setSearch] = useState("");
   const [filiere, setFiliere] = useState("Toutes");
 
+  // États des 3 modales CRUD
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Etudiant | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [viewing, setViewing] = useState<Etudiant | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState<Etudiant | null>(null);
+
   const filieresUniques = [
     "Toutes",
-    ...Array.from(new Set(etudiants.map((e) => e.filiere))),
+    ...Array.from(new Set(filieres.map((f) => f.nom))),
   ];
 
-  const filtered = etudiants.filter((e) => {
+  const filtered = list.filter((e) => {
     const matchSearch = `${e.prenom} ${e.nom} ${e.matricule} ${e.email}`
       .toLowerCase()
       .includes(search.toLowerCase());
@@ -52,12 +87,77 @@ export function EtudiantsView() {
     return matchSearch && matchFiliere;
   });
 
+  // ─── Actions CRUD ──────────────────────────────────────────────────────
+
+  function handleAdd() {
+    setEditing(null);
+    setFormOpen(true);
+  }
+
+  function handleView(e: Etudiant) {
+    setViewing(e);
+    setDetailOpen(true);
+  }
+
+  function handleEditFromDetail() {
+    setEditing(viewing);
+    setDetailOpen(false);
+    setFormOpen(true);
+  }
+
+  function handleEdit(e: Etudiant) {
+    setEditing(e);
+    setFormOpen(true);
+  }
+
+  function handleDelete(e: Etudiant) {
+    setDeleting(e);
+    setDeleteOpen(true);
+  }
+
+  function handleSave(data: Omit<Etudiant, "id"> & { id?: string }) {
+    if (data.id) {
+      // Modification
+      setList((prev) =>
+        prev.map((e) => (e.id === data.id ? { ...e, ...data, id: e.id } : e))
+      );
+      toast({
+        title: "Étudiant modifié",
+        description: `${data.prenom} ${data.nom} a été mis à jour. Action journalisée.`,
+      });
+    } else {
+      // Création
+      const newId = `ETU-${Date.now()}`;
+      setList((prev) => [{ ...data, id: newId }, ...prev]);
+      toast({
+        title: "Étudiant créé",
+        description: `${data.prenom} ${data.nom} a été ajouté à l'établissement.`,
+      });
+    }
+    setFormOpen(false);
+    setEditing(null);
+  }
+
+  function handleConfirmDelete() {
+    if (!deleting) return;
+    setList((prev) => prev.filter((e) => e.id !== deleting.id));
+    toast({
+      title: "Étudiant supprimé",
+      description: `${deleting.prenom} ${deleting.nom} (${deleting.matricule}) a été supprimé. Journalisé dans l'audit.`,
+      variant: "destructive",
+    });
+    setDeleteOpen(false);
+    setDeleting(null);
+  }
+
   return (
     <div>
       <PageHeader
         title="Étudiants"
         description="Liste des étudiants inscrits (F4.2 — consultation des notes et assiduité)"
         icon={GraduationCap}
+        actionLabel="Ajouter un étudiant"
+        onAction={handleAdd}
       />
 
       <Panel className="p-4 sm:p-5">
@@ -145,27 +245,109 @@ export function EtudiantsView() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <Button variant="ghost" size="sm">
-                      <Eye className="size-4" />
-                      Fiche
-                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        openModal({ type: "note", etudiant: e.nom })
-                      }
+                      onClick={() => handleView(e)}
                     >
-                      <ClipboardEdit className="size-4" />
-                      Note
+                      <Eye className="size-4" />
+                      <span className="hidden lg:inline">Fiche</span>
                     </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="size-8">
+                          <MoreVertical className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleEdit(e)}>
+                          <Pencil className="size-4 text-gray-500" />
+                          Modifier
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            openModal({ type: "note", etudiant: e.nom })
+                          }
+                        >
+                          <ClipboardEdit className="size-4 text-emerald-500" />
+                          Saisir une note
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-red-600 focus:text-red-700"
+                          onClick={() => handleDelete(e)}
+                        >
+                          <Trash2 className="size-4" />
+                          Supprimer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </TableCell>
               </TableRow>
             ))}
+            {filtered.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={8} className="py-12 text-center">
+                  <div className="flex flex-col items-center gap-3 text-gray-400">
+                    <div className="flex size-12 items-center justify-center rounded-full bg-gray-100">
+                      <GraduationCap className="size-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Aucun étudiant trouvé
+                      </p>
+                      <p className="text-xs">
+                        Modifiez votre recherche ou ajoutez un nouvel étudiant.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                      onClick={handleAdd}
+                    >
+                      <UserPlus className="size-4" />
+                      Ajouter un étudiant
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </Panel>
+
+      {/* Modales CRUD */}
+      <EtudiantFormModal
+        open={formOpen}
+        etudiant={editing}
+        onClose={() => {
+          setFormOpen(false);
+          setEditing(null);
+        }}
+        onSave={handleSave}
+      />
+      <EtudiantDetailModal
+        open={detailOpen}
+        etudiant={viewing}
+        onClose={() => {
+          setDetailOpen(false);
+          setViewing(null);
+        }}
+        onEdit={handleEditFromDetail}
+      />
+      <EtudiantDeleteDialog
+        open={deleteOpen}
+        etudiant={deleting}
+        onClose={() => {
+          setDeleteOpen(false);
+          setDeleting(null);
+        }}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }
