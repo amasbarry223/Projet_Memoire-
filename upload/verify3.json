@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "(1) PASS - Main content (welcome message, date, stat cards, chart) is visible and readable with appropriate font sizes.  \n(2) PASS - Stat cards are arranged in a 2-column grid (2 cards per row).  \n(3) PASS - No horizontal overflow; all elements fit within the 390px width.  \n(4) PASS - Header search bar is visible at the top.  \n\nNo layout problems detected.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783264744,
+  "id": "20260705231902a78cd0e4441747f9",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260705231902a78cd0e4441747f9",
+  "usage": {
+    "completion_tokens": 94,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 502,
+    "prompt_tokens_details": {
+      "cached_tokens": 5
+    },
+    "total_tokens": 596
+  }
+}

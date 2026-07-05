@@ -1,0 +1,73 @@
+"use client";
+
+import { useState } from "react";
+import { GraduationCap, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { navItems } from "./data";
+
+export function Sidebar() {
+  const [active, setActive] = useState("Overview");
+
+  return (
+    <aside className="hidden lg:flex w-[240px] shrink-0 flex-col border-r border-gray-100 bg-white">
+      {/* Logo */}
+      <div className="flex h-16 items-center gap-2 border-b border-gray-100 px-6">
+        <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-500 text-white">
+          <GraduationCap className="size-5" />
+        </div>
+        <span className="text-xl font-bold text-gray-900">
+          G<span className="text-emerald-500">Learn</span>
+        </span>
+      </div>
+
+      {/* Nav items */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+          Menu
+        </p>
+        <ul className="space-y-1">
+          {navItems.map((item) => {
+            const isActive = active === item.label;
+            const Icon = item.icon;
+            return (
+              <li key={item.label}>
+                <button
+                  type="button"
+                  onClick={() => setActive(item.label)}
+                  className={cn(
+                    "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/20"
+                      : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-600"
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      "size-[18px] shrink-0",
+                      isActive ? "text-white" : "text-gray-400 group-hover:text-emerald-500"
+                    )}
+                  />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {isActive && <ChevronRight className="size-4 text-white/80" />}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* Help card */}
+      <div className="p-3">
+        <div className="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-4 text-white">
+          <p className="text-sm font-semibold">Need Help?</p>
+          <p className="mt-1 text-xs text-white/80">
+            Check our documentation for guides and tutorials.
+          </p>
+          <button className="mt-3 w-full rounded-lg bg-white/15 py-2 text-xs font-semibold backdrop-blur-sm transition hover:bg-white/25">
+            View Docs
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}
