@@ -297,10 +297,18 @@ export const useDataStore = create<DataState>((set) => ({
     }),
 
   deleteUtilisateur: (id) => {
-    // R2 étendu : interdiction de supprimer son propre compte
+    // RBAC : seuls les administrateurs peuvent supprimer un utilisateur
     const session = useAuthStore.getState().session;
+    if (!session || session.role !== "admin") {
+      return {
+        ok: false,
+        error:
+          "Seuls les administrateurs peuvent supprimer un compte (RBAC §2.2).",
+      };
+    }
+    // R2 étendu : interdiction de supprimer son propre compte
     const usr = useDataStore.getState().utilisateurs.find((x) => x.id === id);
-    if (session && usr && usr.email === session.email) {
+    if (usr && usr.email === session.email) {
       return {
         ok: false,
         error: "Vous ne pouvez pas supprimer votre propre compte (R2).",
