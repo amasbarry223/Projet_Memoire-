@@ -13,8 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAppStore } from "@/lib/view-store";
+import { useDataStore } from "@/lib/data-store";
 import {
-  filieres as initialFilieres,
   type Filiere,
   type Classe,
   type Matiere,
@@ -34,7 +34,10 @@ export function FilieresView() {
   const openModal = useAppStore((s) => s.openModal);
   const { toast } = useToast();
 
-  const [list, setList] = useState<Filiere[]>(initialFilieres);
+  const list = useDataStore((s) => s.filieres);
+  const deleteFiliereStore = useDataStore((s) => s.deleteFiliere);
+  const deleteClasseStore = useDataStore((s) => s.deleteClasse);
+  const deleteMatiereStore = useDataStore((s) => s.deleteMatiere);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
 
@@ -66,31 +69,26 @@ export function FilieresView() {
   function handleConfirmDelete() {
     if (!deleteTarget) return;
     if (deleteTarget.type === "filiere") {
-      setList((prev) => prev.filter((f) => f.nom !== deleteTarget.nom));
+      const f = list.find((x) => x.nom === deleteTarget.nom);
+      if (f) deleteFiliereStore(f.id);
       toast({
         title: "Filière supprimée",
         description: `${deleteTarget.nom} et ses classes/matières ont été supprimés. Journalisé.`,
         variant: "destructive",
       });
     } else if (deleteTarget.type === "classe") {
-      setList((prev) =>
-        prev.map((f) => ({
-          ...f,
-          classes: f.classes.filter((c) => c.nom !== deleteTarget.nom),
-        }))
-      );
+      const f = list.find((x) => x.nom === deleteTarget.parent);
+      const c = f?.classes.find((x) => x.nom === deleteTarget.nom);
+      if (f && c) deleteClasseStore(f.id, c.id);
       toast({
         title: "Classe supprimée",
         description: `${deleteTarget.nom} a été retirée. Journalisé dans l'audit.`,
         variant: "destructive",
       });
     } else {
-      setList((prev) =>
-        prev.map((f) => ({
-          ...f,
-          matieres: f.matieres.filter((m) => m.nom !== deleteTarget.nom),
-        }))
-      );
+      const f = list.find((x) => x.nom === deleteTarget.parent);
+      const m = f?.matieres.find((x) => x.nom === deleteTarget.nom);
+      if (f && m) deleteMatiereStore(f.id, m.id);
       toast({
         title: "Matière supprimée",
         description: `${deleteTarget.nom} a été retirée. Journalisé dans l'audit.`,

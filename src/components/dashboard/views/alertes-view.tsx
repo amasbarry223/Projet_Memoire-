@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAppStore } from "@/lib/view-store";
-import { alertesIAComplete } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
 import {
   PageHeader,
   Toolbar,
@@ -44,6 +44,7 @@ function statutBadgeClass(statut: string) {
 
 export function AlertesView() {
   const openModal = useAppStore((s) => s.openModal);
+  const alertesIAComplete = useDataStore((s) => s.alertes);
   const [search, setSearch] = useState("");
   const [filtre, setFiltre] = useState("Toutes");
 

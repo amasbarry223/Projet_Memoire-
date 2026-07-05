@@ -17,11 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { auditLog } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
+import { auditLog as seedAudit } from "@/components/dashboard/data";
 import { PageHeader, Toolbar, Panel } from "./shared";
 import { usePagination, DataTablePagination } from "./data-table-pagination";
 
-const actionsUniques = ["Toutes", ...Array.from(new Set(auditLog.map((a) => a.action)))];
+const actionsUniques = ["Toutes", ...Array.from(new Set(seedAudit.map((a) => a.action)))];
 
 function actionColor(action: string) {
   switch (action) {
@@ -47,6 +48,7 @@ function actionColor(action: string) {
 }
 
 export function AuditView() {
+  const auditLog = useDataStore((s) => s.audit);
   const [search, setSearch] = useState("");
   const [filtreAction, setFiltreAction] = useState("Toutes");
 

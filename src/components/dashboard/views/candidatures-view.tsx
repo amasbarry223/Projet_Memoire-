@@ -27,10 +27,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/view-store";
-import {
-  candidatures,
-  type StatutDossier,
-} from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
+import { type StatutDossier } from "@/components/dashboard/data";
 import {
   PageHeader,
   Toolbar,
@@ -50,6 +48,7 @@ const statuts: ("Tous" | StatutDossier)[] = [
 
 export function CandidaturesView() {
   const openModal = useAppStore((s) => s.openModal);
+  const candidatures = useDataStore((s) => s.candidatures);
   const [search, setSearch] = useState("");
   const [filtreStatut, setFiltreStatut] = useState<string>("Tous");
 

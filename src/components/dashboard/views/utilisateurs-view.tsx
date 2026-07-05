@@ -28,12 +28,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  utilisateurs as initialUtilisateurs,
   roleLabels,
   roleBadgeBg,
   type Role,
   type Utilisateur,
 } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
 import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
 import { usePagination, DataTablePagination } from "./data-table-pagination";
 import { UtilisateurFormModal } from "../modals/utilisateur-form-modal";
@@ -61,7 +61,10 @@ function avatarBg(role: Role) {
 
 export function UtilisateursView() {
   const { toast } = useToast();
-  const [list, setList] = useState<Utilisateur[]>(initialUtilisateurs);
+  const list = useDataStore((s) => s.utilisateurs);
+  const addUtilisateur = useDataStore((s) => s.addUtilisateur);
+  const updateUtilisateur = useDataStore((s) => s.updateUtilisateur);
+  const deleteUtilisateur = useDataStore((s) => s.deleteUtilisateur);
   const [search, setSearch] = useState("");
   const [filtreRole, setFiltreRole] = useState("Tous");
 
@@ -108,27 +111,15 @@ export function UtilisateursView() {
     data: Omit<Utilisateur, "id" | "derniereConnexion"> & { id?: string }
   ) {
     if (data.id) {
-      setList((prev) =>
-        prev.map((u) =>
-          u.id === data.id
-            ? { ...u, ...data, id: u.id }
-            : u
-        )
-      );
+      updateUtilisateur(data.id, data);
       toast({
         title: "Utilisateur modifié",
         description: `${data.prenom} ${data.nom} — Rôle : ${roleLabels[data.role]}. Journalisé dans l'audit.`,
       });
     } else {
-      const newId = `U-${Date.now()}`;
-      setList((prev) => [
-        {
-          ...data,
-          id: newId,
-          derniereConnexion: "Jamais",
-        },
-        ...prev,
-      ]);
+      const { id: _id, ...rest } = data;
+      void _id;
+      addUtilisateur(rest);
       toast({
         title: "Utilisateur créé",
         description: `${data.prenom} ${data.nom} — Rôle : ${roleLabels[data.role]}.`,
@@ -140,7 +131,7 @@ export function UtilisateursView() {
 
   function handleConfirmDelete() {
     if (!deleting) return;
-    setList((prev) => prev.filter((u) => u.id !== deleting.id));
+    deleteUtilisateur(deleting.id);
     toast({
       title: "Utilisateur supprimé",
       description: `${deleting.prenom} ${deleting.nom} a été supprimé. Journalisé dans l'audit.`,

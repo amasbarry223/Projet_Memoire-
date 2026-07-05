@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "For the first question: NO. There is no green toast visible in the image.  \n\nFor the second question: YES. In the \"étudiants\" table, the first row (the topmost entry in the table) is \"Awa Diarra\".",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783284488,
+  "id": "2026070604480394815de92aac4fcc",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "2026070604480394815de92aac4fcc",
+  "usage": {
+    "completion_tokens": 56,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1010,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1066
+  }
+}

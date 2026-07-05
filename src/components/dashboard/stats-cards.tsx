@@ -1,7 +1,100 @@
+"use client";
+
+import {
+  GraduationCap,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  BrainCircuit,
+  TrendingUp,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { stats } from "./data";
+import { useDataStore } from "@/lib/data-store";
 
 export function StatsCards() {
+  const etudiants = useDataStore((s) => s.etudiants);
+  const candidatures = useDataStore((s) => s.candidatures);
+  const alertes = useDataStore((s) => s.alertes);
+
+  // Calculs dynamiques depuis le store
+  const totalEtudiants = etudiants.length;
+  const candidaturesEnAttente = candidatures.filter(
+    (c) => c.statut === "En attente"
+  ).length;
+  const dossiersValides = candidatures.filter(
+    (c) => c.statut === "Validé"
+  ).length;
+  const dossiersIncomplets = candidatures.filter(
+    (c) => c.statut === "Incomplet"
+  ).length;
+  const alertesActives = alertes.filter(
+    (a) => a.statut !== "Clôturée"
+  ).length;
+  // Taux d'assiduité moyen
+  const tauxAssiduite =
+    totalEtudiants === 0
+      ? 0
+      : Math.round(
+          etudiants.reduce((sum, e) => sum + e.assiduite, 0) / totalEtudiants
+        );
+
+  const stats = [
+    {
+      label: "Total Étudiants",
+      value: totalEtudiants.toLocaleString("fr-FR"),
+      icon: GraduationCap,
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-500",
+      statusColor: "bg-emerald-500",
+      hint: "Inscrits actifs",
+    },
+    {
+      label: "Nouvelles Candidatures",
+      value: candidaturesEnAttente.toString(),
+      icon: FileText,
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-500",
+      statusColor: "bg-emerald-500",
+      hint: "En attente",
+    },
+    {
+      label: "Dossiers Validés",
+      value: dossiersValides.toString(),
+      icon: CheckCircle2,
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-500",
+      statusColor: "bg-emerald-500",
+      hint: "Traités",
+    },
+    {
+      label: "Dossiers Incomplets",
+      value: dossiersIncomplets.toString(),
+      icon: AlertCircle,
+      iconBg: "bg-red-50",
+      iconColor: "text-red-500",
+      statusColor: dossiersIncomplets > 0 ? "bg-amber-500" : "bg-emerald-500",
+      hint: dossiersIncomplets > 0 ? "Action requise" : "Aucun",
+    },
+    {
+      label: "Alertes IA Actives",
+      value: alertesActives.toString(),
+      icon: BrainCircuit,
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-500",
+      statusColor: alertesActives > 0 ? "bg-amber-500" : "bg-emerald-500",
+      hint: alertesActives > 0 ? "Risque pédagogique" : "Aucune alerte",
+    },
+    {
+      label: "Taux d'Assiduité",
+      value: `${tauxAssiduite}%`,
+      icon: TrendingUp,
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-500",
+      statusColor: tauxAssiduite >= 85 ? "bg-emerald-500" : "bg-amber-500",
+      hint: "Établissement",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
       {stats.map((stat) => {

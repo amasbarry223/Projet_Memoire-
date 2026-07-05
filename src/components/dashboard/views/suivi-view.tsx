@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAppStore } from "@/lib/view-store";
-import { notesGrille, absences } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
 import { PageHeader, Panel, StatusBadge } from "./shared";
 import { usePagination, DataTablePagination } from "./data-table-pagination";
 
@@ -28,6 +28,8 @@ export function SuiviView() {
   const openModal = useAppStore((s) => s.openModal);
   const [tab, setTab] = useState("notes");
 
+  const notesGrille = useDataStore((s) => s.notes);
+  const absences = useDataStore((s) => s.absences);
   const notesPagination = usePagination(notesGrille);
   const absencesPagination = usePagination(absences);
 

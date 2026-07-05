@@ -20,10 +20,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  enseignants as initialEnseignants,
-  type Enseignant,
-} from "@/components/dashboard/data";
+import { type Enseignant } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
 import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
 import { usePagination, DataTablePagination } from "./data-table-pagination";
 import { EnseignantFormModal } from "../modals/enseignant-form-modal";
@@ -32,7 +30,10 @@ import { useToast } from "@/hooks/use-toast";
 
 export function EnseignantsView() {
   const { toast } = useToast();
-  const [list, setList] = useState<Enseignant[]>(initialEnseignants);
+  const list = useDataStore((s) => s.enseignants);
+  const addEnseignant = useDataStore((s) => s.addEnseignant);
+  const updateEnseignant = useDataStore((s) => s.updateEnseignant);
+  const deleteEnseignant = useDataStore((s) => s.deleteEnseignant);
   const [search, setSearch] = useState("");
 
   const [formOpen, setFormOpen] = useState(false);
@@ -65,16 +66,15 @@ export function EnseignantsView() {
 
   function handleSave(data: Omit<Enseignant, "id"> & { id?: string }) {
     if (data.id) {
-      setList((prev) =>
-        prev.map((e) => (e.id === data.id ? { ...e, ...data, id: e.id } : e))
-      );
+      updateEnseignant(data.id, data);
       toast({
         title: "Enseignant modifié",
         description: `${data.prenom} ${data.nom} a été mis à jour.`,
       });
     } else {
-      const newId = `ENS-${Date.now()}`;
-      setList((prev) => [{ ...data, id: newId }, ...prev]);
+      const { id: _id, ...rest } = data;
+      void _id;
+      addEnseignant(rest);
       toast({
         title: "Enseignant créé",
         description: `${data.prenom} ${data.nom} a été ajouté au corps enseignant.`,
@@ -86,7 +86,7 @@ export function EnseignantsView() {
 
   function handleConfirmDelete() {
     if (!deleting) return;
-    setList((prev) => prev.filter((e) => e.id !== deleting.id));
+    deleteEnseignant(deleting.id);
     toast({
       title: "Enseignant supprimé",
       description: `${deleting.prenom} ${deleting.nom} a été supprimé. Affectations retirées. Journalisé.`,

@@ -1,5 +1,8 @@
+"use client";
+
 import { BrainCircuit } from "lucide-react";
-import { alertesIA } from "./data";
+import { useDataStore } from "@/lib/data-store";
+import { useAppStore } from "@/lib/view-store";
 
 const niveauBg: Record<string, string> = {
   "Élevé": "bg-red-50 text-red-600",
@@ -8,6 +11,15 @@ const niveauBg: Record<string, string> = {
 };
 
 export function AlertesIA() {
+  const alertes = useDataStore((s) => s.alertes);
+  const openModal = useAppStore((s) => s.openModal);
+  const setView = useAppStore((s) => s.setView);
+
+  // Alertes non clôturées, les plus récentes en premier (max 5)
+  const recentes = [...alertes]
+    .filter((a) => a.statut !== "Clôturée")
+    .slice(0, 5);
+
   return (
     <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
@@ -15,19 +27,30 @@ export function AlertesIA() {
           <h3 className="text-base font-semibold text-gray-900">
             Alertes IA récentes
           </h3>
-          <p className="text-xs text-gray-400">Détection de risque pédagogique</p>
+          <p className="text-xs text-gray-400">
+            Détection de risque pédagogique · {recentes.length} active
+            {recentes.length > 1 ? "s" : ""}
+          </p>
         </div>
-        <div className="flex size-9 items-center justify-center rounded-full bg-amber-50 text-amber-500">
+        <button
+          onClick={() => setView("alertes")}
+          className="flex size-9 items-center justify-center rounded-full bg-amber-50 text-amber-500 transition hover:bg-amber-100"
+          aria-label="Voir toutes les alertes"
+        >
           <BrainCircuit className="size-4" />
-        </div>
+        </button>
       </div>
 
       <ul className="space-y-3">
-        {alertesIA.map((alerte, idx) => (
-          <li key={idx} className="flex items-stretch gap-3">
+        {recentes.map((alerte, idx) => (
+          <li
+            key={alerte.id}
+            className="flex cursor-pointer items-stretch gap-3"
+            onClick={() => openModal({ type: "alerte", alerteId: alerte.id })}
+          >
             <div className="flex flex-col items-center">
               <span className={`mt-1 size-2.5 rounded-full ${alerte.indicatorColor}`} />
-              {idx < alertesIA.length - 1 && (
+              {idx < recentes.length - 1 && (
                 <span className="my-1 w-px flex-1 bg-gray-200" />
               )}
             </div>
@@ -48,6 +71,11 @@ export function AlertesIA() {
             </div>
           </li>
         ))}
+        {recentes.length === 0 && (
+          <li className="rounded-lg border border-dashed border-gray-200 p-4 text-center text-xs text-gray-400">
+            Aucune alerte active. Tout est sous contrôle.
+          </li>
+        )}
       </ul>
     </div>
   );

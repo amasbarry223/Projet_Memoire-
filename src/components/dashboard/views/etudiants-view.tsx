@@ -35,11 +35,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAppStore } from "@/lib/view-store";
-import {
-  etudiants as initialEtudiants,
-  filieres,
-  type Etudiant,
-} from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
+import { filieres, type Etudiant } from "@/components/dashboard/data";
 import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
 import { usePagination, DataTablePagination } from "./data-table-pagination";
 import { EtudiantFormModal } from "../modals/etudiant-form-modal";
@@ -63,7 +60,11 @@ export function EtudiantsView() {
   const openModal = useAppStore((s) => s.openModal);
   const { toast } = useToast();
 
-  const [list, setList] = useState<Etudiant[]>(initialEtudiants);
+  const list = useDataStore((s) => s.etudiants);
+  const addEtudiant = useDataStore((s) => s.addEtudiant);
+  const updateEtudiant = useDataStore((s) => s.updateEtudiant);
+  const deleteEtudiant = useDataStore((s) => s.deleteEtudiant);
+
   const [search, setSearch] = useState("");
   const [filiere, setFiliere] = useState("Toutes");
 
@@ -121,17 +122,16 @@ export function EtudiantsView() {
   function handleSave(data: Omit<Etudiant, "id"> & { id?: string }) {
     if (data.id) {
       // Modification
-      setList((prev) =>
-        prev.map((e) => (e.id === data.id ? { ...e, ...data, id: e.id } : e))
-      );
+      updateEtudiant(data.id, data);
       toast({
         title: "Étudiant modifié",
         description: `${data.prenom} ${data.nom} a été mis à jour. Action journalisée.`,
       });
     } else {
       // Création
-      const newId = `ETU-${Date.now()}`;
-      setList((prev) => [{ ...data, id: newId }, ...prev]);
+      const { id: _id, ...rest } = data;
+      void _id;
+      addEtudiant(rest);
       toast({
         title: "Étudiant créé",
         description: `${data.prenom} ${data.nom} a été ajouté à l'établissement.`,
@@ -143,7 +143,7 @@ export function EtudiantsView() {
 
   function handleConfirmDelete() {
     if (!deleting) return;
-    setList((prev) => prev.filter((e) => e.id !== deleting.id));
+    deleteEtudiant(deleting.id);
     toast({
       title: "Étudiant supprimé",
       description: `${deleting.prenom} ${deleting.nom} (${deleting.matricule}) a été supprimé. Journalisé dans l'audit.`,

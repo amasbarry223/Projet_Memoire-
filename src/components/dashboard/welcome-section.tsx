@@ -2,20 +2,33 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/lib/auth-store";
+import { roleLabels } from "./data";
 import { tabsList } from "./data";
 
 export function WelcomeSection() {
   const [activeTab, setActiveTab] = useState("Candidatures");
+  const session = useAuthStore((s) => s.session);
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div className="mb-6">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Bonjour ! Voici l&apos;activité du jour
+            Bonjour{session ? `, ${session.prenom}` : ""} ! Voici l&apos;activité
+            du jour
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Jeudi 1er Novembre 2024 · Session en cours · 5 espaces actifs
+          <p className="mt-1 text-sm text-gray-500 capitalize">
+            {dateStr} · Session en cours
+            {session ? ` · ${roleLabels[session.role]}` : ""}
           </p>
         </div>
       </div>
