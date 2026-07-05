@@ -50,7 +50,7 @@ export function AbsenteismeChart() {
           Objectif &lt; 8%
         </div>
       </div>
-      <div className="h-[260px] w-full">
+      <div className="h-[220px] sm:h-[260px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={absentéismeParMois}

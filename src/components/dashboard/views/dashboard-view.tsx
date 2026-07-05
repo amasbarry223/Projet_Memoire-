@@ -344,10 +344,10 @@ function EtudiantDashboard() {
 // ─── Dashboard global (enseignant, responsable, admin) ────────────────────────
 function GlobalDashboard() {
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-[1600px] space-y-6">
       <WelcomeSection />
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[1fr_360px]">
         {/* Colonne principale */}
         <div className="space-y-6 min-w-0">
           <StatsCards />
@@ -363,9 +363,9 @@ function GlobalDashboard() {
           </div>
         </div>
 
-        {/* Colonne droite */}
-        <aside className="hidden xl:block space-y-6">
-          <div className="xl:sticky xl:top-0 space-y-6">
+        {/* Colonne droite — visible dès xl pour éviter le grand vide sur desktop */}
+        <aside className="hidden 2xl:block space-y-6">
+          <div className="sticky top-0 space-y-6">
             <CalendarWidget />
             <AlertesIA />
           </div>

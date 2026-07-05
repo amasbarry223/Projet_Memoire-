@@ -36,30 +36,96 @@ function avatarBg(role: string) {
   }
 }
 
+function ProfileButton({
+  session,
+  logout,
+  compact = false,
+}: {
+  session: { prenom: string; nom: string; role: keyof typeof roleLabels; email: string };
+  logout: () => void;
+  compact?: boolean;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className={`flex items-center gap-2 rounded-lg border border-gray-100 py-1.5 pl-1.5 transition hover:bg-gray-50 ${
+            compact ? "pr-1.5" : "pr-3"
+          }`}
+          aria-label="Menu utilisateur"
+        >
+          <Avatar className="size-8 border border-gray-100">
+            <AvatarFallback
+              className={`text-xs font-semibold text-white ${avatarBg(session.role)}`}
+            >
+              {initials(session.prenom, session.nom)}
+            </AvatarFallback>
+          </Avatar>
+          {!compact && (
+            <div className="hidden text-left sm:block">
+              <p className="text-sm font-semibold leading-tight text-gray-900">
+                {session.prenom} {session.nom}
+              </p>
+              <p className="text-xs leading-tight text-gray-400">
+                {roleLabels[session.role]}
+              </p>
+            </div>
+          )}
+          {!compact && <ChevronDown className="hidden size-4 text-gray-400 sm:block" />}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="flex items-center justify-between gap-2">
+          <span className="truncate">
+            {session.prenom} {session.nom}
+          </span>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${roleBadgeBg[session.role]}`}
+          >
+            {session.role}
+          </span>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="text-xs text-gray-500" disabled>
+          <span className="truncate">{session.email}</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="text-red-600 focus:text-red-700"
+          onClick={logout}
+        >
+          <LogOut className="size-4" />
+          Déconnexion
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function Header() {
   const session = useAuthStore((s) => s.session);
   const logout = useAuthStore((s) => s.logout);
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-gray-100 bg-white px-4 lg:px-6">
-      <div className="flex items-center gap-2 flex-1 min-w-0">
+    <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-gray-100 bg-white px-3 sm:gap-4 sm:px-4 lg:px-6">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
         <MobileNav />
-        {/* Search */}
-        <div className="relative max-w-md flex-1">
+        {/* Search — réduit sur mobile, max-w sur desktop */}
+        <div className="relative min-w-0 flex-1 max-w-md">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Rechercher un étudiant, un dossier, une classe…"
-            className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-4 text-sm text-gray-700 placeholder:text-gray-400 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/10"
+            placeholder="Rechercher…"
+            className="h-10 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/10"
           />
         </div>
       </div>
 
       {/* Right actions */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-1 sm:gap-3">
         <button
           type="button"
-          className="relative flex size-10 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+          className="relative flex size-10 shrink-0 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
           aria-label="Notifications"
         >
           <Bell className="size-5" />
@@ -67,63 +133,7 @@ export function Header() {
         </button>
 
         {session && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="hidden sm:flex items-center gap-3 rounded-lg border border-gray-100 py-1.5 pl-1.5 pr-3 transition hover:bg-gray-50">
-                <Avatar className="size-8 border border-gray-100">
-                  <AvatarFallback
-                    className={`text-xs font-semibold text-white ${avatarBg(session.role)}`}
-                  >
-                    {initials(session.prenom, session.nom)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-left">
-                  <p className="text-sm font-semibold leading-tight text-gray-900">
-                    {session.prenom} {session.nom}
-                  </p>
-                  <p className="text-xs leading-tight text-gray-400">
-                    {roleLabels[session.role]}
-                  </p>
-                </div>
-                <ChevronDown className="size-4 text-gray-400" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="flex items-center justify-between">
-                <span>
-                  {session.prenom} {session.nom}
-                </span>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${roleBadgeBg[session.role]}`}
-                >
-                  {session.role}
-                </span>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-xs text-gray-500" disabled>
-                {session.email}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-red-600 focus:text-red-700"
-                onClick={logout}
-              >
-                <LogOut className="size-4" />
-                Déconnexion
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-
-        {/* Avatar seul sur mobile */}
-        {session && (
-          <Avatar className="sm:hidden size-8">
-            <AvatarFallback
-              className={`text-xs font-semibold text-white ${avatarBg(session.role)}`}
-            >
-              {initials(session.prenom, session.nom)}
-            </AvatarFallback>
-          </Avatar>
+          <ProfileButton session={session} logout={logout} />
         )}
       </div>
     </header>

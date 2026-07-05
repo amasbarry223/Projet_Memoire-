@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "(1) PASS - Header search shows 'Rechercher…' and is compact.  \n(2) PASS - KPI cards fit 2-per-row without overflow.  \n(3) PASS - Search bar + 'Tous' filter stack vertically and are usable.  \n(4) PASS - Datatable is horizontally scrollable with a thin scrollbar (not cut off).  \n(5) PASS - Pagination bar stacks vertically (Affichage text + Lignes selector + page buttons).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783293624,
+  "id": "20260706072022a926da047080476d",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706072022a926da047080476d",
+  "usage": {
+    "completion_tokens": 101,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 515,
+    "prompt_tokens_details": {
+      "cached_tokens": 7
+    },
+    "total_tokens": 616
+  }
+}

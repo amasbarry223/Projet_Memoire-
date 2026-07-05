@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Mobile (375px): PASS - Header has compact search bar, readable stat cards, no sidebar, no overflow.  \nTablet (768px): PASS - Header search bar/avatars intact, stat cards/charts properly sized, no sidebar, no overflow.  \nDesktop (1920px): PASS - Header elements present, stat cards/charts sized, right sidebar visible, no overflow.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783293587,
+  "id": "20260706071944d754254530244413",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706071944d754254530244413",
+  "usage": {
+    "completion_tokens": 83,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 4184,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 4267
+  }
+}
