@@ -106,7 +106,7 @@ export function LoginView() {
           </div>
 
           {/* Séparateur */}
-          <div className="mt-2 mb-4 flex items-center gap-3">
+          <div className="mt-0 mb-3 flex items-center gap-3">
             <span className="h-px flex-1 bg-gray-200" />
             <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
               Connexion
