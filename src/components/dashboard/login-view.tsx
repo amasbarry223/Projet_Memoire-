@@ -100,9 +100,9 @@ export function LoginView() {
       {/* Conteneur centré */}
       <div className="relative w-full max-w-md">
         <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-emerald-900/5 sm:p-8">
-          {/* Logo centré */}
-          <div className="flex flex-col items-center text-center">
-            <Logo size={140} showText={false} />
+          {/* Logo centré — bien visible */}
+          <div className="flex justify-center">
+            <Logo size={220} showText={false} />
           </div>
 
           {/* Séparateur */}
