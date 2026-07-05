@@ -255,11 +255,12 @@ export function UtilisateursView() {
                   <div className="flex items-center justify-end gap-1">
                     <Button
                       variant="ghost"
-                      size="sm"
+                      size="icon"
+                      className="size-8"
                       onClick={() => handleEdit(u)}
+                      aria-label="Modifier"
                     >
                       <Pencil className="size-4" />
-                      <span className="hidden lg:inline">Modifier</span>
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
