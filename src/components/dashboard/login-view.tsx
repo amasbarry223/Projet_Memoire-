@@ -101,12 +101,12 @@ export function LoginView() {
       <div className="relative w-full max-w-md">
         <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-emerald-900/5 sm:p-8">
           {/* Logo centré — bien visible */}
-          <div className="flex justify-center pb-2">
+          <div className="flex justify-center">
             <Logo size={220} showText={false} />
           </div>
 
           {/* Séparateur */}
-          <div className="my-10 flex items-center gap-3">
+          <div className="my-4 flex items-center gap-3">
             <span className="h-px flex-1 bg-gray-200" />
             <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
               Connexion
