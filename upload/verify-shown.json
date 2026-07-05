@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS\nRole buttons visible: Administrateur, Responsable pédagogique, Enseignant, Étudiant, Candidat",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783271895,
+  "id": "2026070601181043e6ac1ab01c4dee",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "2026070601181043e6ac1ab01c4dee",
+  "usage": {
+    "completion_tokens": 28,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1062,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1090
+  }
+}

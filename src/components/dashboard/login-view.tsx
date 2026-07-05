@@ -12,6 +12,7 @@ import {
   Users,
   ArrowRight,
   AlertCircle,
+  ChevronDown,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,6 +54,7 @@ export function LoginView() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
 
   function afterLogin(role: Role) {
     setView(defaultView[role]);
@@ -187,48 +189,60 @@ export function LoginView() {
             </Button>
           </form>
 
-          {/* Séparateur quick login */}
-          <div className="my-6 flex items-center gap-3">
-            <span className="h-px flex-1 bg-gray-200" />
-            <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
-              Connexion rapide démo
-            </span>
-            <span className="h-px flex-1 bg-gray-200" />
-          </div>
+          {/* Bascule comptes démo (masqués par défaut) */}
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={() => setShowDemo((v) => !v)}
+              className="flex w-full items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-100"
+              aria-expanded={showDemo}
+            >
+              <span className="flex items-center gap-2">
+                <Users className="size-4 text-gray-400" />
+                Comptes de démonstration
+              </span>
+              <ChevronDown
+                className={`size-4 text-gray-400 transition-transform ${
+                  showDemo ? "rotate-180" : ""
+                }`}
+              />
+            </button>
 
-          {/* Quick login par rôle */}
-          <div className="space-y-2">
-            {demoAccounts.map((account) => {
-              const Icon = roleIcons[account.role];
-              return (
-                <button
-                  key={account.role}
-                  type="button"
-                  onClick={() => quickLogin(account.role)}
-                  className="group flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition hover:border-emerald-300 hover:bg-emerald-50/40"
-                >
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition group-hover:bg-emerald-100 group-hover:text-emerald-600">
-                    <Icon className="size-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-gray-900">
-                        {roleLabels[account.role]}
-                      </span>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${roleBadgeBg[account.role]}`}
-                      >
-                        {account.role}
-                      </span>
-                    </div>
-                    <p className="truncate text-xs text-gray-400">
-                      {roleDesc[account.role]}
-                    </p>
-                  </div>
-                  <ArrowRight className="size-4 text-gray-300 transition group-hover:text-emerald-500" />
-                </button>
-              );
-            })}
+            {showDemo && (
+              <div className="mt-2 space-y-2">
+                {demoAccounts.map((account) => {
+                  const Icon = roleIcons[account.role];
+                  return (
+                    <button
+                      key={account.role}
+                      type="button"
+                      onClick={() => quickLogin(account.role)}
+                      className="group flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition hover:border-emerald-300 hover:bg-emerald-50/40"
+                    >
+                      <div className="flex size-9 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition group-hover:bg-emerald-100 group-hover:text-emerald-600">
+                        <Icon className="size-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-gray-900">
+                            {roleLabels[account.role]}
+                          </span>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${roleBadgeBg[account.role]}`}
+                          >
+                            {account.role}
+                          </span>
+                        </div>
+                        <p className="truncate text-xs text-gray-400">
+                          {roleDesc[account.role]}
+                        </p>
+                      </div>
+                      <ArrowRight className="size-4 text-gray-300 transition group-hover:text-emerald-500" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
