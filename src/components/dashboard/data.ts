@@ -115,11 +115,11 @@ export type DemoAccount = {
 };
 
 export const demoAccounts: DemoAccount[] = [
-  { email: "admin@scolaflow.fr", password: "admin", role: "admin", nom: "Principal", prenom: "Admin" },
-  { email: "claire.lambert@scolaflow.fr", password: "resp", role: "responsable", nom: "Lambert", prenom: "Claire" },
-  { email: "a.dubois@scolaflow.fr", password: "ens", role: "enseignant", nom: "Dubois", prenom: "Antoine" },
-  { email: "thomas.roux@etu.fr", password: "etu", role: "etudiant", nom: "Roux", prenom: "Thomas" },
-  { email: "marie.dupont@email.fr", password: "cand", role: "candidat", nom: "Dupont", prenom: "Marie" },
+  { email: "amadou.toure@scolaflow.ml", password: "admin", role: "admin", nom: "Touré", prenom: "Amadou" },
+  { email: "rokia.keita@scolaflow.ml", password: "resp", role: "responsable", nom: "Keïta", prenom: "Rokia" },
+  { email: "d.coulibaly@scolaflow.ml", password: "ens", role: "enseignant", nom: "Coulibaly", prenom: "Drissa" },
+  { email: "moussa.diabate@etu.ml", password: "etu", role: "etudiant", nom: "Diabaté", prenom: "Moussa" },
+  { email: "kadiatou.konate@email.ml", password: "cand", role: "candidat", nom: "Konaté", prenom: "Kadiatou" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -230,10 +230,10 @@ export type DossierRecent = {
 };
 
 export const dossiersRecents: DossierRecent[] = [
-  { candidat: "Marie Dupont", filiere: "BTS SIO", date: "01 Nov 2024", statut: "En attente", statutBg: "bg-amber-50 text-amber-600", initialBg: "bg-amber-500" },
-  { candidat: "Jean Martin", filiere: "BTS MCO", date: "31 Oct 2024", statut: "Validé", statutBg: "bg-emerald-50 text-emerald-600", initialBg: "bg-emerald-500" },
-  { candidat: "Sophie Bernard", filiere: "Licence 3", date: "30 Oct 2024", statut: "Incomplet", statutBg: "bg-orange-50 text-orange-600", initialBg: "bg-orange-500" },
-  { candidat: "Lucas Petit", filiere: "BTS NDRC", date: "29 Oct 2024", statut: "Rejeté", statutBg: "bg-red-50 text-red-500", initialBg: "bg-red-500" },
+  { candidat: "Kadiatou Konaté", filiere: "BTS SIO", date: "01 Nov 2024", statut: "En attente", statutBg: "bg-amber-50 text-amber-600", initialBg: "bg-amber-500" },
+  { candidat: "Ibrahim Touré", filiere: "BTS MCO", date: "31 Oct 2024", statut: "Validé", statutBg: "bg-emerald-50 text-emerald-600", initialBg: "bg-emerald-500" },
+  { candidat: "Rokia Diallo", filiere: "Licence 3", date: "30 Oct 2024", statut: "Incomplet", statutBg: "bg-orange-50 text-orange-600", initialBg: "bg-orange-500" },
+  { candidat: "Seydou Bagayoko", filiere: "BTS NDRC", date: "29 Oct 2024", statut: "Rejeté", statutBg: "bg-red-50 text-red-500", initialBg: "bg-red-500" },
 ];
 
 export type AlerteIA = {
@@ -248,10 +248,10 @@ export type AlerteIA = {
 };
 
 export const alertesIA: AlerteIA[] = [
-  { id: "ALT-001", etudiant: "Thomas Roux", classe: "BTS SIO 2", niveau: "Élevé", motif: "Chute des notes + absences répétées", date: "01 Nov 2024", statut: "Nouvelle", indicatorColor: "bg-red-500" },
-  { id: "ALT-002", etudiant: "Emma Lion", classe: "BTS MCO 1", niveau: "Moyen", motif: "Baisse continue sur 3 évaluations", date: "31 Oct 2024", statut: "Nouvelle", indicatorColor: "bg-orange-500" },
-  { id: "ALT-003", etudiant: "Noah Garcia", classe: "Licence 2", niveau: "Faible", motif: "Premier signalement d'assiduité", date: "30 Oct 2024", statut: "Prise en charge", indicatorColor: "bg-amber-400" },
-  { id: "ALT-004", etudiant: "Léa Moreau", classe: "BTS SIO 1", niveau: "Élevé", motif: "Risque de décrochage détecté", date: "29 Oct 2024", statut: "Nouvelle", indicatorColor: "bg-red-500" },
+  { id: "ALT-001", etudiant: "Moussa Diabaté", classe: "BTS SIO 2", niveau: "Élevé", motif: "Chute des notes + absences répétées", date: "01 Nov 2024", statut: "Nouvelle", indicatorColor: "bg-red-500" },
+  { id: "ALT-002", etudiant: "Aïssata Diallo", classe: "BTS MCO 1", niveau: "Moyen", motif: "Baisse continue sur 3 évaluations", date: "31 Oct 2024", statut: "Nouvelle", indicatorColor: "bg-orange-500" },
+  { id: "ALT-003", etudiant: "Modibo Keïta", classe: "Licence 2", niveau: "Faible", motif: "Premier signalement d'assiduité", date: "30 Oct 2024", statut: "Prise en charge", indicatorColor: "bg-amber-400" },
+  { id: "ALT-004", etudiant: "Fatoumata Diarra", classe: "BTS SIO 1", niveau: "Élevé", motif: "Risque de décrochage détecté", date: "29 Oct 2024", statut: "Nouvelle", indicatorColor: "bg-red-500" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -294,12 +294,12 @@ export type Candidature = {
 export const candidatures: Candidature[] = [
   {
     id: "CAND-2024-048",
-    nom: "Dupont",
-    prenom: "Marie",
-    email: "marie.dupont@email.fr",
-    telephone: "06 12 34 56 78",
+    nom: "Konaté",
+    prenom: "Kadiatou",
+    email: "kadiatou.konate@email.ml",
+    telephone: "+223 76 12 34 56",
     dateNaissance: "15/03/2005",
-    adresse: "12 rue des Lilas, 75011 Paris",
+    adresse: "Rue 12, Faladiè, Bamako",
     filiere: "BTS SIO",
     niveau: "1ère année",
     statut: "En attente",
@@ -314,18 +314,18 @@ export const candidatures: Candidature[] = [
       "Dossier complet. Mention TB au baccalauréat. Lettre de motivation cohérente avec la filière. Aucun point d'attention détecté.",
     completude: 100,
     historique: [
-      { action: "Dossier soumis", date: "01 Nov 2024 09:12", auteur: "Marie Dupont" },
+      { action: "Dossier soumis", date: "01 Nov 2024 09:12", auteur: "Kadiatou Konaté" },
       { action: "Analyse IA effectuée", date: "01 Nov 2024 09:14", auteur: "Système IA" },
     ],
   },
   {
     id: "CAND-2024-047",
-    nom: "Martin",
-    prenom: "Jean",
-    email: "jean.martin@email.fr",
-    telephone: "06 98 76 54 32",
+    nom: "Touré",
+    prenom: "Ibrahim",
+    email: "ibrahim.toure@email.ml",
+    telephone: "+223 77 98 76 54",
     dateNaissance: "22/07/2005",
-    adresse: "45 avenue Foch, 69006 Lyon",
+    adresse: "Avenue Cheick Zayed, ACI 2000, Bamako",
     filiere: "BTS MCO",
     niveau: "1ère année",
     statut: "Validé",
@@ -340,19 +340,19 @@ export const candidatures: Candidature[] = [
       "Dossier complet et conforme. Profil adapté à la filière commerce. Recommandation : validation.",
     completude: 100,
     historique: [
-      { action: "Dossier soumis", date: "31 Oct 2024 14:30", auteur: "Jean Martin" },
+      { action: "Dossier soumis", date: "31 Oct 2024 14:30", auteur: "Ibrahim Touré" },
       { action: "Analyse IA effectuée", date: "31 Oct 2024 14:32", auteur: "Système IA" },
-      { action: "Dossier validé", date: "01 Nov 2024 08:15", auteur: "Admin Principal" },
+      { action: "Dossier validé", date: "01 Nov 2024 08:15", auteur: "Amadou Touré" },
     ],
   },
   {
     id: "CAND-2024-046",
-    nom: "Bernard",
-    prenom: "Sophie",
-    email: "sophie.bernard@email.fr",
-    telephone: "07 11 22 33 44",
+    nom: "Diallo",
+    prenom: "Rokia",
+    email: "rokia.diallo@email.ml",
+    telephone: "+223 78 11 22 33",
     dateNaissance: "08/11/2004",
-    adresse: "7 rue Victor Hugo, 33000 Bordeaux",
+    adresse: "Rue 45, Médina-Coura, Bamako",
     filiere: "Licence 3",
     niveau: "3ème année",
     statut: "Incomplet",
@@ -367,19 +367,19 @@ export const candidatures: Candidature[] = [
       "Dossier incomplet : 2 pièces manquantes (relevé L2, lettre de motivation). Profil académique solide sur les pièces présentes.",
     completude: 50,
     historique: [
-      { action: "Dossier soumis", date: "30 Oct 2024 11:00", auteur: "Sophie Bernard" },
+      { action: "Dossier soumis", date: "30 Oct 2024 11:00", auteur: "Rokia Diallo" },
       { action: "Analyse IA effectuée", date: "30 Oct 2024 11:02", auteur: "Système IA" },
-      { action: "Marqué incomplet", date: "30 Oct 2024 16:45", auteur: "Admin Principal" },
+      { action: "Marqué incomplet", date: "30 Oct 2024 16:45", auteur: "Amadou Touré" },
     ],
   },
   {
     id: "CAND-2024-045",
-    nom: "Petit",
-    prenom: "Lucas",
-    email: "lucas.petit@email.fr",
-    telephone: "06 55 44 33 22",
+    nom: "Bagayoko",
+    prenom: "Seydou",
+    email: "seydou.bagayoko@email.ml",
+    telephone: "+223 79 55 44 33",
     dateNaissance: "30/01/2005",
-    adresse: "23 bd Saint-Michel, 13001 Marseille",
+    adresse: "Boulevard du Peuple, Sikasso",
     filiere: "BTS NDRC",
     niveau: "1ère année",
     statut: "Rejeté",
@@ -393,19 +393,19 @@ export const candidatures: Candidature[] = [
       "Dossier complet mais profil inadapté à la filière visée. Niveau académique insuffisant en commerciales. Recommandation : réorientation.",
     completude: 100,
     historique: [
-      { action: "Dossier soumis", date: "29 Oct 2024 10:20", auteur: "Lucas Petit" },
+      { action: "Dossier soumis", date: "29 Oct 2024 10:20", auteur: "Seydou Bagayoko" },
       { action: "Analyse IA effectuée", date: "29 Oct 2024 10:22", auteur: "Système IA" },
-      { action: "Dossier rejeté", date: "30 Oct 2024 09:00", auteur: "Admin Principal" },
+      { action: "Dossier rejeté", date: "30 Oct 2024 09:00", auteur: "Amadou Touré" },
     ],
   },
   {
     id: "CAND-2024-044",
-    nom: "Leroy",
-    prenom: "Camille",
-    email: "camille.leroy@email.fr",
-    telephone: "06 77 88 99 00",
+    nom: "Doumbia",
+    prenom: "Fanta",
+    email: "fanta.doumbia@email.ml",
+    telephone: "+223 76 77 88 99",
     dateNaissance: "12/05/2005",
-    adresse: "5 rue de la Paix, 44000 Nantes",
+    adresse: "Rue 10, Ségou",
     filiere: "BTS SIO",
     niveau: "1ère année",
     statut: "En attente",
@@ -419,18 +419,18 @@ export const candidatures: Candidature[] = [
       "Dossier complet. Profil technique prometteur. Lettre de motivation à compléter pour la session de rentrée.",
     completude: 100,
     historique: [
-      { action: "Dossier soumis", date: "28 Oct 2024 15:00", auteur: "Camille Leroy" },
+      { action: "Dossier soumis", date: "28 Oct 2024 15:00", auteur: "Fanta Doumbia" },
       { action: "Analyse IA effectuée", date: "28 Oct 2024 15:02", auteur: "Système IA" },
     ],
   },
   {
     id: "CAND-2024-043",
-    nom: "Moreau",
-    prenom: "Julien",
-    email: "julien.moreau@email.fr",
-    telephone: "07 66 55 44 33",
+    nom: "Maïga",
+    prenom: "Oumar",
+    email: "oumar.maiga@email.ml",
+    telephone: "+223 65 66 55 44",
     dateNaissance: "19/09/2004",
-    adresse: "18 rue du Commerce, 21000 Dijon",
+    adresse: "Avenue de la Liberté, Kayes",
     filiere: "Licence 2",
     niveau: "2ème année",
     statut: "En attente",
@@ -444,7 +444,7 @@ export const candidatures: Candidature[] = [
       "Dossier complet. Bon dossier académique. Demande de transfert de filière justifiée.",
     completude: 100,
     historique: [
-      { action: "Dossier soumis", date: "27 Oct 2024 13:30", auteur: "Julien Moreau" },
+      { action: "Dossier soumis", date: "27 Oct 2024 13:30", auteur: "Oumar Maïga" },
       { action: "Analyse IA effectuée", date: "27 Oct 2024 13:32", auteur: "Système IA" },
     ],
   },
@@ -468,14 +468,14 @@ export type Etudiant = {
 };
 
 export const etudiants: Etudiant[] = [
-  { id: "ETU-1", matricule: "2024-SIO-001", nom: "Roux", prenom: "Thomas", email: "thomas.roux@etu.fr", filiere: "BTS SIO", classe: "BTS SIO 2", moyenne: 8.4, assiduite: 72, statut: "Actif" },
-  { id: "ETU-2", matricule: "2024-SIO-014", nom: "Moreau", prenom: "Léa", email: "lea.moreau@etu.fr", filiere: "BTS SIO", classe: "BTS SIO 1", moyenne: 9.1, assiduite: 68, statut: "Actif" },
-  { id: "ETU-3", matricule: "2024-MCO-008", nom: "Lion", prenom: "Emma", email: "emma.lion@etu.fr", filiere: "BTS MCO", classe: "BTS MCO 1", moyenne: 10.2, assiduite: 81, statut: "Actif" },
-  { id: "ETU-4", matricule: "2024-LIC-022", nom: "Garcia", prenom: "Noah", email: "noah.garcia@etu.fr", filiere: "Licence Informatique", classe: "Licence 2", moyenne: 12.8, assiduite: 88, statut: "Actif" },
-  { id: "ETU-5", matricule: "2024-NDRC-005", nom: "Fontaine", prenom: "Chloé", email: "chloe.fontaine@etu.fr", filiere: "BTS NDRC", classe: "BTS NDRC 2", moyenne: 14.5, assiduite: 95, statut: "Actif" },
-  { id: "ETU-6", matricule: "2024-SIO-031", nom: "Girard", prenom: "Hugo", email: "hugo.girard@etu.fr", filiere: "BTS SIO", classe: "BTS SIO 1", moyenne: 13.2, assiduite: 91, statut: "Actif" },
-  { id: "ETU-7", matricule: "2024-MCO-019", nom: "Mercier", prenom: "Sarah", email: "sarah.mercier@etu.fr", filiere: "BTS MCO", classe: "BTS MCO 2", moyenne: 11.7, assiduite: 84, statut: "Actif" },
-  { id: "ETU-8", matricule: "2024-LIC-040", nom: "Blanc", prenom: "Nathan", email: "nathan.blanc@etu.fr", filiere: "Licence Informatique", classe: "Licence 3", moyenne: 15.1, assiduite: 97, statut: "Actif" },
+  { id: "ETU-1", matricule: "2024-SIO-001", nom: "Diabaté", prenom: "Moussa", email: "moussa.diabate@etu.ml", filiere: "BTS SIO", classe: "BTS SIO 2", moyenne: 8.4, assiduite: 72, statut: "Actif" },
+  { id: "ETU-2", matricule: "2024-SIO-014", nom: "Diarra", prenom: "Fatoumata", email: "fatoumata.diarra@etu.ml", filiere: "BTS SIO", classe: "BTS SIO 1", moyenne: 9.1, assiduite: 68, statut: "Actif" },
+  { id: "ETU-3", matricule: "2024-MCO-008", nom: "Diallo", prenom: "Aïssata", email: "aissata.diallo@etu.ml", filiere: "BTS MCO", classe: "BTS MCO 1", moyenne: 10.2, assiduite: 81, statut: "Actif" },
+  { id: "ETU-4", matricule: "2024-LIC-022", nom: "Keïta", prenom: "Modibo", email: "modibo.keita@etu.ml", filiere: "Licence Informatique", classe: "Licence 2", moyenne: 12.8, assiduite: 88, statut: "Actif" },
+  { id: "ETU-5", matricule: "2024-NDRC-005", nom: "Sangaré", prenom: "Korotoumou", email: "k.sangare@etu.ml", filiere: "BTS NDRC", classe: "BTS NDRC 2", moyenne: 14.5, assiduite: 95, statut: "Actif" },
+  { id: "ETU-6", matricule: "2024-SIO-031", nom: "Traoré", prenom: "Boubacar", email: "boubacar.traore@etu.ml", filiere: "BTS SIO", classe: "BTS SIO 1", moyenne: 13.2, assiduite: 91, statut: "Actif" },
+  { id: "ETU-7", matricule: "2024-MCO-019", nom: "Cissé", prenom: "Mariam", email: "mariam.cisse@etu.ml", filiere: "BTS MCO", classe: "BTS MCO 2", moyenne: 11.7, assiduite: 84, statut: "Actif" },
+  { id: "ETU-8", matricule: "2024-LIC-040", nom: "Touré", prenom: "Lassana", email: "lassana.toure@etu.ml", filiere: "Licence Informatique", classe: "Licence 3", moyenne: 15.1, assiduite: 97, statut: "Actif" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -493,12 +493,12 @@ export type Enseignant = {
 };
 
 export const enseignants: Enseignant[] = [
-  { id: "ENS-1", nom: "Dubois", prenom: "Antoine", email: "a.dubois@ecole.fr", matieres: ["Développement Web", "Base de données"], classes: ["BTS SIO 1", "BTS SIO 2"], statut: "Actif" },
-  { id: "ENS-2", nom: "Laurent", prenom: "Isabelle", email: "i.laurent@ecole.fr", matieres: ["Management", "Marketing"], classes: ["BTS MCO 1", "BTS MCO 2"], statut: "Actif" },
-  { id: "ENS-3", nom: "Robert", prenom: "Philippe", email: "p.robert@ecole.fr", matieres: ["Réseaux", "Système"], classes: ["BTS SIO 2"], statut: "Actif" },
-  { id: "ENS-4", nom: "Faure", prenom: "Nathalie", email: "n.faure@ecole.fr", matieres: ["Communication"], classes: ["BTS NDRC 1", "BTS NDRC 2"], statut: "Congé" },
-  { id: "ENS-5", nom: "Lemoine", prenom: "Christophe", email: "c.lemoine@ecole.fr", matieres: ["Algorithmique", "Mathématiques"], classes: ["Licence 2", "Licence 3"], statut: "Actif" },
-  { id: "ENS-6", nom: "Giraud", prenom: "Sylvie", email: "s.giraud@ecole.fr", matieres: ["Gestion", "Économie"], classes: ["BTS MCO 2", "BTS NDRC 2"], statut: "Actif" },
+  { id: "ENS-1", nom: "Coulibaly", prenom: "Drissa", email: "d.coulibaly@ecole.ml", matieres: ["Développement Web", "Base de données"], classes: ["BTS SIO 1", "BTS SIO 2"], statut: "Actif" },
+  { id: "ENS-2", nom: "Traoré", prenom: "Aminata", email: "a.traore@ecole.ml", matieres: ["Management", "Marketing"], classes: ["BTS MCO 1", "BTS MCO 2"], statut: "Actif" },
+  { id: "ENS-3", nom: "Koné", prenom: "Bakary", email: "b.kone@ecole.ml", matieres: ["Réseaux", "Système"], classes: ["BTS SIO 2"], statut: "Actif" },
+  { id: "ENS-4", nom: "Sidibé", prenom: "Salimata", email: "s.sidibe@ecole.ml", matieres: ["Communication"], classes: ["BTS NDRC 1", "BTS NDRC 2"], statut: "Congé" },
+  { id: "ENS-5", nom: "Konaté", prenom: "Mahamadou", email: "m.konate@ecole.ml", matieres: ["Algorithmique", "Mathématiques"], classes: ["Licence 2", "Licence 3"], statut: "Actif" },
+  { id: "ENS-6", nom: "Sangaré", prenom: "Oumou", email: "o.sangare@ecole.ml", matieres: ["Gestion", "Économie"], classes: ["BTS MCO 2", "BTS NDRC 2"], statut: "Actif" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -516,14 +516,14 @@ export type Note = {
 };
 
 export const notesGrille: Note[] = [
-  { etudiant: "Thomas Roux", matiere: "Développement Web", classe: "BTS SIO 2", note: 8, sur: 20, coefficient: 3, periode: "Semestre 1" },
-  { etudiant: "Thomas Roux", matiere: "Base de données", classe: "BTS SIO 2", note: 9.5, sur: 20, coefficient: 2, periode: "Semestre 1" },
-  { etudiant: "Léa Moreau", matiere: "Développement Web", classe: "BTS SIO 1", note: 9, sur: 20, coefficient: 3, periode: "Semestre 1" },
-  { etudiant: "Hugo Girard", matiere: "Développement Web", classe: "BTS SIO 1", note: 13, sur: 20, coefficient: 3, periode: "Semestre 1" },
-  { etudiant: "Emma Lion", matiere: "Management", classe: "BTS MCO 1", note: 10.5, sur: 20, coefficient: 2, periode: "Semestre 1" },
-  { etudiant: "Noah Garcia", matiere: "Algorithmique", classe: "Licence 2", note: 12.5, sur: 20, coefficient: 3, periode: "Semestre 1" },
-  { etudiant: "Chloé Fontaine", matiere: "Communication", classe: "BTS NDRC 2", note: 14.5, sur: 20, coefficient: 2, periode: "Semestre 1" },
-  { etudiant: "Nathan Blanc", matiere: "Algorithmique", classe: "Licence 3", note: 15, sur: 20, coefficient: 3, periode: "Semestre 1" },
+  { etudiant: "Moussa Diabaté", matiere: "Développement Web", classe: "BTS SIO 2", note: 8, sur: 20, coefficient: 3, periode: "Semestre 1" },
+  { etudiant: "Moussa Diabaté", matiere: "Base de données", classe: "BTS SIO 2", note: 9.5, sur: 20, coefficient: 2, periode: "Semestre 1" },
+  { etudiant: "Fatoumata Diarra", matiere: "Développement Web", classe: "BTS SIO 1", note: 9, sur: 20, coefficient: 3, periode: "Semestre 1" },
+  { etudiant: "Boubacar Traoré", matiere: "Développement Web", classe: "BTS SIO 1", note: 13, sur: 20, coefficient: 3, periode: "Semestre 1" },
+  { etudiant: "Aïssata Diallo", matiere: "Management", classe: "BTS MCO 1", note: 10.5, sur: 20, coefficient: 2, periode: "Semestre 1" },
+  { etudiant: "Modibo Keïta", matiere: "Algorithmique", classe: "Licence 2", note: 12.5, sur: 20, coefficient: 3, periode: "Semestre 1" },
+  { etudiant: "Korotoumou Sangaré", matiere: "Communication", classe: "BTS NDRC 2", note: 14.5, sur: 20, coefficient: 2, periode: "Semestre 1" },
+  { etudiant: "Lassana Touré", matiere: "Algorithmique", classe: "Licence 3", note: 15, sur: 20, coefficient: 3, periode: "Semestre 1" },
 ];
 
 export type Absence = {
@@ -535,12 +535,12 @@ export type Absence = {
 };
 
 export const absences: Absence[] = [
-  { etudiant: "Thomas Roux", classe: "BTS SIO 2", matiere: "Développement Web", date: "28 Oct 2024", justifiee: false },
-  { etudiant: "Thomas Roux", classe: "BTS SIO 2", matiere: "Réseaux", date: "29 Oct 2024", justifiee: true },
-  { etudiant: "Léa Moreau", classe: "BTS SIO 1", matiere: "Développement Web", date: "30 Oct 2024", justifiee: false },
-  { etudiant: "Emma Lion", classe: "BTS MCO 1", matiere: "Management", date: "25 Oct 2024", justifiee: false },
-  { etudiant: "Noah Garcia", classe: "Licence 2", matiere: "Algorithmique", date: "24 Oct 2024", justifiee: true },
-  { etudiant: "Sarah Mercier", classe: "BTS MCO 2", matiere: "Marketing", date: "23 Oct 2024", justifiee: false },
+  { etudiant: "Moussa Diabaté", classe: "BTS SIO 2", matiere: "Développement Web", date: "28 Oct 2024", justifiee: false },
+  { etudiant: "Moussa Diabaté", classe: "BTS SIO 2", matiere: "Réseaux", date: "29 Oct 2024", justifiee: true },
+  { etudiant: "Fatoumata Diarra", classe: "BTS SIO 1", matiere: "Développement Web", date: "30 Oct 2024", justifiee: false },
+  { etudiant: "Aïssata Diallo", classe: "BTS MCO 1", matiere: "Management", date: "25 Oct 2024", justifiee: false },
+  { etudiant: "Modibo Keïta", classe: "Licence 2", matiere: "Algorithmique", date: "24 Oct 2024", justifiee: true },
+  { etudiant: "Mariam Cissé", classe: "BTS MCO 2", matiere: "Marketing", date: "23 Oct 2024", justifiee: false },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -549,9 +549,9 @@ export const absences: Absence[] = [
 
 export const alertesIAComplete: AlerteIA[] = [
   ...alertesIA,
-  { id: "ALT-005", etudiant: "Sarah Mercier", classe: "BTS MCO 2", niveau: "Moyen", motif: "3 absences non justifiées ce mois", date: "28 Oct 2024", statut: "Prise en charge", indicatorColor: "bg-orange-500" },
-  { id: "ALT-006", etudiant: "Hugo Girard", classe: "BTS SIO 1", niveau: "Faible", motif: "Légère baisse sur la dernière évaluation", date: "27 Oct 2024", statut: "Clôturée", indicatorColor: "bg-amber-400" },
-  { id: "ALT-007", etudiant: "Nathan Blanc", classe: "Licence 3", niveau: "Faible", motif: "Signalement de suivi positif", date: "26 Oct 2024", statut: "Clôturée", indicatorColor: "bg-emerald-400" },
+  { id: "ALT-005", etudiant: "Mariam Cissé", classe: "BTS MCO 2", niveau: "Moyen", motif: "3 absences non justifiées ce mois", date: "28 Oct 2024", statut: "Prise en charge", indicatorColor: "bg-orange-500" },
+  { id: "ALT-006", etudiant: "Boubacar Traoré", classe: "BTS SIO 1", niveau: "Faible", motif: "Légère baisse sur la dernière évaluation", date: "27 Oct 2024", statut: "Clôturée", indicatorColor: "bg-amber-400" },
+  { id: "ALT-007", etudiant: "Lassana Touré", classe: "Licence 3", niveau: "Faible", motif: "Signalement de suivi positif", date: "26 Oct 2024", statut: "Clôturée", indicatorColor: "bg-emerald-400" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -681,14 +681,14 @@ export type Utilisateur = {
 };
 
 export const utilisateurs: Utilisateur[] = [
-  { id: "U-1", nom: "Principal", prenom: "Admin", email: "admin@scolaflow.fr", role: "admin", statut: "Actif", derniereConnexion: "01 Nov 2024 08:00" },
-  { id: "U-2", nom: "Lambert", prenom: "Claire", email: "c.lambert@scolaflow.fr", role: "responsable", statut: "Actif", derniereConnexion: "01 Nov 2024 07:42" },
-  { id: "U-3", nom: "Dubois", prenom: "Antoine", email: "a.dubois@scolaflow.fr", role: "enseignant", statut: "Actif", derniereConnexion: "31 Oct 2024 18:15" },
-  { id: "U-4", nom: "Laurent", prenom: "Isabelle", email: "i.laurent@scolaflow.fr", role: "enseignant", statut: "Actif", derniereConnexion: "31 Oct 2024 16:30" },
-  { id: "U-5", nom: "Roux", prenom: "Thomas", email: "thomas.roux@etu.fr", role: "etudiant", statut: "Actif", derniereConnexion: "31 Oct 2024 14:20" },
-  { id: "U-6", nom: "Fontaine", prenom: "Chloé", email: "chloe.fontaine@etu.fr", role: "etudiant", statut: "Actif", derniereConnexion: "30 Oct 2024 11:05" },
-  { id: "U-7", nom: "Dupont", prenom: "Marie", email: "marie.dupont@email.fr", role: "candidat", statut: "Actif", derniereConnexion: "01 Nov 2024 09:12" },
-  { id: "U-8", nom: "Faure", prenom: "Nathalie", email: "n.faure@scolaflow.fr", role: "enseignant", statut: "Désactivé", derniereConnexion: "12 Oct 2024 10:00" },
+  { id: "U-1", nom: "Touré", prenom: "Amadou", email: "amadou.toure@scolaflow.ml", role: "admin", statut: "Actif", derniereConnexion: "01 Nov 2024 08:00" },
+  { id: "U-2", nom: "Keïta", prenom: "Rokia", email: "rokia.keita@scolaflow.ml", role: "responsable", statut: "Actif", derniereConnexion: "01 Nov 2024 07:42" },
+  { id: "U-3", nom: "Coulibaly", prenom: "Drissa", email: "d.coulibaly@scolaflow.ml", role: "enseignant", statut: "Actif", derniereConnexion: "31 Oct 2024 18:15" },
+  { id: "U-4", nom: "Traoré", prenom: "Aminata", email: "a.traore@scolaflow.ml", role: "enseignant", statut: "Actif", derniereConnexion: "31 Oct 2024 16:30" },
+  { id: "U-5", nom: "Diabaté", prenom: "Moussa", email: "moussa.diabate@etu.ml", role: "etudiant", statut: "Actif", derniereConnexion: "31 Oct 2024 14:20" },
+  { id: "U-6", nom: "Sangaré", prenom: "Korotoumou", email: "k.sangare@etu.ml", role: "etudiant", statut: "Actif", derniereConnexion: "30 Oct 2024 11:05" },
+  { id: "U-7", nom: "Konaté", prenom: "Kadiatou", email: "kadiatou.konate@email.ml", role: "candidat", statut: "Actif", derniereConnexion: "01 Nov 2024 09:12" },
+  { id: "U-8", nom: "Sidibé", prenom: "Salimata", email: "s.sidibe@scolaflow.ml", role: "enseignant", statut: "Désactivé", derniereConnexion: "12 Oct 2024 10:00" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -705,12 +705,12 @@ export type EntreeAudit = {
 };
 
 export const auditLog: EntreeAudit[] = [
-  { id: "AUD-024", date: "01 Nov 2024 08:15", utilisateur: "Admin Principal", action: "Validation dossier", cible: "CAND-2024-047", details: "Dossier validé — statut passé à « Validé »" },
-  { id: "AUD-023", date: "30 Oct 2024 16:45", utilisateur: "Admin Principal", action: "Marquage incomplet", cible: "CAND-2024-046", details: "Pièces manquantes : Relevé L2, Lettre de motivation" },
-  { id: "AUD-022", date: "30 Oct 2024 09:00", utilisateur: "Admin Principal", action: "Rejet dossier", cible: "CAND-2024-045", details: "Motif : profil inadapté à la filière" },
-  { id: "AUD-021", date: "29 Oct 2024 14:30", utilisateur: "Claire Lambert", action: "Clôture alerte", cible: "ALT-006", details: "Élève suivi, situation régularisée" },
-  { id: "AUD-020", date: "28 Oct 2024 11:20", utilisateur: "Antoine Dubois", action: "Saisie de notes", cible: "BTS SIO 2 — Dév. Web", details: "8 notes saisies pour le semestre 1" },
-  { id: "AUD-019", date: "27 Oct 2024 15:45", utilisateur: "Admin Principal", action: "Modification rôle", cible: "U-7 (Marie Dupont)", details: "Rôle « candidat » → « étudiant »" },
-  { id: "AUD-018", date: "26 Oct 2024 10:10", utilisateur: "Claire Lambert", action: "Création compte", cible: "U-3 (Antoine Dubois)", details: "Compte enseignant créé" },
-  { id: "AUD-017", date: "25 Oct 2024 17:30", utilisateur: "Admin Principal", action: "Désactivation compte", cible: "U-8 (Nathalie Faure)", details: "Compte désactivé (congé)" },
+  { id: "AUD-024", date: "01 Nov 2024 08:15", utilisateur: "Amadou Touré", action: "Validation dossier", cible: "CAND-2024-047", details: "Dossier validé — statut passé à « Validé »" },
+  { id: "AUD-023", date: "30 Oct 2024 16:45", utilisateur: "Amadou Touré", action: "Marquage incomplet", cible: "CAND-2024-046", details: "Pièces manquantes : Relevé L2, Lettre de motivation" },
+  { id: "AUD-022", date: "30 Oct 2024 09:00", utilisateur: "Amadou Touré", action: "Rejet dossier", cible: "CAND-2024-045", details: "Motif : profil inadapté à la filière" },
+  { id: "AUD-021", date: "29 Oct 2024 14:30", utilisateur: "Rokia Keïta", action: "Clôture alerte", cible: "ALT-006", details: "Élève suivi, situation régularisée" },
+  { id: "AUD-020", date: "28 Oct 2024 11:20", utilisateur: "Drissa Coulibaly", action: "Saisie de notes", cible: "BTS SIO 2 — Dév. Web", details: "8 notes saisies pour le semestre 1" },
+  { id: "AUD-019", date: "27 Oct 2024 15:45", utilisateur: "Amadou Touré", action: "Modification rôle", cible: "U-7 (Kadiatou Konaté)", details: "Rôle « candidat » → « étudiant »" },
+  { id: "AUD-018", date: "26 Oct 2024 10:10", utilisateur: "Rokia Keïta", action: "Création compte", cible: "U-3 (Drissa Coulibaly)", details: "Compte enseignant créé" },
+  { id: "AUD-017", date: "25 Oct 2024 17:30", utilisateur: "Amadou Touré", action: "Désactivation compte", cible: "U-8 (Salimata Sidibé)", details: "Compte désactivé (congé)" },
 ];

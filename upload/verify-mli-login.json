@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS  \nRole labels: (1) Administrateur, (2) Responsable pédagogique, (3) Enseignant, (4) Étudiant, (5) Candidat  \nEmail placeholder: amadou.toure@scolaflow.ml",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783271157,
+  "id": "20260706010553d52242f823d44ae5",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706010553d52242f823d44ae5",
+  "usage": {
+    "completion_tokens": 55,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1745,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1800
+  }
+}

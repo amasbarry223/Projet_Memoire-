@@ -172,7 +172,7 @@ export function LoginView() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@scolaflow.fr"
+                  placeholder="amadou.toure@scolaflow.ml"
                   className="h-11 pl-10"
                   autoComplete="email"
                   required

@@ -105,7 +105,7 @@ export function UtilisateurModal() {
               name="email"
               type="email"
               defaultValue={editing?.email ?? ""}
-              placeholder="a.dubois@scolaflow.fr"
+              placeholder="d.coulibaly@scolaflow.ml"
             />
           </div>
           <div className="space-y-2">

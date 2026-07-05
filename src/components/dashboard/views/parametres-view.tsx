@@ -70,21 +70,21 @@ export function ParametresView() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="eta-nom">Nom</Label>
-              <Input id="eta-nom" defaultValue="Institut ScolaFlow" />
+              <Input id="eta-nom" defaultValue="Institut ScolaFlow du Mali" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="eta-email">Email contact</Label>
-                <Input id="eta-email" type="email" defaultValue="contact@scolaflow.fr" />
+                <Input id="eta-email" type="email" defaultValue="contact@scolaflow.ml" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="eta-tel">Téléphone</Label>
-                <Input id="eta-tel" defaultValue="01 23 45 67 89" />
+                <Input id="eta-tel" defaultValue="+223 20 22 33 44" />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="eta-addr">Adresse</Label>
-              <Textarea id="eta-addr" rows={2} defaultValue="12 avenue de l'Éducation, 75000 Paris" />
+              <Textarea id="eta-addr" rows={2} defaultValue="Avenue de l'Indépendance, ACI 2000, Bamako" />
             </div>
           </div>
         </Panel>
