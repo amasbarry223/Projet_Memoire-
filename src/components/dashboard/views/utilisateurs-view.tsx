@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UserCog, Pencil, UserPlus, Shield, MoreVertical, Trash2 } from "lucide-react";
+import { UserCog, Pencil, Shield, MoreVertical, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -297,17 +297,6 @@ export function UtilisateursView() {
           onPageSizeChange={pagination.setPageSize}
         />
       </Panel>
-
-      <div className="mt-4 flex items-center justify-center">
-        <Button
-          variant="outline"
-          className="border-emerald-200 text-emerald-600 hover:bg-emerald-50"
-          onClick={handleAdd}
-        >
-          <UserPlus className="size-4" />
-          Créer un compte
-        </Button>
-      </div>
 
       <UtilisateurFormModal
         open={formOpen}
