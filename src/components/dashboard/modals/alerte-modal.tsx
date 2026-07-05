@@ -21,28 +21,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAppStore } from "@/lib/view-store";
-import { alertesIAComplete } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
 import { StatusBadge, niveauBadge } from "../views/shared";
 import { useToast } from "@/hooks/use-toast";
 
 export function AlerteModal() {
   const modal = useAppStore((s) => s.modal);
   const closeModal = useAppStore((s) => s.closeModal);
+  const traiterAlerte = useDataStore((s) => s.traiterAlerte);
+  const alertes = useDataStore((s) => s.alertes);
   const { toast } = useToast();
 
   const alerteId = modal.type === "alerte" ? modal.alerteId : "";
-  const alerte = alertesIAComplete.find((a) => a.id === alerteId);
+  const alerte = alertes.find((a) => a.id === alerteId);
   const open = modal.type === "alerte";
 
-  const [nouveauStatut, setNouveauStatut] = useState("Prise en charge");
+  const [nouveauStatut, setNouveauStatut] = useState<
+    "Prise en charge" | "Clôturée"
+  >("Prise en charge");
   const [commentaire, setCommentaire] = useState("");
 
   function handleSubmit() {
+    if (!alerte) return;
+    traiterAlerte(alerte.id, nouveauStatut, commentaire.trim() || undefined);
     toast({
       title: "Alerte traitée",
-      description: `Alerte ${alerteId} — statut mis à jour « ${nouveauStatut} ». Journalisé dans l'audit.`,
+      description: `Alerte ${alerte.id} — statut mis à jour « ${nouveauStatut} ». Journalisé dans l'audit.`,
     });
     setCommentaire("");
+    setNouveauStatut("Prise en charge");
     closeModal();
   }
 
@@ -81,7 +88,9 @@ export function AlerteModal() {
               <Label>Nouveau statut</Label>
               <Select
                 value={nouveauStatut}
-                onValueChange={setNouveauStatut}
+                onValueChange={(v) =>
+                  setNouveauStatut(v as "Prise en charge" | "Clôturée")
+                }
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />

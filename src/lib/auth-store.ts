@@ -71,7 +71,10 @@ export const useAuthStore = create<AuthState>()(
       },
       logout: () => {
         set({ session: null });
+        // Réinitialise la navigation et ferme tout dossier ouvert
         useAppStore.getState().setView("dashboard");
+        useAppStore.getState().closeDossier();
+        useAppStore.getState().closeModal();
       },
       allowedViews: () => {
         const role = get().session?.role;

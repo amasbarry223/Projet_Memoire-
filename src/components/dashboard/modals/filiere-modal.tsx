@@ -22,21 +22,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAppStore } from "@/lib/view-store";
-import { filieres } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
 import { useToast } from "@/hooks/use-toast";
 
 export function FiliereModal() {
   const modal = useAppStore((s) => s.modal);
   const closeModal = useAppStore((s) => s.closeModal);
+  const filieres = useDataStore((s) => s.filieres);
+  const addFiliere = useDataStore((s) => s.addFiliere);
+  const addClasse = useDataStore((s) => s.addClasse);
+  const addMatiere = useDataStore((s) => s.addMatiere);
   const { toast } = useToast();
 
   const sub = modal.type === "filiere" ? modal.sub : "filiere";
+  const presetFiliereId =
+    modal.type === "filiere" ? modal.filiereId : undefined;
   const open = modal.type === "filiere";
 
   const [filiereNom, setFiliereNom] = useState("");
   const [filiereCode, setFiliereCode] = useState("");
   const [filiereDesc, setFiliereDesc] = useState("");
-  const [selectedFiliere, setSelectedFiliere] = useState(filieres[0]?.id ?? "");
+  const [selectedFiliere, setSelectedFiliere] = useState(
+    presetFiliereId ?? filieres[0]?.id ?? ""
+  );
   const [classeNom, setClasseNom] = useState("");
   const [classeNiveau, setClasseNiveau] = useState("1ère année");
   const [classeEffectif, setClasseEffectif] = useState("");
@@ -64,10 +72,60 @@ export function FiliereModal() {
   const Icon = config.icon;
 
   function handleSubmit() {
-    toast({
-      title: "Élément créé",
-      description: `Le nouvel élément a été ajouté au référentiel.`,
-    });
+    if (sub === "filiere") {
+      if (!filiereNom.trim() || !filiereCode.trim()) {
+        toast({
+          title: "Champs requis",
+          description: "Le nom et le code de la filière sont obligatoires.",
+          variant: "destructive",
+        });
+        return;
+      }
+      addFiliere({
+        nom: filiereNom.trim(),
+        code: filiereCode.trim(),
+        description: filiereDesc.trim(),
+      });
+      toast({
+        title: "Filière créée",
+        description: `La filière « ${filiereNom.trim()} » a été ajoutée au référentiel.`,
+      });
+    } else if (sub === "classe") {
+      if (!classeNom.trim()) {
+        toast({
+          title: "Champ requis",
+          description: "Le nom de la classe est obligatoire.",
+          variant: "destructive",
+        });
+        return;
+      }
+      addClasse(selectedFiliere, {
+        nom: classeNom.trim(),
+        niveau: classeNiveau,
+        effectif: parseInt(classeEffectif || "0", 10) || 0,
+      });
+      toast({
+        title: "Classe créée",
+        description: `La classe « ${classeNom.trim()} » a été ajoutée.`,
+      });
+    } else {
+      if (!matiereNom.trim()) {
+        toast({
+          title: "Champ requis",
+          description: "Le nom de la matière est obligatoire.",
+          variant: "destructive",
+        });
+        return;
+      }
+      addMatiere(selectedFiliere, {
+        nom: matiereNom.trim(),
+        coefficient: parseInt(matiereCoef || "1", 10) || 1,
+      });
+      toast({
+        title: "Matière créée",
+        description: `La matière « ${matiereNom.trim()} » a été ajoutée.`,
+      });
+    }
     setFiliereNom("");
     setFiliereCode("");
     setFiliereDesc("");

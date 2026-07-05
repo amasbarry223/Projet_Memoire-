@@ -21,27 +21,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAppStore } from "@/lib/view-store";
-import { etudiants, filieres } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
 import { useToast } from "@/hooks/use-toast";
 
 export function NoteModal() {
   const modal = useAppStore((s) => s.modal);
   const closeModal = useAppStore((s) => s.closeModal);
+  const addNote = useDataStore((s) => s.addNote);
+  const etudiants = useDataStore((s) => s.etudiants);
+  const filieres = useDataStore((s) => s.filieres);
   const { toast } = useToast();
 
   const open = modal.type === "note";
-  const presetEtudiant =
+  const presetEtudiantId =
     modal.type === "note" ? modal.etudiant : undefined;
 
-  const [etudiant, setEtudiant] = useState(presetEtudiant ?? etudiants[0].nom);
-  const [filiereId, setFiliereId] = useState(filieres[0].id);
-  const [matiere, setMatiere] = useState(filieres[0].matieres[0].nom);
+  const [etudiantId, setEtudiantId] = useState(
+    presetEtudiantId ??
+      etudiants[0]?.id ??
+      ""
+  );
+  const [filiereId, setFiliereId] = useState(filieres[0]?.id ?? "");
+  const [matiere, setMatiere] = useState(filieres[0]?.matieres[0]?.nom ?? "");
   const [note, setNote] = useState("");
   const [sur, setSur] = useState("20");
   const [periode, setPeriode] = useState("Semestre 1");
 
   const filiereCourante =
     filieres.find((f) => f.id === filiereId) ?? filieres[0];
+  const etudiantCourant = etudiants.find((e) => e.id === etudiantId);
 
   function handleSubmit() {
     const noteNum = parseFloat(note);
@@ -54,9 +62,29 @@ export function NoteModal() {
       });
       return;
     }
+    if (!etudiantCourant || !filiereCourante) {
+      toast({
+        title: "Données manquantes",
+        description: "Sélectionnez un étudiant et une matière.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addNote({
+      etudiant: `${etudiantCourant.prenom} ${etudiantCourant.nom}`,
+      matiere,
+      classe: etudiantCourant.classe,
+      note: noteNum,
+      sur: surNum,
+      coefficient:
+        filiereCourante.matieres.find((m) => m.nom === matiere)?.coefficient ?? 1,
+      periode,
+    });
+
     toast({
       title: "Note enregistrée",
-      description: `${etudiant} — ${matiere} : ${noteNum}/${surNum}. Visible par l'étudiant et le responsable.`,
+      description: `${etudiantCourant.prenom} ${etudiantCourant.nom} — ${matiere} : ${noteNum}/${surNum}. Visible par l'étudiant et le responsable.`,
     });
     setNote("");
     closeModal();
@@ -79,13 +107,13 @@ export function NoteModal() {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Étudiant</Label>
-            <Select value={etudiant} onValueChange={setEtudiant}>
+            <Select value={etudiantId} onValueChange={setEtudiantId}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {etudiants.map((e) => (
-                  <SelectItem key={e.id} value={e.nom}>
+                  <SelectItem key={e.id} value={e.id}>
                     {e.prenom} {e.nom} — {e.classe}
                   </SelectItem>
                 ))}
@@ -101,7 +129,7 @@ export function NoteModal() {
                 onValueChange={(v) => {
                   setFiliereId(v);
                   const f = filieres.find((x) => x.id === v);
-                  if (f) setMatiere(f.matieres[0].nom);
+                  if (f) setMatiere(f.matieres[0]?.nom ?? "");
                 }}
               >
                 <SelectTrigger className="w-full">
@@ -123,7 +151,7 @@ export function NoteModal() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {filiereCourante.matieres.map((m) => (
+                  {filiereCourante?.matieres.map((m) => (
                     <SelectItem key={m.id} value={m.nom}>
                       {m.nom} (coef. {m.coefficient})
                     </SelectItem>

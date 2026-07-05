@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAppStore } from "@/lib/view-store";
-import { candidatures } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
 import { useToast } from "@/hooks/use-toast";
 
 const actionConfig = {
@@ -45,6 +45,9 @@ const actionConfig = {
 export function TraitementDossierModal() {
   const modal = useAppStore((s) => s.modal);
   const closeModal = useAppStore((s) => s.closeModal);
+  const closeDossier = useAppStore((s) => s.closeDossier);
+  const traiterDossier = useDataStore((s) => s.traiterDossier);
+  const candidatures = useDataStore((s) => s.candidatures);
   const { toast } = useToast();
 
   const action =
@@ -67,6 +70,11 @@ export function TraitementDossierModal() {
     );
   }
 
+  function reset() {
+    setMotif("");
+    setMissing([]);
+  }
+
   function handleSubmit() {
     if (action === "rejeter" && !motif.trim()) {
       toast({
@@ -85,13 +93,20 @@ export function TraitementDossierModal() {
       return;
     }
 
+    // Applique réellement le changement dans le store
+    traiterDossier(dossierId, action, {
+      motif: motif.trim() || undefined,
+      piecesManquantes: missing.length > 0 ? missing : undefined,
+    });
+
     toast({
       title: "Dossier traité",
       description: `Le dossier ${dossierId} a été ${cfg.verb}. Notification envoyée via n8n.`,
     });
-    setMotif("");
-    setMissing([]);
+    reset();
     closeModal();
+    // Retour à la liste des candidatures (ferme la page détail si ouverte)
+    closeDossier();
   }
 
   return (
@@ -99,8 +114,7 @@ export function TraitementDossierModal() {
       open={open}
       onOpenChange={(o) => {
         if (!o) {
-          setMotif("");
-          setMissing([]);
+          reset();
           closeModal();
         }
       }}

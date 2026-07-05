@@ -16,13 +16,13 @@ import {
   type Candidature,
   type Utilisateur,
   type Filiere,
-  type Classe,
-  type Matiere,
   type AlerteIA,
   type Note,
   type Absence,
   type EntreeAudit,
+  type StatutDossier,
 } from "@/components/dashboard/data";
+import { useAuthStore } from "@/lib/auth-store";
 
 // ─── Store central de données ─────────────────────────────────────────────────
 // Toutes les collections vivent ici. Les vues CRUD agissent dessus ; les vues
@@ -56,10 +56,36 @@ interface DataState {
   updateUtilisateur: (id: string, u: Partial<Utilisateur>) => void;
   deleteUtilisateur: (id: string) => void;
 
-  // Filières
+  // Filières / classes / matières
+  addFiliere: (f: { nom: string; code: string; description: string }) => void;
+  addClasse: (
+    filiereId: string,
+    c: { nom: string; niveau: string; effectif: number }
+  ) => void;
+  addMatiere: (
+    filiereId: string,
+    m: { nom: string; coefficient: number }
+  ) => void;
   deleteFiliere: (id: string) => void;
   deleteClasse: (filiereId: string, classeId: string) => void;
   deleteMatiere: (filiereId: string, matiereId: string) => void;
+
+  // Candidatures
+  traiterDossier: (
+    id: string,
+    action: "valider" | "rejeter" | "incomplet",
+    options?: { motif?: string; piecesManquantes?: string[] }
+  ) => void;
+
+  // Alertes IA
+  traiterAlerte: (
+    id: string,
+    nouveauStatut: "Prise en charge" | "Clôturée",
+    commentaire?: string
+  ) => void;
+
+  // Notes & absences
+  addNote: (n: Omit<Note, never>) => void;
 
   // Journal d'audit
   logAction: (e: Omit<EntreeAudit, "id" | "date">) => void;
@@ -77,7 +103,18 @@ function now() {
   })}`;
 }
 
+// Auteur courant = utilisateur connecté (R5 : auteur réel)
+function currentAuthor(): string {
+  const s = useAuthStore.getState().session;
+  return s ? `${s.prenom} ${s.nom}` : "Système";
+}
+
 let auditCounter = 100;
+
+function makeAuditId() {
+  auditCounter += 1;
+  return `AUD-${auditCounter.toString().padStart(3, "0")}`;
+}
 
 export const useDataStore = create<DataState>((set) => ({
   etudiants: seedEtudiants,
@@ -90,17 +127,17 @@ export const useDataStore = create<DataState>((set) => ({
   notes: seedNotes,
   absences: seedAbsences,
 
+  // ─── Étudiants ──────────────────────────────────────────────────────────
   addEtudiant: (e) =>
     set((s) => {
       const id = `ETU-${Date.now()}`;
-      auditCounter += 1;
       return {
         etudiants: [{ ...e, id }, ...s.etudiants],
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Création étudiant",
             cible: `${e.prenom} ${e.nom}`,
             details: `Étudiant ajouté — filière ${e.filiere}, classe ${e.classe}.`,
@@ -112,15 +149,14 @@ export const useDataStore = create<DataState>((set) => ({
 
   updateEtudiant: (id, e) =>
     set((s) => {
-      auditCounter += 1;
       const etu = s.etudiants.find((x) => x.id === id);
       return {
         etudiants: s.etudiants.map((x) => (x.id === id ? { ...x, ...e } : x)),
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Modification étudiant",
             cible: etu ? `${etu.prenom} ${etu.nom}` : id,
             details: "Fiche étudiant mise à jour.",
@@ -132,15 +168,14 @@ export const useDataStore = create<DataState>((set) => ({
 
   deleteEtudiant: (id) =>
     set((s) => {
-      auditCounter += 1;
       const etu = s.etudiants.find((x) => x.id === id);
       return {
         etudiants: s.etudiants.filter((x) => x.id !== id),
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Suppression étudiant",
             cible: etu ? `${etu.prenom} ${etu.nom} (${etu.matricule})` : id,
             details: "Étudiant supprimé de l'établissement.",
@@ -150,17 +185,17 @@ export const useDataStore = create<DataState>((set) => ({
       };
     }),
 
+  // ─── Enseignants ────────────────────────────────────────────────────────
   addEnseignant: (e) =>
     set((s) => {
       const id = `ENS-${Date.now()}`;
-      auditCounter += 1;
       return {
         enseignants: [{ ...e, id }, ...s.enseignants],
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Création enseignant",
             cible: `${e.prenom} ${e.nom}`,
             details: `Enseignant ajouté — ${e.matieres.length} matière(s), ${e.classes.length} classe(s).`,
@@ -172,7 +207,6 @@ export const useDataStore = create<DataState>((set) => ({
 
   updateEnseignant: (id, e) =>
     set((s) => {
-      auditCounter += 1;
       const ens = s.enseignants.find((x) => x.id === id);
       return {
         enseignants: s.enseignants.map((x) =>
@@ -180,9 +214,9 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Modification enseignant",
             cible: ens ? `${ens.prenom} ${ens.nom}` : id,
             details: "Fiche enseignant mise à jour.",
@@ -194,15 +228,14 @@ export const useDataStore = create<DataState>((set) => ({
 
   deleteEnseignant: (id) =>
     set((s) => {
-      auditCounter += 1;
       const ens = s.enseignants.find((x) => x.id === id);
       return {
         enseignants: s.enseignants.filter((x) => x.id !== id),
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Suppression enseignant",
             cible: ens ? `${ens.prenom} ${ens.nom}` : id,
             details: "Enseignant supprimé, affectations retirées.",
@@ -212,10 +245,10 @@ export const useDataStore = create<DataState>((set) => ({
       };
     }),
 
+  // ─── Utilisateurs ───────────────────────────────────────────────────────
   addUtilisateur: (u) =>
     set((s) => {
       const id = `U-${Date.now()}`;
-      auditCounter += 1;
       return {
         utilisateurs: [
           { ...u, id, derniereConnexion: "Jamais" },
@@ -223,9 +256,9 @@ export const useDataStore = create<DataState>((set) => ({
         ],
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Création compte",
             cible: `${u.prenom} ${u.nom}`,
             details: `Compte créé — rôle ${u.role}.`,
@@ -237,7 +270,6 @@ export const useDataStore = create<DataState>((set) => ({
 
   updateUtilisateur: (id, u) =>
     set((s) => {
-      auditCounter += 1;
       const usr = s.utilisateurs.find((x) => x.id === id);
       return {
         utilisateurs: s.utilisateurs.map((x) =>
@@ -245,9 +277,9 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Modification compte",
             cible: usr ? `${usr.prenom} ${usr.nom}` : id,
             details: u.role ? `Rôle mis à jour → ${u.role}.` : "Compte modifié.",
@@ -259,15 +291,14 @@ export const useDataStore = create<DataState>((set) => ({
 
   deleteUtilisateur: (id) =>
     set((s) => {
-      auditCounter += 1;
       const usr = s.utilisateurs.find((x) => x.id === id);
       return {
         utilisateurs: s.utilisateurs.filter((x) => x.id !== id),
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Suppression compte",
             cible: usr ? `${usr.prenom} ${usr.nom}` : id,
             details: "Compte utilisateur supprimé.",
@@ -277,17 +308,106 @@ export const useDataStore = create<DataState>((set) => ({
       };
     }),
 
+  // ─── Filières / classes / matières ──────────────────────────────────────
+  addFiliere: (f) =>
+    set((s) => {
+      const id = `FIL-${Date.now()}`;
+      return {
+        filieres: [
+          ...s.filieres,
+          {
+            id,
+            nom: f.nom,
+            code: f.code,
+            description: f.description,
+            classes: [],
+            matieres: [],
+          },
+        ],
+        audit: [
+          {
+            id: makeAuditId(),
+            date: now(),
+            utilisateur: currentAuthor(),
+            action: "Création filière",
+            cible: f.nom,
+            details: `Filière créée (code ${f.code}).`,
+          },
+          ...s.audit,
+        ],
+      };
+    }),
+
+  addClasse: (filiereId, c) =>
+    set((s) => {
+      const id = `CL-${Date.now()}`;
+      const f = s.filieres.find((x) => x.id === filiereId);
+      return {
+        filieres: s.filieres.map((f) =>
+          f.id === filiereId
+            ? {
+                ...f,
+                classes: [
+                  ...f.classes,
+                  { id, nom: c.nom, niveau: c.niveau, effectif: c.effectif },
+                ],
+              }
+            : f
+        ),
+        audit: [
+          {
+            id: makeAuditId(),
+            date: now(),
+            utilisateur: currentAuthor(),
+            action: "Création classe",
+            cible: c.nom,
+            details: `Classe ajoutée à la filière ${f?.nom ?? ""}.`,
+          },
+          ...s.audit,
+        ],
+      };
+    }),
+
+  addMatiere: (filiereId, m) =>
+    set((s) => {
+      const id = `MA-${Date.now()}`;
+      const f = s.filieres.find((x) => x.id === filiereId);
+      return {
+        filieres: s.filieres.map((f) =>
+          f.id === filiereId
+            ? {
+                ...f,
+                matieres: [
+                  ...f.matieres,
+                  { id, nom: m.nom, coefficient: m.coefficient },
+                ],
+              }
+            : f
+        ),
+        audit: [
+          {
+            id: makeAuditId(),
+            date: now(),
+            utilisateur: currentAuthor(),
+            action: "Création matière",
+            cible: m.nom,
+            details: `Matière ajoutée à la filière ${f?.nom ?? ""} (coef. ${m.coefficient}).`,
+          },
+          ...s.audit,
+        ],
+      };
+    }),
+
   deleteFiliere: (id) =>
     set((s) => {
-      auditCounter += 1;
       const f = s.filieres.find((x) => x.id === id);
       return {
         filieres: s.filieres.filter((x) => x.id !== id),
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Suppression filière",
             cible: f?.nom ?? id,
             details: "Filière et ses classes/matières supprimées.",
@@ -299,7 +419,6 @@ export const useDataStore = create<DataState>((set) => ({
 
   deleteClasse: (filiereId, classeId) =>
     set((s) => {
-      auditCounter += 1;
       const f = s.filieres.find((x) => x.id === filiereId);
       const c = f?.classes.find((x) => x.id === classeId);
       return {
@@ -310,9 +429,9 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Suppression classe",
             cible: c?.nom ?? classeId,
             details: `Classe retirée de la filière ${f?.nom ?? ""}.`,
@@ -324,7 +443,6 @@ export const useDataStore = create<DataState>((set) => ({
 
   deleteMatiere: (filiereId, matiereId) =>
     set((s) => {
-      auditCounter += 1;
       const f = s.filieres.find((x) => x.id === filiereId);
       const m = f?.matieres.find((x) => x.id === matiereId);
       return {
@@ -335,9 +453,9 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: `AUD-${auditCounter.toString().padStart(3, "0")}`,
+            id: makeAuditId(),
             date: now(),
-            utilisateur: "Amadou Touré",
+            utilisateur: currentAuthor(),
             action: "Suppression matière",
             cible: m?.nom ?? matiereId,
             details: `Matière retirée de la filière ${f?.nom ?? ""}.`,
@@ -347,14 +465,117 @@ export const useDataStore = create<DataState>((set) => ({
       };
     }),
 
-  logAction: (e) =>
+  // ─── Candidatures (traitement de dossier) ───────────────────────────────
+  traiterDossier: (id, action, options) =>
     set((s) => {
-      auditCounter += 1;
+      const dossier = s.candidatures.find((c) => c.id === id);
+      if (!dossier) return s;
+
+      const statutMap: Record<typeof action, StatutDossier> = {
+        valider: "Validé",
+        rejeter: "Rejeté",
+        incomplet: "Incomplet",
+      };
+      const statut = statutMap[action];
+
+      const actionLabel: Record<typeof action, string> = {
+        valider: "Validation dossier",
+        rejeter: "Rejet dossier",
+        incomplet: "Marquage incomplet",
+      };
+
+      let details = `Dossier ${statut.toLowerCase()}.`;
+      if (action === "rejeter" && options?.motif) {
+        details = `Motif : ${options.motif}`;
+      } else if (action === "incomplet" && options?.piecesManquantes?.length) {
+        details = `Pièces manquantes : ${options.piecesManquantes.join(", ")}`;
+      }
+
       return {
+        candidatures: s.candidatures.map((c) =>
+          c.id === id
+            ? {
+                ...c,
+                statut,
+                historique: [
+                  ...c.historique,
+                  {
+                    action: actionLabel[action],
+                    date: now(),
+                    auteur: currentAuthor(),
+                  },
+                ],
+              }
+            : c
+        ),
         audit: [
-          { ...e, id: `AUD-${auditCounter.toString().padStart(3, "0")}`, date: now() },
+          {
+            id: makeAuditId(),
+            date: now(),
+            utilisateur: currentAuthor(),
+            action: actionLabel[action],
+            cible: id,
+            details,
+          },
           ...s.audit,
         ],
       };
     }),
+
+  // ─── Alertes IA ─────────────────────────────────────────────────────────
+  traiterAlerte: (id, nouveauStatut, commentaire) =>
+    set((s) => {
+      const alerte = s.alertes.find((a) => a.id === id);
+      if (!alerte) return s;
+      return {
+        alertes: s.alertes.map((a) =>
+          a.id === id ? { ...a, statut: nouveauStatut } : a
+        ),
+        audit: [
+          {
+            id: makeAuditId(),
+            date: now(),
+            utilisateur: currentAuthor(),
+            action:
+              nouveauStatut === "Clôturée"
+                ? "Clôture alerte"
+                : "Prise en charge alerte",
+            cible: id,
+            details: `Alerte ${id} (${alerte.etudiant}) → ${nouveauStatut}${
+              commentaire ? `. Commentaire : ${commentaire}` : ""
+            }.`,
+          },
+          ...s.audit,
+        ],
+      };
+    }),
+
+  // ─── Notes ──────────────────────────────────────────────────────────────
+  addNote: (n) =>
+    set((s) => {
+      auditCounter += 1;
+      return {
+        notes: [n, ...s.notes],
+        audit: [
+          {
+            id: makeAuditId(),
+            date: now(),
+            utilisateur: currentAuthor(),
+            action: "Saisie de notes",
+            cible: `${n.classe} — ${n.matiere}`,
+            details: `Note ${n.note}/${n.sur} saisie pour ${n.etudiant} (${n.periode}).`,
+          },
+          ...s.audit,
+        ],
+      };
+    }),
+
+  // ─── Journal d'audit ────────────────────────────────────────────────────
+  logAction: (e) =>
+    set((s) => ({
+      audit: [
+        { ...e, id: makeAuditId(), date: now() },
+        ...s.audit,
+      ],
+    })),
 }));

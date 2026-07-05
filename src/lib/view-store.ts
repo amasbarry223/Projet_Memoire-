@@ -14,7 +14,6 @@ export type ModalState =
       dossierId: string;
       action: "valider" | "rejeter" | "incomplet";
     }
-  | { type: "utilisateur"; userId?: string }
   | {
       type: "filiere";
       sub: "filiere" | "classe" | "matiere";

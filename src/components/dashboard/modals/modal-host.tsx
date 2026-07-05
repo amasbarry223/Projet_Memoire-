@@ -2,7 +2,6 @@
 
 import { useAppStore } from "@/lib/view-store";
 import { TraitementDossierModal } from "./traitement-dossier-modal";
-import { UtilisateurModal } from "./utilisateur-modal";
 import { FiliereModal } from "./filiere-modal";
 import { AlerteModal } from "./alerte-modal";
 import { NoteModal } from "./note-modal";
@@ -14,8 +13,6 @@ export function ModalHost() {
   switch (type) {
     case "traitement-dossier":
       return <TraitementDossierModal />;
-    case "utilisateur":
-      return <UtilisateurModal />;
     case "filiere":
       return <FiliereModal />;
     case "alerte":
