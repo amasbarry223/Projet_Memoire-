@@ -54,6 +54,75 @@ export const navItems: NavItem[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// RBAC — Rôles et permissions (§2 du cahier des charges)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Role = "candidat" | "etudiant" | "enseignant" | "responsable" | "admin";
+
+export const roleLabels: Record<Role, string> = {
+  candidat: "Candidat",
+  etudiant: "Étudiant",
+  enseignant: "Enseignant",
+  responsable: "Responsable pédagogique",
+  admin: "Administrateur",
+};
+
+export const roleBadgeBg: Record<Role, string> = {
+  candidat: "bg-gray-100 text-gray-600",
+  etudiant: "bg-emerald-50 text-emerald-600",
+  enseignant: "bg-amber-50 text-amber-600",
+  responsable: "bg-orange-50 text-orange-600",
+  admin: "bg-emerald-500 text-white",
+};
+
+// Mapping rôle → vues accessibles (matrice de permissions §2.2)
+export const roleViews: Record<Role, ViewKey[]> = {
+  candidat: ["dashboard", "candidatures"],
+  etudiant: ["dashboard", "suivi", "candidatures"],
+  enseignant: ["dashboard", "etudiants", "suivi", "alertes"],
+  responsable: ["dashboard", "etudiants", "enseignants", "suivi", "alertes", "rapports", "audit"],
+  admin: [
+    "dashboard",
+    "candidatures",
+    "etudiants",
+    "enseignants",
+    "suivi",
+    "alertes",
+    "rapports",
+    "filieres",
+    "utilisateurs",
+    "audit",
+    "parametres",
+  ],
+};
+
+// Vue par défaut à la connexion selon le rôle
+export const defaultView: Record<Role, ViewKey> = {
+  candidat: "candidatures",
+  etudiant: "suivi",
+  enseignant: "suivi",
+  responsable: "dashboard",
+  admin: "dashboard",
+};
+
+// Comptes de démonstration (un par rôle pour la soutenance — livrable §6.1)
+export type DemoAccount = {
+  email: string;
+  password: string;
+  role: Role;
+  nom: string;
+  prenom: string;
+};
+
+export const demoAccounts: DemoAccount[] = [
+  { email: "admin@scolaflow.fr", password: "admin", role: "admin", nom: "Principal", prenom: "Admin" },
+  { email: "claire.lambert@scolaflow.fr", password: "resp", role: "responsable", nom: "Lambert", prenom: "Claire" },
+  { email: "a.dubois@scolaflow.fr", password: "ens", role: "enseignant", nom: "Dubois", prenom: "Antoine" },
+  { email: "thomas.roux@etu.fr", password: "etu", role: "etudiant", nom: "Roux", prenom: "Thomas" },
+  { email: "marie.dupont@email.fr", password: "cand", role: "candidat", nom: "Dupont", prenom: "Marie" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Tableau de bord — KPIs, graphiques, widgets
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -601,8 +670,6 @@ export const filieres: Filiere[] = [
 // Utilisateurs & rôles (F6.1, RBAC §2)
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type Role = "candidat" | "etudiant" | "enseignant" | "responsable" | "admin";
-
 export type Utilisateur = {
   id: string;
   nom: string;
@@ -611,22 +678,6 @@ export type Utilisateur = {
   role: Role;
   statut: "Actif" | "Désactivé";
   derniereConnexion: string;
-};
-
-export const roleLabels: Record<Role, string> = {
-  candidat: "Candidat",
-  etudiant: "Étudiant",
-  enseignant: "Enseignant",
-  responsable: "Responsable pédagogique",
-  admin: "Administrateur",
-};
-
-export const roleBadgeBg: Record<Role, string> = {
-  candidat: "bg-gray-100 text-gray-600",
-  etudiant: "bg-emerald-50 text-emerald-600",
-  enseignant: "bg-amber-50 text-amber-600",
-  responsable: "bg-orange-50 text-orange-600",
-  admin: "bg-emerald-500 text-white",
 };
 
 export const utilisateurs: Utilisateur[] = [

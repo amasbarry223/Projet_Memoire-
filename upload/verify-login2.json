@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "(1) Left panel: PASS. Contains emerald gradient, ScolaFlow logo, title 'Gestion des inscriptions et suivi pédagogique', 3 feature bullets (RBAC/RLS, n8n, IA), and copyright.  \n(2) Right panel: PASS. Contains 'Connexion' heading, email field, password field, and green 'Se connecter' button.  \n(3) Quick-login role buttons: PASS. Includes 5 buttons (Candidat, Étudiant, Enseignant, Responsable pédagogique, Administrateur).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783270312,
+  "id": "2026070600514811ee99214d4e474b",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "2026070600514811ee99214d4e474b",
+  "usage": {
+    "completion_tokens": 122,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1770,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1892
+  }
+}

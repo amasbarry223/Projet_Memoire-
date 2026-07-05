@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS. The error message visible is \"Mot de passe incorrect.\" displayed in a red error box with an alert icon, and the user remains on the login screen.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783270503,
+  "id": "20260706005500df798a4da6b543bb",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706005500df798a4da6b543bb",
+  "usage": {
+    "completion_tokens": 36,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1699,
+    "prompt_tokens_details": {
+      "cached_tokens": 5
+    },
+    "total_tokens": 1735
+  }
+}

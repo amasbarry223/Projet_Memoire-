@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "(1) Left panel: FAIL - Image shows a console error page, not the described emerald gradient panel with logo/title/bullets/copyright.  \n(2) Right panel: FAIL - No login form elements (heading, fields, button) visible; only a console error.  \n(3) 'Connexion rapide démo' separator: FAIL - Not present; console error page is displayed.  \n(4) 5 quick-login buttons: FAIL - No role buttons visible; console error page is displayed.  \n\nOverall: FAIL - The image does not match the described login screen; it shows a development console error instead.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783270187,
+  "id": "20260706004943800cae36a56247d4",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706004943800cae36a56247d4",
+  "usage": {
+    "completion_tokens": 130,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1801,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1931
+  }
+}

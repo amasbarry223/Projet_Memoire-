@@ -1,8 +1,10 @@
 "use client";
 
 import { useAppStore } from "@/lib/view-store";
+import { useAuthStore } from "@/lib/auth-store";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Header } from "@/components/dashboard/header";
+import { LoginView } from "@/components/dashboard/login-view";
 import { ModalHost } from "@/components/dashboard/modals/modal-host";
 import { DashboardView } from "@/components/dashboard/views/dashboard-view";
 import { CandidaturesView } from "@/components/dashboard/views/candidatures-view";
@@ -15,7 +17,7 @@ import { FilieresView } from "@/components/dashboard/views/filieres-view";
 import { UtilisateursView } from "@/components/dashboard/views/utilisateurs-view";
 import { AuditView } from "@/components/dashboard/views/audit-view";
 import { ParametresView } from "@/components/dashboard/views/parametres-view";
-import type { ViewKey } from "@/components/dashboard/data";
+import { roleViews, type ViewKey } from "@/components/dashboard/data";
 
 const views: Record<ViewKey, React.ComponentType> = {
   dashboard: DashboardView,
@@ -32,8 +34,21 @@ const views: Record<ViewKey, React.ComponentType> = {
 };
 
 export default function Home() {
+  const session = useAuthStore((s) => s.session);
   const view = useAppStore((s) => s.view);
-  const ActiveView = views[view];
+
+  // RBAC côté rendu : si la vue courante n'est pas autorisée pour le rôle,
+  // on affiche la première vue autorisée (sans écrire dans le store pendant le rendu).
+  const allowed = session ? roleViews[session.role] : [];
+  const safeView: ViewKey =
+    !session || allowed.includes(view) ? view : allowed[0] ?? "dashboard";
+
+  // Non authentifié → écran de connexion
+  if (!session) {
+    return <LoginView />;
+  }
+
+  const ActiveView = views[safeView] ?? DashboardView;
 
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900 overflow-hidden">

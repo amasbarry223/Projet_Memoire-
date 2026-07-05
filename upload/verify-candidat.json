@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "(1) FAIL - The left sidebar shows multiple nav items (Tableau de bord, Étudiants, Enseignants, Suivi pédagogique, Alertes IA, Rapports, Journal d'audit) instead of only Tableau de bord and Candidatures. (2) FAIL - The main content shows a dashboard view with statistics cards and charts, not a table of candidatures. (3) FAIL - The sidebar header shows \"RESPONSABLE PÉDAGOGIQUE\" instead of \"Candidat\". (4) FAIL - The user profile shows \"Claire Lambert\" / \"Responsable pédagogique\" instead of \"Marie Dupont\" / \"Candidat\".",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783270373,
+  "id": "20260706005243b714a7ed498b477a",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706005243b714a7ed498b477a",
+  "usage": {
+    "completion_tokens": 147,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1763,
+    "prompt_tokens_details": {
+      "cached_tokens": 5
+    },
+    "total_tokens": 1910
+  }
+}
