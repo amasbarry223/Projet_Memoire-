@@ -54,7 +54,7 @@ interface DataState {
   // Utilisateurs
   addUtilisateur: (u: Omit<Utilisateur, "id" | "derniereConnexion">) => void;
   updateUtilisateur: (id: string, u: Partial<Utilisateur>) => void;
-  deleteUtilisateur: (id: string) => void;
+  deleteUtilisateur: (id: string) => { ok: boolean; error?: string };
 
   // Filières / classes / matières
   addFiliere: (f: { nom: string; code: string; description: string }) => void;
@@ -109,11 +109,18 @@ function currentAuthor(): string {
   return s ? `${s.prenom} ${s.nom}` : "Système";
 }
 
-let auditCounter = 100;
-
-function makeAuditId() {
-  auditCounter += 1;
-  return `AUD-${auditCounter.toString().padStart(3, "0")}`;
+// Calcule le prochain ID d'audit depuis le max des IDs existants (robuste au
+// refresh : pas de compteur module-level qui se réinitialiserait).
+function makeAuditId(existing: EntreeAudit[]): string {
+  let max = 0;
+  for (const e of existing) {
+    const match = e.id.match(/^AUD-(\d+)$/);
+    if (match) {
+      const n = parseInt(match[1], 10);
+      if (n > max) max = n;
+    }
+  }
+  return `AUD-${(max + 1).toString().padStart(3, "0")}`;
 }
 
 export const useDataStore = create<DataState>((set) => ({
@@ -135,7 +142,7 @@ export const useDataStore = create<DataState>((set) => ({
         etudiants: [{ ...e, id }, ...s.etudiants],
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Création étudiant",
@@ -154,7 +161,7 @@ export const useDataStore = create<DataState>((set) => ({
         etudiants: s.etudiants.map((x) => (x.id === id ? { ...x, ...e } : x)),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Modification étudiant",
@@ -173,7 +180,7 @@ export const useDataStore = create<DataState>((set) => ({
         etudiants: s.etudiants.filter((x) => x.id !== id),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Suppression étudiant",
@@ -193,7 +200,7 @@ export const useDataStore = create<DataState>((set) => ({
         enseignants: [{ ...e, id }, ...s.enseignants],
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Création enseignant",
@@ -214,7 +221,7 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Modification enseignant",
@@ -233,7 +240,7 @@ export const useDataStore = create<DataState>((set) => ({
         enseignants: s.enseignants.filter((x) => x.id !== id),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Suppression enseignant",
@@ -256,7 +263,7 @@ export const useDataStore = create<DataState>((set) => ({
         ],
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Création compte",
@@ -277,7 +284,7 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Modification compte",
@@ -289,14 +296,22 @@ export const useDataStore = create<DataState>((set) => ({
       };
     }),
 
-  deleteUtilisateur: (id) =>
+  deleteUtilisateur: (id) => {
+    // R2 étendu : interdiction de supprimer son propre compte
+    const session = useAuthStore.getState().session;
+    const usr = useDataStore.getState().utilisateurs.find((x) => x.id === id);
+    if (session && usr && usr.email === session.email) {
+      return {
+        ok: false,
+        error: "Vous ne pouvez pas supprimer votre propre compte (R2).",
+      };
+    }
     set((s) => {
-      const usr = s.utilisateurs.find((x) => x.id === id);
       return {
         utilisateurs: s.utilisateurs.filter((x) => x.id !== id),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Suppression compte",
@@ -306,7 +321,9 @@ export const useDataStore = create<DataState>((set) => ({
           ...s.audit,
         ],
       };
-    }),
+    });
+    return { ok: true };
+  },
 
   // ─── Filières / classes / matières ──────────────────────────────────────
   addFiliere: (f) =>
@@ -326,7 +343,7 @@ export const useDataStore = create<DataState>((set) => ({
         ],
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Création filière",
@@ -356,7 +373,7 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Création classe",
@@ -386,7 +403,7 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Création matière",
@@ -405,7 +422,7 @@ export const useDataStore = create<DataState>((set) => ({
         filieres: s.filieres.filter((x) => x.id !== id),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Suppression filière",
@@ -429,7 +446,7 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Suppression classe",
@@ -453,7 +470,7 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Suppression matière",
@@ -510,7 +527,7 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: actionLabel[action],
@@ -533,7 +550,7 @@ export const useDataStore = create<DataState>((set) => ({
         ),
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action:
@@ -558,7 +575,7 @@ export const useDataStore = create<DataState>((set) => ({
         notes: [n, ...s.notes],
         audit: [
           {
-            id: makeAuditId(),
+            id: makeAuditId(s.audit),
             date: now(),
             utilisateur: currentAuthor(),
             action: "Saisie de notes",
@@ -574,7 +591,7 @@ export const useDataStore = create<DataState>((set) => ({
   logAction: (e) =>
     set((s) => ({
       audit: [
-        { ...e, id: makeAuditId(), date: now() },
+        { ...e, id: makeAuditId(s.audit), date: now() },
         ...s.audit,
       ],
     })),

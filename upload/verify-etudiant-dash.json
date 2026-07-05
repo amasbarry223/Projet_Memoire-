@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS  \n(1) Heading mentions 'Bonjour, Moussa' → Value: \"Bonjour, Moussa ! Voici l'activité du jour\" (matches).  \n(2) 4 stat pills: Ma moyenne (8.60/20), Mon assiduité (72%), Notes saisies (2), Absences non justifiées (1) → All 4 present with correct labels/values.  \n(3) 'Mes dernières notes' panel with notes list → Contains 2 notes (Développement Web: 8/20; Base de données: 9.5/20) → Panel exists with note list.  \n(4) NO global KPIs (Total Étudiants), NO charts, NO n8n card, NO calendar → None of these elements are visible.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783290826,
+  "id": "20260706063340611ff5f2c8ff42ff",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706063340611ff5f2c8ff42ff",
+  "usage": {
+    "completion_tokens": 168,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1087,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1255
+  }
+}

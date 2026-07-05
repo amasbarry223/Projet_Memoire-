@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "(1) FAIL - Heading is 'Candidatures' not 'Bonjour, Kadiatou! Voici l'activité du jour'  \n(2) FAIL - No 'Mon dossier' card with candidate avatar (KK), status badge, dossier ID CAND-2024-048, or 'Voir le détail' button  \n(3) FAIL - No 4 stat pills (Filière, Niveau, Pièces fournies, Complétude IA)  \n(4) FAIL - No 'Synthèse d'analyse IA' amber card  \n(5) PASS - No global KPIs like 'Total Étudiants', no charts, no n8n card, no calendar",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783290751,
+  "id": "20260706063228d0061cc503194d49",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706063228d0061cc503194d49",
+  "usage": {
+    "completion_tokens": 150,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1131,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1281
+  }
+}

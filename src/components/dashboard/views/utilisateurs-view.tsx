@@ -34,6 +34,7 @@ import {
   type Utilisateur,
 } from "@/components/dashboard/data";
 import { useDataStore } from "@/lib/data-store";
+import { useAuthStore } from "@/lib/auth-store";
 import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
 import { usePagination, DataTablePagination } from "./data-table-pagination";
 import { UtilisateurFormModal } from "../modals/utilisateur-form-modal";
@@ -61,6 +62,7 @@ function avatarBg(role: Role) {
 
 export function UtilisateursView() {
   const { toast } = useToast();
+  const session = useAuthStore((s) => s.session);
   const list = useDataStore((s) => s.utilisateurs);
   const addUtilisateur = useDataStore((s) => s.addUtilisateur);
   const updateUtilisateur = useDataStore((s) => s.updateUtilisateur);
@@ -131,7 +133,17 @@ export function UtilisateursView() {
 
   function handleConfirmDelete() {
     if (!deleting) return;
-    deleteUtilisateur(deleting.id);
+    const result = deleteUtilisateur(deleting.id);
+    if (!result.ok) {
+      toast({
+        title: "Suppression refusée",
+        description: result.error,
+        variant: "destructive",
+      });
+      setDeleteOpen(false);
+      setDeleting(null);
+      return;
+    }
     toast({
       title: "Utilisateur supprimé",
       description: `${deleting.prenom} ${deleting.nom} a été supprimé. Journalisé dans l'audit.`,
@@ -265,10 +277,13 @@ export function UtilisateursView() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-red-600 focus:text-red-700"
+                          disabled={session?.email === u.email}
                           onClick={() => handleDelete(u)}
                         >
                           <Trash2 className="size-4" />
-                          Supprimer
+                          {session?.email === u.email
+                            ? "Supprimer (verrouillé — votre compte)"
+                            : "Supprimer"}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
