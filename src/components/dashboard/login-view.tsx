@@ -66,7 +66,6 @@ export function LoginView() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    // Simule un court débit réseau
     setTimeout(() => {
       const result = login(email, password);
       setLoading(false);
@@ -89,80 +88,40 @@ export function LoginView() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Panneau gauche — branding */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-700 lg:flex lg:flex-col lg:justify-between lg:p-12">
-        {/* Décor */}
-        <div className="pointer-events-none absolute -right-16 -top-16 size-72 rounded-full bg-white/10" />
-        <div className="pointer-events-none absolute -bottom-24 -left-10 size-80 rounded-full bg-white/5" />
-
-        {/* Logo */}
-        <div className="relative flex items-center gap-3 text-white">
-          <div className="flex size-11 items-center justify-center rounded-xl bg-white/15 backdrop-blur-sm">
-            <GraduationCap className="size-6" />
-          </div>
-          <span className="text-2xl font-bold">
-            Scola<span className="text-emerald-200">Flow</span>
-          </span>
-        </div>
-
-        {/* Titre + features */}
-        <div className="relative text-white">
-          <h1 className="text-4xl font-bold leading-tight">
-            Gestion des inscriptions
-            <br />
-            et suivi pédagogique
-          </h1>
-          <p className="mt-4 max-w-md text-emerald-50/90">
-            Plateforme centralisée avec contrôle d&apos;accès basé sur les rôles
-            (RBAC), automatisation n8n et analyse IA.
-          </p>
-
-          <ul className="mt-8 space-y-4">
-            {[
-              { icon: ShieldCheck, text: "Sécurité RLS Supabase sur 100% des tables" },
-              { icon: Workflow, text: "Workflows n8n pour les notifications automatiques" },
-              { icon: BrainCircuit, text: "Détection IA des étudiants à risque" },
-            ].map((f, i) => {
-              const Icon = f.icon;
-              return (
-                <li key={i} className="flex items-center gap-3 text-emerald-50">
-                  <div className="flex size-9 items-center justify-center rounded-lg bg-white/15 backdrop-blur-sm">
-                    <Icon className="size-5" />
-                  </div>
-                  <span className="text-sm">{f.text}</span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-
-        {/* Pied */}
-        <p className="relative text-xs text-emerald-50/70">
-          © 2024 ScolaFlow — Projet de mémoire · Vercel × Supabase × n8n × Claude
-        </p>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-emerald-50/40 px-4 py-8">
+      {/* Décor d'arrière-plan */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-24 -top-24 size-80 rounded-full bg-emerald-100/40 blur-3xl" />
+        <div className="absolute -right-24 -bottom-24 size-96 rounded-full bg-emerald-100/30 blur-3xl" />
       </div>
 
-      {/* Panneau droit — formulaire */}
-      <div className="flex w-full flex-col justify-center px-6 py-10 lg:w-1/2 lg:px-20">
-        <div className="mx-auto w-full max-w-md">
-          {/* Logo mobile */}
-          <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="flex size-11 items-center justify-center rounded-xl bg-emerald-500 text-white">
-              <GraduationCap className="size-6" />
+      {/* Conteneur centré */}
+      <div className="relative w-full max-w-md">
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-emerald-900/5 sm:p-8">
+          {/* Logo centré */}
+          <div className="flex flex-col items-center text-center">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
+              <GraduationCap className="size-7" />
             </div>
-            <span className="text-2xl font-bold text-gray-900">
+            <h1 className="mt-4 text-2xl font-bold text-gray-900">
               Scola<span className="text-emerald-500">Flow</span>
-            </span>
+            </h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Gestion des inscriptions et suivi pédagogique
+            </p>
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-900">Connexion</h2>
-          <p className="mt-1 text-sm text-gray-500">
-            Accédez à votre espace selon votre rôle (F1.1 — F1.3).
-          </p>
+          {/* Séparateur */}
+          <div className="my-6 flex items-center gap-3">
+            <span className="h-px flex-1 bg-gray-200" />
+            <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
+              Connexion
+            </span>
+            <span className="h-px flex-1 bg-gray-200" />
+          </div>
 
           {/* Formulaire */}
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Adresse email</Label>
               <div className="relative">
@@ -228,7 +187,7 @@ export function LoginView() {
             </Button>
           </form>
 
-          {/* Séparateur */}
+          {/* Séparateur quick login */}
           <div className="my-6 flex items-center gap-3">
             <span className="h-px flex-1 bg-gray-200" />
             <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
@@ -271,11 +230,12 @@ export function LoginView() {
               );
             })}
           </div>
-
-          <p className="mt-6 text-center text-xs text-gray-400">
-            Comptes de démonstration — livrable soutenance (§6.1)
-          </p>
         </div>
+
+        {/* Pied */}
+        <p className="mt-6 text-center text-xs text-gray-400">
+          © 2024 ScolaFlow — Projet de mémoire · Vercel × Supabase × n8n × Claude
+        </p>
       </div>
     </div>
   );
