@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Users, Mail, BookOpen, Layers } from "lucide-react";
+import { Users, Mail, BookOpen, Layers, Pencil, Trash2, MoreVertical, UserPlus } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,18 +10,88 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { enseignants } from "@/components/dashboard/data";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  enseignants as initialEnseignants,
+  type Enseignant,
+} from "@/components/dashboard/data";
 import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
+import { EnseignantFormModal } from "../modals/enseignant-form-modal";
+import { EnseignantDeleteDialog } from "../modals/enseignant-delete-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export function EnseignantsView() {
+  const { toast } = useToast();
+  const [list, setList] = useState<Enseignant[]>(initialEnseignants);
   const [search, setSearch] = useState("");
 
-  const filtered = enseignants.filter((e) =>
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Enseignant | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState<Enseignant | null>(null);
+
+  const filtered = list.filter((e) =>
     `${e.prenom} ${e.nom} ${e.email}`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
+
+  function handleAdd() {
+    setEditing(null);
+    setFormOpen(true);
+  }
+
+  function handleEdit(e: Enseignant) {
+    setEditing(e);
+    setFormOpen(true);
+  }
+
+  function handleDelete(e: Enseignant) {
+    setDeleting(e);
+    setDeleteOpen(true);
+  }
+
+  function handleSave(data: Omit<Enseignant, "id"> & { id?: string }) {
+    if (data.id) {
+      setList((prev) =>
+        prev.map((e) => (e.id === data.id ? { ...e, ...data, id: e.id } : e))
+      );
+      toast({
+        title: "Enseignant modifié",
+        description: `${data.prenom} ${data.nom} a été mis à jour.`,
+      });
+    } else {
+      const newId = `ENS-${Date.now()}`;
+      setList((prev) => [{ ...data, id: newId }, ...prev]);
+      toast({
+        title: "Enseignant créé",
+        description: `${data.prenom} ${data.nom} a été ajouté au corps enseignant.`,
+      });
+    }
+    setFormOpen(false);
+    setEditing(null);
+  }
+
+  function handleConfirmDelete() {
+    if (!deleting) return;
+    setList((prev) => prev.filter((e) => e.id !== deleting.id));
+    toast({
+      title: "Enseignant supprimé",
+      description: `${deleting.prenom} ${deleting.nom} a été supprimé. Affectations retirées. Journalisé.`,
+      variant: "destructive",
+    });
+    setDeleteOpen(false);
+    setDeleting(null);
+  }
 
   return (
     <div>
@@ -29,6 +99,8 @@ export function EnseignantsView() {
         title="Enseignants"
         description="Corps enseignant et affectations aux classes/matières (F4.1 — R3)"
         icon={Users}
+        actionLabel="Ajouter un enseignant"
+        onAction={handleAdd}
       />
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -37,9 +109,7 @@ export function EnseignantsView() {
             <Users className="size-5 text-emerald-500" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">
-              {enseignants.length}
-            </p>
+            <p className="text-2xl font-bold text-gray-900">{list.length}</p>
             <p className="text-xs text-gray-500">Enseignants</p>
           </div>
         </Panel>
@@ -49,7 +119,7 @@ export function EnseignantsView() {
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-900">
-              {new Set(enseignants.flatMap((e) => e.matieres)).size}
+              {new Set(list.flatMap((e) => e.matieres)).size}
             </p>
             <p className="text-xs text-gray-500">Matières couvertes</p>
           </div>
@@ -60,7 +130,7 @@ export function EnseignantsView() {
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-900">
-              {new Set(enseignants.flatMap((e) => e.classes)).size}
+              {new Set(list.flatMap((e) => e.classes)).size}
             </p>
             <p className="text-xs text-gray-500">Classes affectées</p>
           </div>
@@ -77,6 +147,7 @@ export function EnseignantsView() {
               <TableHead className="text-gray-500">Matières</TableHead>
               <TableHead className="text-gray-500">Classes affectées</TableHead>
               <TableHead className="text-gray-500">Statut</TableHead>
+              <TableHead className="text-right text-gray-500">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -135,11 +206,62 @@ export function EnseignantsView() {
                     }
                   />
                 </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="size-8">
+                        <MoreVertical className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => handleEdit(e)}>
+                        <Pencil className="size-4 text-gray-500" />
+                        Modifier
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-red-600 focus:text-red-700"
+                        onClick={() => handleDelete(e)}
+                      >
+                        <Trash2 className="size-4" />
+                        Supprimer
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
               </TableRow>
             ))}
+            {filtered.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="py-12 text-center text-gray-400">
+                  Aucun enseignant trouvé.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </Panel>
+
+      <EnseignantFormModal
+        open={formOpen}
+        enseignant={editing}
+        onClose={() => {
+          setFormOpen(false);
+          setEditing(null);
+        }}
+        onSave={handleSave}
+      />
+      <EnseignantDeleteDialog
+        open={deleteOpen}
+        enseignant={deleting}
+        onClose={() => {
+          setDeleteOpen(false);
+          setDeleting(null);
+        }}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

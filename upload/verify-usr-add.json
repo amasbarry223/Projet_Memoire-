@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS  \nToast: A toast appears in the bottom-right corner stating \"Utilisateur créé — Bakary Koné — Rôle : Enseignant.\"  \nFirst row: The top row in the users table shows \"Bakary Koné\" with email \"b.kone@scolaflow.ml\", an amber \"Enseignant\" role badge, \"Actif\" status, and \"Jamais\" last connection.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783282591,
+  "id": "20260706041625307aeac2f4af4402",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706041625307aeac2f4af4402",
+  "usage": {
+    "completion_tokens": 87,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1086,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1173
+  }
+}

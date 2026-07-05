@@ -1,14 +1,105 @@
 "use client";
 
-import { BookOpen, School, BookMarked, Users, Plus } from "lucide-react";
+import { useState } from "react";
+import { BookOpen, School, BookMarked, Users, Plus, Pencil, Trash2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAppStore } from "@/lib/view-store";
-import { filieres } from "@/components/dashboard/data";
+import {
+  filieres as initialFilieres,
+  type Filiere,
+  type Classe,
+  type Matiere,
+} from "@/components/dashboard/data";
 import { PageHeader, Panel } from "./shared";
+import { FiliereModal } from "../modals/filiere-modal";
+import { FiliereDeleteDialog, type DeleteTarget } from "../modals/filiere-delete-dialog";
+import { useToast } from "@/hooks/use-toast";
+
+type EditState =
+  | { kind: "filiere"; filiere: Filiere }
+  | { kind: "classe"; filiereId: string; classe: Classe }
+  | { kind: "matiere"; filiereId: string; matiere: Matiere }
+  | null;
 
 export function FilieresView() {
   const openModal = useAppStore((s) => s.openModal);
+  const { toast } = useToast();
+
+  const [list, setList] = useState<Filiere[]>(initialFilieres);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+
+  function handleDeleteFiliere(f: Filiere) {
+    setDeleteTarget({ type: "filiere", nom: f.nom });
+    setDeleteOpen(true);
+  }
+
+  function handleDeleteClasse(filiereId: string, c: Classe) {
+    const f = list.find((x) => x.id === filiereId);
+    setDeleteTarget({
+      type: "classe",
+      nom: c.nom,
+      parent: f?.nom,
+    });
+    setDeleteOpen(true);
+  }
+
+  function handleDeleteMatiere(filiereId: string, m: Matiere) {
+    const f = list.find((x) => x.id === filiereId);
+    setDeleteTarget({
+      type: "matiere",
+      nom: m.nom,
+      parent: f?.nom,
+    });
+    setDeleteOpen(true);
+  }
+
+  function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    if (deleteTarget.type === "filiere") {
+      setList((prev) => prev.filter((f) => f.nom !== deleteTarget.nom));
+      toast({
+        title: "Filière supprimée",
+        description: `${deleteTarget.nom} et ses classes/matières ont été supprimés. Journalisé.`,
+        variant: "destructive",
+      });
+    } else if (deleteTarget.type === "classe") {
+      setList((prev) =>
+        prev.map((f) => ({
+          ...f,
+          classes: f.classes.filter((c) => c.nom !== deleteTarget.nom),
+        }))
+      );
+      toast({
+        title: "Classe supprimée",
+        description: `${deleteTarget.nom} a été retirée. Journalisé dans l'audit.`,
+        variant: "destructive",
+      });
+    } else {
+      setList((prev) =>
+        prev.map((f) => ({
+          ...f,
+          matieres: f.matieres.filter((m) => m.nom !== deleteTarget.nom),
+        }))
+      );
+      toast({
+        title: "Matière supprimée",
+        description: `${deleteTarget.nom} a été retirée. Journalisé dans l'audit.`,
+        variant: "destructive",
+      });
+    }
+    setDeleteOpen(false);
+    setDeleteTarget(null);
+  }
 
   return (
     <div>
@@ -19,7 +110,7 @@ export function FilieresView() {
       />
 
       <div className="space-y-6">
-        {filieres.map((f) => {
+        {list.map((f) => {
           const effectifTotal = f.classes.reduce((sum, c) => sum + c.effectif, 0);
           return (
             <Panel key={f.id} className="p-5">
@@ -68,6 +159,24 @@ export function FilieresView() {
                     <Plus className="size-4" />
                     Matière
                   </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="size-8">
+                        <MoreVertical className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions filière</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-red-600 focus:text-red-700"
+                        onClick={() => handleDeleteFiliere(f)}
+                      >
+                        <Trash2 className="size-4" />
+                        Supprimer la filière
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
@@ -82,7 +191,7 @@ export function FilieresView() {
                     {f.classes.map((c) => (
                       <div
                         key={c.id}
-                        className="flex items-center justify-between rounded-lg border border-gray-100 p-3"
+                        className="group flex items-center justify-between rounded-lg border border-gray-100 p-3"
                       >
                         <div>
                           <p className="text-sm font-medium text-gray-900">
@@ -90,11 +199,26 @@ export function FilieresView() {
                           </p>
                           <p className="text-xs text-gray-400">{c.niveau}</p>
                         </div>
-                        <Badge variant="secondary" className="bg-emerald-50 font-normal text-emerald-700">
-                          {c.effectif} élèves
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="bg-emerald-50 font-normal text-emerald-700">
+                            {c.effectif} élèves
+                          </Badge>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteClasse(f.id, c)}
+                            className="flex size-7 items-center justify-center rounded-md text-gray-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                            aria-label="Supprimer la classe"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </div>
                       </div>
                     ))}
+                    {f.classes.length === 0 && (
+                      <p className="rounded-lg border border-dashed border-gray-200 p-3 text-center text-xs text-gray-400">
+                        Aucune classe — cliquez sur « Classe » pour en ajouter.
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -108,22 +232,42 @@ export function FilieresView() {
                     {f.matieres.map((m) => (
                       <div
                         key={m.id}
-                        className="flex items-center justify-between rounded-lg border border-gray-100 p-3"
+                        className="group flex items-center justify-between rounded-lg border border-gray-100 p-3"
                       >
                         <p className="text-sm font-medium text-gray-900">
                           {m.nom}
                         </p>
-                        <Badge variant="secondary" className="bg-gray-100 font-normal text-gray-600">
-                          Coef. {m.coefficient}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="bg-gray-100 font-normal text-gray-600">
+                            Coef. {m.coefficient}
+                          </Badge>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMatiere(f.id, m)}
+                            className="flex size-7 items-center justify-center rounded-md text-gray-300 opacity-0 transition hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                            aria-label="Supprimer la matière"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </div>
                       </div>
                     ))}
+                    {f.matieres.length === 0 && (
+                      <p className="rounded-lg border border-dashed border-gray-200 p-3 text-center text-xs text-gray-400">
+                        Aucune matière — cliquez sur « Matière » pour en ajouter.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
             </Panel>
           );
         })}
+        {list.length === 0 && (
+          <Panel className="p-12 text-center text-gray-400">
+            Aucune filière. Cliquez sur « Ajouter une filière » ci-dessous.
+          </Panel>
+        )}
       </div>
 
       {/* Bouton ajouter filière */}
@@ -137,6 +281,16 @@ export function FilieresView() {
           Ajouter une filière
         </Button>
       </div>
+
+      <FiliereDeleteDialog
+        open={deleteOpen}
+        target={deleteTarget}
+        onClose={() => {
+          setDeleteOpen(false);
+          setDeleteTarget(null);
+        }}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

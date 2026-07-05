@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UserCog, Pencil, UserPlus, Shield } from "lucide-react";
+import { UserCog, Pencil, UserPlus, Shield, MoreVertical, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -19,14 +19,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAppStore } from "@/lib/view-store";
 import {
-  utilisateurs,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  utilisateurs as initialUtilisateurs,
   roleLabels,
   roleBadgeBg,
   type Role,
+  type Utilisateur,
 } from "@/components/dashboard/data";
 import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
+import { UtilisateurFormModal } from "../modals/utilisateur-form-modal";
+import { UtilisateurDeleteDialog } from "../modals/utilisateur-delete-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 function initials(prenom: string, nom: string) {
   return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
@@ -48,9 +59,15 @@ function avatarBg(role: Role) {
 }
 
 export function UtilisateursView() {
-  const openModal = useAppStore((s) => s.openModal);
+  const { toast } = useToast();
+  const [list, setList] = useState<Utilisateur[]>(initialUtilisateurs);
   const [search, setSearch] = useState("");
   const [filtreRole, setFiltreRole] = useState("Tous");
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Utilisateur | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState<Utilisateur | null>(null);
 
   const roles: ("Tous" | Role)[] = [
     "Tous",
@@ -61,13 +78,74 @@ export function UtilisateursView() {
     "admin",
   ];
 
-  const filtered = utilisateurs.filter((u) => {
+  const filtered = list.filter((u) => {
     const matchSearch = `${u.prenom} ${u.nom} ${u.email}`
       .toLowerCase()
       .includes(search.toLowerCase());
     const matchRole = filtreRole === "Tous" || u.role === filtreRole;
     return matchSearch && matchRole;
   });
+
+  function handleAdd() {
+    setEditing(null);
+    setFormOpen(true);
+  }
+
+  function handleEdit(u: Utilisateur) {
+    setEditing(u);
+    setFormOpen(true);
+  }
+
+  function handleDelete(u: Utilisateur) {
+    setDeleting(u);
+    setDeleteOpen(true);
+  }
+
+  function handleSave(
+    data: Omit<Utilisateur, "id" | "derniereConnexion"> & { id?: string }
+  ) {
+    if (data.id) {
+      setList((prev) =>
+        prev.map((u) =>
+          u.id === data.id
+            ? { ...u, ...data, id: u.id }
+            : u
+        )
+      );
+      toast({
+        title: "Utilisateur modifié",
+        description: `${data.prenom} ${data.nom} — Rôle : ${roleLabels[data.role]}. Journalisé dans l'audit.`,
+      });
+    } else {
+      const newId = `U-${Date.now()}`;
+      setList((prev) => [
+        {
+          ...data,
+          id: newId,
+          derniereConnexion: "Jamais",
+        },
+        ...prev,
+      ]);
+      toast({
+        title: "Utilisateur créé",
+        description: `${data.prenom} ${data.nom} — Rôle : ${roleLabels[data.role]}.`,
+      });
+    }
+    setFormOpen(false);
+    setEditing(null);
+  }
+
+  function handleConfirmDelete() {
+    if (!deleting) return;
+    setList((prev) => prev.filter((u) => u.id !== deleting.id));
+    toast({
+      title: "Utilisateur supprimé",
+      description: `${deleting.prenom} ${deleting.nom} a été supprimé. Journalisé dans l'audit.`,
+      variant: "destructive",
+    });
+    setDeleteOpen(false);
+    setDeleting(null);
+  }
 
   return (
     <div>
@@ -76,7 +154,7 @@ export function UtilisateursView() {
         description="Gestion des comptes et des rôles RBAC (F6.1 — R2)"
         icon={UserCog}
         actionLabel="Nouvel utilisateur"
-        onAction={() => openModal({ type: "utilisateur" })}
+        onAction={handleAdd}
       />
 
       {/* Légende RBAC */}
@@ -121,7 +199,7 @@ export function UtilisateursView() {
               <TableHead className="text-gray-500">Rôle</TableHead>
               <TableHead className="text-gray-500">Statut</TableHead>
               <TableHead className="text-gray-500">Dernière connexion</TableHead>
-              <TableHead className="text-right text-gray-500">Action</TableHead>
+              <TableHead className="text-right text-gray-500">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -168,19 +246,49 @@ export function UtilisateursView() {
                   {u.derniereConnexion}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() =>
-                      openModal({ type: "utilisateur", userId: u.id })
-                    }
-                  >
-                    <Pencil className="size-4" />
-                    Modifier
-                  </Button>
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(u)}
+                    >
+                      <Pencil className="size-4" />
+                      <span className="hidden lg:inline">Modifier</span>
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="size-8">
+                          <MoreVertical className="size-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleEdit(u)}>
+                          <Pencil className="size-4 text-gray-500" />
+                          Modifier
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-red-600 focus:text-red-700"
+                          onClick={() => handleDelete(u)}
+                        >
+                          <Trash2 className="size-4" />
+                          Supprimer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
+            {filtered.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="py-12 text-center text-gray-400">
+                  Aucun utilisateur trouvé.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </Panel>
@@ -189,12 +297,31 @@ export function UtilisateursView() {
         <Button
           variant="outline"
           className="border-emerald-200 text-emerald-600 hover:bg-emerald-50"
-          onClick={() => openModal({ type: "utilisateur" })}
+          onClick={handleAdd}
         >
           <UserPlus className="size-4" />
           Créer un compte
         </Button>
       </div>
+
+      <UtilisateurFormModal
+        open={formOpen}
+        utilisateur={editing}
+        onClose={() => {
+          setFormOpen(false);
+          setEditing(null);
+        }}
+        onSave={handleSave}
+      />
+      <UtilisateurDeleteDialog
+        open={deleteOpen}
+        utilisateur={deleting}
+        onClose={() => {
+          setDeleteOpen(false);
+          setDeleting(null);
+        }}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 }

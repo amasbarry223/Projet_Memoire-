@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS\nToast: A green toast appears with the message \"Enseignant créé — Mariam Sidibé a été ajouté au corps enseignant.\" First row: Mariam Sidibé appears at the TOP of the table with email m.sidibe@ecole.ml, Développement Web matière badge, BTS SIO 1 class badge, and Actif status.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783282486,
+  "id": "202607060414441cd918e365034026",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607060414441cd918e365034026",
+  "usage": {
+    "completion_tokens": 79,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1098,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1177
+  }
+}
