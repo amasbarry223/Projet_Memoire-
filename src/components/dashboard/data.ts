@@ -16,25 +16,46 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Navigation
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ViewKey =
+  | "dashboard"
+  | "candidatures"
+  | "etudiants"
+  | "enseignants"
+  | "suivi"
+  | "alertes"
+  | "rapports"
+  | "filieres"
+  | "utilisateurs"
+  | "audit"
+  | "parametres";
+
 export type NavItem = {
+  key: ViewKey;
   label: string;
   icon: LucideIcon;
 };
 
-// Navigation alignée sur les modules du cahier des charges (espace administrateur)
 export const navItems: NavItem[] = [
-  { label: "Tableau de bord", icon: LayoutGrid },
-  { label: "Candidatures", icon: FileText },
-  { label: "Étudiants", icon: GraduationCap },
-  { label: "Enseignants", icon: Users },
-  { label: "Suivi pédagogique", icon: ClipboardList },
-  { label: "Alertes IA", icon: BrainCircuit },
-  { label: "Rapports", icon: BarChart3 },
-  { label: "Filières & Classes", icon: BookOpen },
-  { label: "Utilisateurs", icon: UserCog },
-  { label: "Journal d'audit", icon: ScrollText },
-  { label: "Paramètres", icon: Settings },
+  { key: "dashboard", label: "Tableau de bord", icon: LayoutGrid },
+  { key: "candidatures", label: "Candidatures", icon: FileText },
+  { key: "etudiants", label: "Étudiants", icon: GraduationCap },
+  { key: "enseignants", label: "Enseignants", icon: Users },
+  { key: "suivi", label: "Suivi pédagogique", icon: ClipboardList },
+  { key: "alertes", label: "Alertes IA", icon: BrainCircuit },
+  { key: "rapports", label: "Rapports", icon: BarChart3 },
+  { key: "filieres", label: "Filières & Classes", icon: BookOpen },
+  { key: "utilisateurs", label: "Utilisateurs", icon: UserCog },
+  { key: "audit", label: "Journal d'audit", icon: ScrollText },
+  { key: "parametres", label: "Paramètres", icon: Settings },
 ];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tableau de bord — KPIs, graphiques, widgets
+// ─────────────────────────────────────────────────────────────────────────────
 
 export type StatCard = {
   label: string;
@@ -46,7 +67,6 @@ export type StatCard = {
   hint: string;
 };
 
-// KPIs conformes au cahier des charges (F3.4, F4.4, F5.1)
 export const stats: StatCard[] = [
   {
     label: "Total Étudiants",
@@ -104,7 +124,6 @@ export const stats: StatCard[] = [
   },
 ];
 
-// Onglets de filtrage du tableau de bord (espaces couverts par le RBAC)
 export const tabsList = [
   "Candidatures",
   "Étudiants",
@@ -114,7 +133,6 @@ export const tabsList = [
   "Alertes",
 ];
 
-// F5.1 — Évolution des inscriptions par mois
 export const inscriptionsParMois = [
   { mois: "Jan", inscriptions: 182 },
   { mois: "Fév", inscriptions: 215 },
@@ -124,7 +142,6 @@ export const inscriptionsParMois = [
   { mois: "Juin", inscriptions: 248 },
 ];
 
-// F5.1 — Taux d'absentéisme par mois (%)
 export const absentéismeParMois = [
   { mois: "Jan", taux: 8.2 },
   { mois: "Fév", taux: 7.5 },
@@ -134,87 +151,515 @@ export const absentéismeParMois = [
   { mois: "Juin", taux: 6.5 },
 ];
 
-// F4.4 — Alertes pédagogiques générées par l'IA
-export type AlerteIA = {
-  etudiant: string;
-  classe: string;
-  niveau: "Élevé" | "Moyen" | "Faible";
-  motif: string;
-  indicatorColor: string;
-};
-
-export const alertesIA: AlerteIA[] = [
-  {
-    etudiant: "Thomas Roux",
-    classe: "BTS SIO 2",
-    niveau: "Élevé",
-    motif: "Chute des notes + absences répétées",
-    indicatorColor: "bg-red-500",
-  },
-  {
-    etudiant: "Emma Lion",
-    classe: "BTS MCO 1",
-    niveau: "Moyen",
-    motif: "Baisse continue sur 3 évaluations",
-    indicatorColor: "bg-orange-500",
-  },
-  {
-    etudiant: "Noah Garcia",
-    classe: "Licence 2",
-    niveau: "Faible",
-    motif: "Premier signalement d'assiduité",
-    indicatorColor: "bg-amber-400",
-  },
-  {
-    etudiant: "Léa Moreau",
-    classe: "BTS SIO 1",
-    niveau: "Élevé",
-    motif: "Risque de décrochage détecté",
-    indicatorColor: "bg-red-500",
-  },
-];
-
-// F3.1 — Dossiers récents (candidatures)
 export type DossierRecent = {
   candidat: string;
   filiere: string;
   date: string;
-  statut: "En attente" | "Validé" | "Incomplet" | "Rejeté";
+  statut: StatutDossier;
   statutBg: string;
   initialBg: string;
 };
 
 export const dossiersRecents: DossierRecent[] = [
+  { candidat: "Marie Dupont", filiere: "BTS SIO", date: "01 Nov 2024", statut: "En attente", statutBg: "bg-amber-50 text-amber-600", initialBg: "bg-amber-500" },
+  { candidat: "Jean Martin", filiere: "BTS MCO", date: "31 Oct 2024", statut: "Validé", statutBg: "bg-emerald-50 text-emerald-600", initialBg: "bg-emerald-500" },
+  { candidat: "Sophie Bernard", filiere: "Licence 3", date: "30 Oct 2024", statut: "Incomplet", statutBg: "bg-orange-50 text-orange-600", initialBg: "bg-orange-500" },
+  { candidat: "Lucas Petit", filiere: "BTS NDRC", date: "29 Oct 2024", statut: "Rejeté", statutBg: "bg-red-50 text-red-500", initialBg: "bg-red-500" },
+];
+
+export type AlerteIA = {
+  id: string;
+  etudiant: string;
+  classe: string;
+  niveau: "Élevé" | "Moyen" | "Faible";
+  motif: string;
+  date: string;
+  statut: "Nouvelle" | "Prise en charge" | "Clôturée";
+  indicatorColor: string;
+};
+
+export const alertesIA: AlerteIA[] = [
+  { id: "ALT-001", etudiant: "Thomas Roux", classe: "BTS SIO 2", niveau: "Élevé", motif: "Chute des notes + absences répétées", date: "01 Nov 2024", statut: "Nouvelle", indicatorColor: "bg-red-500" },
+  { id: "ALT-002", etudiant: "Emma Lion", classe: "BTS MCO 1", niveau: "Moyen", motif: "Baisse continue sur 3 évaluations", date: "31 Oct 2024", statut: "Nouvelle", indicatorColor: "bg-orange-500" },
+  { id: "ALT-003", etudiant: "Noah Garcia", classe: "Licence 2", niveau: "Faible", motif: "Premier signalement d'assiduité", date: "30 Oct 2024", statut: "Prise en charge", indicatorColor: "bg-amber-400" },
+  { id: "ALT-004", etudiant: "Léa Moreau", classe: "BTS SIO 1", niveau: "Élevé", motif: "Risque de décrochage détecté", date: "29 Oct 2024", statut: "Nouvelle", indicatorColor: "bg-red-500" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Module Candidatures (F3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type StatutDossier = "En attente" | "Validé" | "Incomplet" | "Rejeté";
+
+export type PieceJustificative = {
+  nom: string;
+  type: string;
+  taille: string;
+  present: boolean;
+};
+
+export type ActionHistorique = {
+  action: string;
+  date: string;
+  auteur: string;
+};
+
+export type Candidature = {
+  id: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone: string;
+  dateNaissance: string;
+  adresse: string;
+  filiere: string;
+  niveau: string;
+  statut: StatutDossier;
+  dateSoumission: string;
+  pieces: PieceJustificative[];
+  syntheseIA: string;
+  completude: number;
+  historique: ActionHistorique[];
+};
+
+export const candidatures: Candidature[] = [
   {
-    candidat: "Marie Dupont",
+    id: "CAND-2024-048",
+    nom: "Dupont",
+    prenom: "Marie",
+    email: "marie.dupont@email.fr",
+    telephone: "06 12 34 56 78",
+    dateNaissance: "15/03/2005",
+    adresse: "12 rue des Lilas, 75011 Paris",
     filiere: "BTS SIO",
-    date: "01 Nov 2024",
+    niveau: "1ère année",
     statut: "En attente",
-    statutBg: "bg-amber-50 text-amber-600",
-    initialBg: "bg-amber-500",
+    dateSoumission: "01 Nov 2024",
+    pieces: [
+      { nom: "Pièce d'identité", type: "PDF", taille: "1.2 Mo", present: true },
+      { nom: "Baccalauréat", type: "PDF", taille: "2.4 Mo", present: true },
+      { nom: "Relevé de notes", type: "PDF", taille: "0.8 Mo", present: true },
+      { nom: "Lettre de motivation", type: "DOCX", taille: "0.3 Mo", present: true },
+    ],
+    syntheseIA:
+      "Dossier complet. Mention TB au baccalauréat. Lettre de motivation cohérente avec la filière. Aucun point d'attention détecté.",
+    completude: 100,
+    historique: [
+      { action: "Dossier soumis", date: "01 Nov 2024 09:12", auteur: "Marie Dupont" },
+      { action: "Analyse IA effectuée", date: "01 Nov 2024 09:14", auteur: "Système IA" },
+    ],
   },
   {
-    candidat: "Jean Martin",
+    id: "CAND-2024-047",
+    nom: "Martin",
+    prenom: "Jean",
+    email: "jean.martin@email.fr",
+    telephone: "06 98 76 54 32",
+    dateNaissance: "22/07/2005",
+    adresse: "45 avenue Foch, 69006 Lyon",
     filiere: "BTS MCO",
-    date: "31 Oct 2024",
+    niveau: "1ère année",
     statut: "Validé",
-    statutBg: "bg-emerald-50 text-emerald-600",
-    initialBg: "bg-emerald-500",
+    dateSoumission: "31 Oct 2024",
+    pieces: [
+      { nom: "Pièce d'identité", type: "PDF", taille: "1.5 Mo", present: true },
+      { nom: "Baccalauréat", type: "PDF", taille: "2.1 Mo", present: true },
+      { nom: "Relevé de notes", type: "PDF", taille: "0.9 Mo", present: true },
+      { nom: "Lettre de motivation", type: "PDF", taille: "0.4 Mo", present: true },
+    ],
+    syntheseIA:
+      "Dossier complet et conforme. Profil adapté à la filière commerce. Recommandation : validation.",
+    completude: 100,
+    historique: [
+      { action: "Dossier soumis", date: "31 Oct 2024 14:30", auteur: "Jean Martin" },
+      { action: "Analyse IA effectuée", date: "31 Oct 2024 14:32", auteur: "Système IA" },
+      { action: "Dossier validé", date: "01 Nov 2024 08:15", auteur: "Admin Principal" },
+    ],
   },
   {
-    candidat: "Sophie Bernard",
+    id: "CAND-2024-046",
+    nom: "Bernard",
+    prenom: "Sophie",
+    email: "sophie.bernard@email.fr",
+    telephone: "07 11 22 33 44",
+    dateNaissance: "08/11/2004",
+    adresse: "7 rue Victor Hugo, 33000 Bordeaux",
     filiere: "Licence 3",
-    date: "30 Oct 2024",
+    niveau: "3ème année",
     statut: "Incomplet",
-    statutBg: "bg-orange-50 text-orange-600",
-    initialBg: "bg-orange-500",
+    dateSoumission: "30 Oct 2024",
+    pieces: [
+      { nom: "Pièce d'identité", type: "PDF", taille: "1.1 Mo", present: true },
+      { nom: "Relevé de notes L2", type: "PDF", taille: "0.7 Mo", present: false },
+      { nom: "CV", type: "PDF", taille: "0.5 Mo", present: true },
+      { nom: "Lettre de motivation", type: "PDF", taille: "0.3 Mo", present: false },
+    ],
+    syntheseIA:
+      "Dossier incomplet : 2 pièces manquantes (relevé L2, lettre de motivation). Profil académique solide sur les pièces présentes.",
+    completude: 50,
+    historique: [
+      { action: "Dossier soumis", date: "30 Oct 2024 11:00", auteur: "Sophie Bernard" },
+      { action: "Analyse IA effectuée", date: "30 Oct 2024 11:02", auteur: "Système IA" },
+      { action: "Marqué incomplet", date: "30 Oct 2024 16:45", auteur: "Admin Principal" },
+    ],
   },
   {
-    candidat: "Lucas Petit",
+    id: "CAND-2024-045",
+    nom: "Petit",
+    prenom: "Lucas",
+    email: "lucas.petit@email.fr",
+    telephone: "06 55 44 33 22",
+    dateNaissance: "30/01/2005",
+    adresse: "23 bd Saint-Michel, 13001 Marseille",
     filiere: "BTS NDRC",
-    date: "29 Oct 2024",
+    niveau: "1ère année",
     statut: "Rejeté",
-    statutBg: "bg-red-50 text-red-500",
-    initialBg: "bg-red-500",
+    dateSoumission: "29 Oct 2024",
+    pieces: [
+      { nom: "Pièce d'identité", type: "PDF", taille: "1.3 Mo", present: true },
+      { nom: "Baccalauréat", type: "PDF", taille: "2.0 Mo", present: true },
+      { nom: "Relevé de notes", type: "PDF", taille: "0.6 Mo", present: true },
+    ],
+    syntheseIA:
+      "Dossier complet mais profil inadapté à la filière visée. Niveau académique insuffisant en commerciales. Recommandation : réorientation.",
+    completude: 100,
+    historique: [
+      { action: "Dossier soumis", date: "29 Oct 2024 10:20", auteur: "Lucas Petit" },
+      { action: "Analyse IA effectuée", date: "29 Oct 2024 10:22", auteur: "Système IA" },
+      { action: "Dossier rejeté", date: "30 Oct 2024 09:00", auteur: "Admin Principal" },
+    ],
   },
+  {
+    id: "CAND-2024-044",
+    nom: "Leroy",
+    prenom: "Camille",
+    email: "camille.leroy@email.fr",
+    telephone: "06 77 88 99 00",
+    dateNaissance: "12/05/2005",
+    adresse: "5 rue de la Paix, 44000 Nantes",
+    filiere: "BTS SIO",
+    niveau: "1ère année",
+    statut: "En attente",
+    dateSoumission: "28 Oct 2024",
+    pieces: [
+      { nom: "Pièce d'identité", type: "PDF", taille: "1.0 Mo", present: true },
+      { nom: "Baccalauréat", type: "PDF", taille: "2.2 Mo", present: true },
+      { nom: "Relevé de notes", type: "PDF", taille: "0.8 Mo", present: true },
+    ],
+    syntheseIA:
+      "Dossier complet. Profil technique prometteur. Lettre de motivation à compléter pour la session de rentrée.",
+    completude: 100,
+    historique: [
+      { action: "Dossier soumis", date: "28 Oct 2024 15:00", auteur: "Camille Leroy" },
+      { action: "Analyse IA effectuée", date: "28 Oct 2024 15:02", auteur: "Système IA" },
+    ],
+  },
+  {
+    id: "CAND-2024-043",
+    nom: "Moreau",
+    prenom: "Julien",
+    email: "julien.moreau@email.fr",
+    telephone: "07 66 55 44 33",
+    dateNaissance: "19/09/2004",
+    adresse: "18 rue du Commerce, 21000 Dijon",
+    filiere: "Licence 2",
+    niveau: "2ème année",
+    statut: "En attente",
+    dateSoumission: "27 Oct 2024",
+    pieces: [
+      { nom: "Pièce d'identité", type: "PDF", taille: "1.4 Mo", present: true },
+      { nom: "Relevé de notes L1", type: "PDF", taille: "0.9 Mo", present: true },
+      { nom: "CV", type: "PDF", taille: "0.4 Mo", present: true },
+    ],
+    syntheseIA:
+      "Dossier complet. Bon dossier académique. Demande de transfert de filière justifiée.",
+    completude: 100,
+    historique: [
+      { action: "Dossier soumis", date: "27 Oct 2024 13:30", auteur: "Julien Moreau" },
+      { action: "Analyse IA effectuée", date: "27 Oct 2024 13:32", auteur: "Système IA" },
+    ],
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Étudiants (F4.2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Etudiant = {
+  id: string;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  filiere: string;
+  classe: string;
+  moyenne: number;
+  assiduite: number;
+  statut: "Actif" | "Suspendu";
+};
+
+export const etudiants: Etudiant[] = [
+  { id: "ETU-1", matricule: "2024-SIO-001", nom: "Roux", prenom: "Thomas", email: "thomas.roux@etu.fr", filiere: "BTS SIO", classe: "BTS SIO 2", moyenne: 8.4, assiduite: 72, statut: "Actif" },
+  { id: "ETU-2", matricule: "2024-SIO-014", nom: "Moreau", prenom: "Léa", email: "lea.moreau@etu.fr", filiere: "BTS SIO", classe: "BTS SIO 1", moyenne: 9.1, assiduite: 68, statut: "Actif" },
+  { id: "ETU-3", matricule: "2024-MCO-008", nom: "Lion", prenom: "Emma", email: "emma.lion@etu.fr", filiere: "BTS MCO", classe: "BTS MCO 1", moyenne: 10.2, assiduite: 81, statut: "Actif" },
+  { id: "ETU-4", matricule: "2024-LIC-022", nom: "Garcia", prenom: "Noah", email: "noah.garcia@etu.fr", filiere: "Licence Informatique", classe: "Licence 2", moyenne: 12.8, assiduite: 88, statut: "Actif" },
+  { id: "ETU-5", matricule: "2024-NDRC-005", nom: "Fontaine", prenom: "Chloé", email: "chloe.fontaine@etu.fr", filiere: "BTS NDRC", classe: "BTS NDRC 2", moyenne: 14.5, assiduite: 95, statut: "Actif" },
+  { id: "ETU-6", matricule: "2024-SIO-031", nom: "Girard", prenom: "Hugo", email: "hugo.girard@etu.fr", filiere: "BTS SIO", classe: "BTS SIO 1", moyenne: 13.2, assiduite: 91, statut: "Actif" },
+  { id: "ETU-7", matricule: "2024-MCO-019", nom: "Mercier", prenom: "Sarah", email: "sarah.mercier@etu.fr", filiere: "BTS MCO", classe: "BTS MCO 2", moyenne: 11.7, assiduite: 84, statut: "Actif" },
+  { id: "ETU-8", matricule: "2024-LIC-040", nom: "Blanc", prenom: "Nathan", email: "nathan.blanc@etu.fr", filiere: "Licence Informatique", classe: "Licence 3", moyenne: 15.1, assiduite: 97, statut: "Actif" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enseignants (F4.1)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Enseignant = {
+  id: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  matieres: string[];
+  classes: string[];
+  statut: "Actif" | "Congé";
+};
+
+export const enseignants: Enseignant[] = [
+  { id: "ENS-1", nom: "Dubois", prenom: "Antoine", email: "a.dubois@ecole.fr", matieres: ["Développement Web", "Base de données"], classes: ["BTS SIO 1", "BTS SIO 2"], statut: "Actif" },
+  { id: "ENS-2", nom: "Laurent", prenom: "Isabelle", email: "i.laurent@ecole.fr", matieres: ["Management", "Marketing"], classes: ["BTS MCO 1", "BTS MCO 2"], statut: "Actif" },
+  { id: "ENS-3", nom: "Robert", prenom: "Philippe", email: "p.robert@ecole.fr", matieres: ["Réseaux", "Système"], classes: ["BTS SIO 2"], statut: "Actif" },
+  { id: "ENS-4", nom: "Faure", prenom: "Nathalie", email: "n.faure@ecole.fr", matieres: ["Communication"], classes: ["BTS NDRC 1", "BTS NDRC 2"], statut: "Congé" },
+  { id: "ENS-5", nom: "Lemoine", prenom: "Christophe", email: "c.lemoine@ecole.fr", matieres: ["Algorithmique", "Mathématiques"], classes: ["Licence 2", "Licence 3"], statut: "Actif" },
+  { id: "ENS-6", nom: "Giraud", prenom: "Sylvie", email: "s.giraud@ecole.fr", matieres: ["Gestion", "Économie"], classes: ["BTS MCO 2", "BTS NDRC 2"], statut: "Actif" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Suivi pédagogique — grille de notes (F4.1, F4.2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Note = {
+  etudiant: string;
+  matiere: string;
+  classe: string;
+  note: number | null;
+  sur: number;
+  coefficient: number;
+  periode: string;
+};
+
+export const notesGrille: Note[] = [
+  { etudiant: "Thomas Roux", matiere: "Développement Web", classe: "BTS SIO 2", note: 8, sur: 20, coefficient: 3, periode: "Semestre 1" },
+  { etudiant: "Thomas Roux", matiere: "Base de données", classe: "BTS SIO 2", note: 9.5, sur: 20, coefficient: 2, periode: "Semestre 1" },
+  { etudiant: "Léa Moreau", matiere: "Développement Web", classe: "BTS SIO 1", note: 9, sur: 20, coefficient: 3, periode: "Semestre 1" },
+  { etudiant: "Hugo Girard", matiere: "Développement Web", classe: "BTS SIO 1", note: 13, sur: 20, coefficient: 3, periode: "Semestre 1" },
+  { etudiant: "Emma Lion", matiere: "Management", classe: "BTS MCO 1", note: 10.5, sur: 20, coefficient: 2, periode: "Semestre 1" },
+  { etudiant: "Noah Garcia", matiere: "Algorithmique", classe: "Licence 2", note: 12.5, sur: 20, coefficient: 3, periode: "Semestre 1" },
+  { etudiant: "Chloé Fontaine", matiere: "Communication", classe: "BTS NDRC 2", note: 14.5, sur: 20, coefficient: 2, periode: "Semestre 1" },
+  { etudiant: "Nathan Blanc", matiere: "Algorithmique", classe: "Licence 3", note: 15, sur: 20, coefficient: 3, periode: "Semestre 1" },
+];
+
+export type Absence = {
+  etudiant: string;
+  classe: string;
+  matiere: string;
+  date: string;
+  justifiee: boolean;
+};
+
+export const absences: Absence[] = [
+  { etudiant: "Thomas Roux", classe: "BTS SIO 2", matiere: "Développement Web", date: "28 Oct 2024", justifiee: false },
+  { etudiant: "Thomas Roux", classe: "BTS SIO 2", matiere: "Réseaux", date: "29 Oct 2024", justifiee: true },
+  { etudiant: "Léa Moreau", classe: "BTS SIO 1", matiere: "Développement Web", date: "30 Oct 2024", justifiee: false },
+  { etudiant: "Emma Lion", classe: "BTS MCO 1", matiere: "Management", date: "25 Oct 2024", justifiee: false },
+  { etudiant: "Noah Garcia", classe: "Licence 2", matiere: "Algorithmique", date: "24 Oct 2024", justifiee: true },
+  { etudiant: "Sarah Mercier", classe: "BTS MCO 2", matiere: "Marketing", date: "23 Oct 2024", justifiee: false },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alertes IA (F4.4) — version complète pour la vue dédiée
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const alertesIAComplete: AlerteIA[] = [
+  ...alertesIA,
+  { id: "ALT-005", etudiant: "Sarah Mercier", classe: "BTS MCO 2", niveau: "Moyen", motif: "3 absences non justifiées ce mois", date: "28 Oct 2024", statut: "Prise en charge", indicatorColor: "bg-orange-500" },
+  { id: "ALT-006", etudiant: "Hugo Girard", classe: "BTS SIO 1", niveau: "Faible", motif: "Légère baisse sur la dernière évaluation", date: "27 Oct 2024", statut: "Clôturée", indicatorColor: "bg-amber-400" },
+  { id: "ALT-007", etudiant: "Nathan Blanc", classe: "Licence 3", niveau: "Faible", motif: "Signalement de suivi positif", date: "26 Oct 2024", statut: "Clôturée", indicatorColor: "bg-emerald-400" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rapports (F5.2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Rapport = {
+  id: string;
+  titre: string;
+  periode: string;
+  dateGeneration: string;
+  type: "Mensuel" | "Hebdomadaire" | "Trimestriel" | "Ponctuel";
+  taille: string;
+  generePar: string;
+};
+
+export const rapports: Rapport[] = [
+  { id: "RAP-001", titre: "Rapport mensuel — Octobre 2024", periode: "Octobre 2024", dateGeneration: "01 Nov 2024", type: "Mensuel", taille: "1.8 Mo", generePar: "IA (Claude)" },
+  { id: "RAP-002", titre: "Suivi pédagogique BTS SIO — S44", periode: "Semaine 44", dateGeneration: "31 Oct 2024", type: "Hebdomadaire", taille: "0.6 Mo", generePar: "IA (Claude)" },
+  { id: "RAP-003", titre: "Bilan trimestriel — Q3 2024", periode: "Juillet–Septembre 2024", dateGeneration: "05 Oct 2024", type: "Trimestriel", taille: "3.2 Mo", generePar: "IA (Claude)" },
+  { id: "RAP-004", titre: "Analyse des candidatures — Octobre", periode: "Octobre 2024", dateGeneration: "02 Nov 2024", type: "Ponctuel", taille: "0.9 Mo", generePar: "IA (Claude)" },
+  { id: "RAP-005", titre: "Rapport d'assiduité global", periode: "Septembre–Octobre 2024", dateGeneration: "30 Oct 2024", type: "Ponctuel", taille: "1.1 Mo", generePar: "IA (Claude)" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Filières, classes, matières (F6.2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Classe = {
+  id: string;
+  nom: string;
+  niveau: string;
+  effectif: number;
+};
+
+export type Matiere = {
+  id: string;
+  nom: string;
+  coefficient: number;
+};
+
+export type Filiere = {
+  id: string;
+  nom: string;
+  code: string;
+  description: string;
+  classes: Classe[];
+  matieres: Matiere[];
+};
+
+export const filieres: Filiere[] = [
+  {
+    id: "FIL-1",
+    nom: "BTS SIO",
+    code: "SIO",
+    description: "Services Informatiques aux Organisations — options SLAM et SISR.",
+    classes: [
+      { id: "CL-1", nom: "BTS SIO 1", niveau: "1ère année", effectif: 32 },
+      { id: "CL-2", nom: "BTS SIO 2", niveau: "2ème année", effectif: 28 },
+    ],
+    matieres: [
+      { id: "MA-1", nom: "Développement Web", coefficient: 3 },
+      { id: "MA-2", nom: "Base de données", coefficient: 2 },
+      { id: "MA-3", nom: "Réseaux", coefficient: 2 },
+      { id: "MA-4", nom: "Algorithmique", coefficient: 3 },
+    ],
+  },
+  {
+    id: "FIL-2",
+    nom: "BTS MCO",
+    code: "MCO",
+    description: "Management Commercial Opérationnel.",
+    classes: [
+      { id: "CL-3", nom: "BTS MCO 1", niveau: "1ère année", effectif: 30 },
+      { id: "CL-4", nom: "BTS MCO 2", niveau: "2ème année", effectif: 26 },
+    ],
+    matieres: [
+      { id: "MA-5", nom: "Management", coefficient: 3 },
+      { id: "MA-6", nom: "Marketing", coefficient: 2 },
+      { id: "MA-7", nom: "Gestion", coefficient: 2 },
+    ],
+  },
+  {
+    id: "FIL-3",
+    nom: "Licence Informatique",
+    code: "LIC-INFO",
+    description: "Licence générale en informatique (3 ans).",
+    classes: [
+      { id: "CL-5", nom: "Licence 1", niveau: "1ère année", effectif: 45 },
+      { id: "CL-6", nom: "Licence 2", niveau: "2ème année", effectif: 38 },
+      { id: "CL-7", nom: "Licence 3", niveau: "3ème année", effectif: 31 },
+    ],
+    matieres: [
+      { id: "MA-8", nom: "Algorithmique", coefficient: 3 },
+      { id: "MA-9", nom: "Mathématiques", coefficient: 2 },
+      { id: "MA-10", nom: "Système", coefficient: 2 },
+    ],
+  },
+  {
+    id: "FIL-4",
+    nom: "BTS NDRC",
+    code: "NDRC",
+    description: "Négociation et Digitalisation de la Relation Client.",
+    classes: [
+      { id: "CL-8", nom: "BTS NDRC 1", niveau: "1ère année", effectif: 27 },
+      { id: "CL-9", nom: "BTS NDRC 2", niveau: "2ème année", effectif: 24 },
+    ],
+    matieres: [
+      { id: "MA-11", nom: "Communication", coefficient: 3 },
+      { id: "MA-12", nom: "Négociation", coefficient: 2 },
+    ],
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Utilisateurs & rôles (F6.1, RBAC §2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Role = "candidat" | "etudiant" | "enseignant" | "responsable" | "admin";
+
+export type Utilisateur = {
+  id: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  role: Role;
+  statut: "Actif" | "Désactivé";
+  derniereConnexion: string;
+};
+
+export const roleLabels: Record<Role, string> = {
+  candidat: "Candidat",
+  etudiant: "Étudiant",
+  enseignant: "Enseignant",
+  responsable: "Responsable pédagogique",
+  admin: "Administrateur",
+};
+
+export const roleBadgeBg: Record<Role, string> = {
+  candidat: "bg-gray-100 text-gray-600",
+  etudiant: "bg-emerald-50 text-emerald-600",
+  enseignant: "bg-amber-50 text-amber-600",
+  responsable: "bg-orange-50 text-orange-600",
+  admin: "bg-emerald-500 text-white",
+};
+
+export const utilisateurs: Utilisateur[] = [
+  { id: "U-1", nom: "Principal", prenom: "Admin", email: "admin@scolaflow.fr", role: "admin", statut: "Actif", derniereConnexion: "01 Nov 2024 08:00" },
+  { id: "U-2", nom: "Lambert", prenom: "Claire", email: "c.lambert@scolaflow.fr", role: "responsable", statut: "Actif", derniereConnexion: "01 Nov 2024 07:42" },
+  { id: "U-3", nom: "Dubois", prenom: "Antoine", email: "a.dubois@scolaflow.fr", role: "enseignant", statut: "Actif", derniereConnexion: "31 Oct 2024 18:15" },
+  { id: "U-4", nom: "Laurent", prenom: "Isabelle", email: "i.laurent@scolaflow.fr", role: "enseignant", statut: "Actif", derniereConnexion: "31 Oct 2024 16:30" },
+  { id: "U-5", nom: "Roux", prenom: "Thomas", email: "thomas.roux@etu.fr", role: "etudiant", statut: "Actif", derniereConnexion: "31 Oct 2024 14:20" },
+  { id: "U-6", nom: "Fontaine", prenom: "Chloé", email: "chloe.fontaine@etu.fr", role: "etudiant", statut: "Actif", derniereConnexion: "30 Oct 2024 11:05" },
+  { id: "U-7", nom: "Dupont", prenom: "Marie", email: "marie.dupont@email.fr", role: "candidat", statut: "Actif", derniereConnexion: "01 Nov 2024 09:12" },
+  { id: "U-8", nom: "Faure", prenom: "Nathalie", email: "n.faure@scolaflow.fr", role: "enseignant", statut: "Désactivé", derniereConnexion: "12 Oct 2024 10:00" },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Journal d'audit (F6.3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type EntreeAudit = {
+  id: string;
+  date: string;
+  utilisateur: string;
+  action: string;
+  cible: string;
+  details: string;
+};
+
+export const auditLog: EntreeAudit[] = [
+  { id: "AUD-024", date: "01 Nov 2024 08:15", utilisateur: "Admin Principal", action: "Validation dossier", cible: "CAND-2024-047", details: "Dossier validé — statut passé à « Validé »" },
+  { id: "AUD-023", date: "30 Oct 2024 16:45", utilisateur: "Admin Principal", action: "Marquage incomplet", cible: "CAND-2024-046", details: "Pièces manquantes : Relevé L2, Lettre de motivation" },
+  { id: "AUD-022", date: "30 Oct 2024 09:00", utilisateur: "Admin Principal", action: "Rejet dossier", cible: "CAND-2024-045", details: "Motif : profil inadapté à la filière" },
+  { id: "AUD-021", date: "29 Oct 2024 14:30", utilisateur: "Claire Lambert", action: "Clôture alerte", cible: "ALT-006", details: "Élève suivi, situation régularisée" },
+  { id: "AUD-020", date: "28 Oct 2024 11:20", utilisateur: "Antoine Dubois", action: "Saisie de notes", cible: "BTS SIO 2 — Dév. Web", details: "8 notes saisies pour le semestre 1" },
+  { id: "AUD-019", date: "27 Oct 2024 15:45", utilisateur: "Admin Principal", action: "Modification rôle", cible: "U-7 (Marie Dupont)", details: "Rôle « candidat » → « étudiant »" },
+  { id: "AUD-018", date: "26 Oct 2024 10:10", utilisateur: "Claire Lambert", action: "Création compte", cible: "U-3 (Antoine Dubois)", details: "Compte enseignant créé" },
+  { id: "AUD-017", date: "25 Oct 2024 17:30", utilisateur: "Admin Principal", action: "Désactivation compte", cible: "U-8 (Nathalie Faure)", details: "Compte désactivé (congé)" },
 ];

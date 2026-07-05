@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS (1) - Title and submission date visible: \"Dossier CAND-2024-048\" with \"Soumis le 01 Nov 2024\"  \nPASS (2) - Status badge \"En attente\" displayed in orange  \nPASS (3) - \"Informations personnelles\" section with Prénom: Marie, Nom: Dupont, etc.  \nPASS (4) - \"Formation visée\" section showing \"BTS SIO\"  \nPASS (5) - \"Synthèse d'analyse IA\" with 100% completeness bar  \nPASS (6) - \"Pièces justificatives\" list with download buttons (Pièce d'identité, Baccalauréat, Relevé de notes)  \nFAIL (7) - \"Historique des actions\" timeline NOT visible (missing from dialog)  \nPASS (8) - Footer with 3 action buttons: \"Marquer incomplet\" (orange), \"Rejeter\" (red), \"Valider\" (green)",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783267314,
+  "id": "20260706000146e1ed561e1d3e4932",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706000146e1ed561e1d3e4932",
+  "usage": {
+    "completion_tokens": 216,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1819,
+    "prompt_tokens_details": {
+      "cached_tokens": 7
+    },
+    "total_tokens": 2035
+  }
+}

@@ -1,0 +1,145 @@
+"use client";
+
+import { useState } from "react";
+import { Users, Mail, BookOpen, Layers } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { enseignants } from "@/components/dashboard/data";
+import { PageHeader, Toolbar, Panel, StatusBadge } from "./shared";
+
+export function EnseignantsView() {
+  const [search, setSearch] = useState("");
+
+  const filtered = enseignants.filter((e) =>
+    `${e.prenom} ${e.nom} ${e.email}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  return (
+    <div>
+      <PageHeader
+        title="Enseignants"
+        description="Corps enseignant et affectations aux classes/matières (F4.1 — R3)"
+        icon={Users}
+      />
+
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Panel className="flex items-center gap-3 p-4">
+          <div className="flex size-10 items-center justify-center rounded-full bg-emerald-50">
+            <Users className="size-5 text-emerald-500" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-gray-900">
+              {enseignants.length}
+            </p>
+            <p className="text-xs text-gray-500">Enseignants</p>
+          </div>
+        </Panel>
+        <Panel className="flex items-center gap-3 p-4">
+          <div className="flex size-10 items-center justify-center rounded-full bg-amber-50">
+            <BookOpen className="size-5 text-amber-500" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-gray-900">
+              {new Set(enseignants.flatMap((e) => e.matieres)).size}
+            </p>
+            <p className="text-xs text-gray-500">Matières couvertes</p>
+          </div>
+        </Panel>
+        <Panel className="flex items-center gap-3 p-4">
+          <div className="flex size-10 items-center justify-center rounded-full bg-orange-50">
+            <Layers className="size-5 text-orange-500" />
+          </div>
+          <div>
+            <p className="text-2xl font-bold text-gray-900">
+              {new Set(enseignants.flatMap((e) => e.classes)).size}
+            </p>
+            <p className="text-xs text-gray-500">Classes affectées</p>
+          </div>
+        </Panel>
+      </div>
+
+      <Panel className="p-4 sm:p-5">
+        <Toolbar search={search} onSearch={setSearch} />
+
+        <Table>
+          <TableHeader>
+            <TableRow className="border-gray-100">
+              <TableHead className="text-gray-500">Enseignant</TableHead>
+              <TableHead className="text-gray-500">Matières</TableHead>
+              <TableHead className="text-gray-500">Classes affectées</TableHead>
+              <TableHead className="text-gray-500">Statut</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.map((e) => (
+              <TableRow key={e.id} className="border-gray-50">
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-9 items-center justify-center rounded-full bg-amber-100 text-sm font-semibold text-amber-700">
+                      {e.prenom.charAt(0)}
+                      {e.nom.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {e.prenom} {e.nom}
+                      </p>
+                      <p className="flex items-center gap-1 text-xs text-gray-400">
+                        <Mail className="size-3" />
+                        {e.email}
+                      </p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {e.matieres.map((m) => (
+                      <Badge
+                        key={m}
+                        variant="secondary"
+                        className="bg-emerald-50 font-normal text-emerald-700"
+                      >
+                        {m}
+                      </Badge>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {e.classes.map((c) => (
+                      <Badge
+                        key={c}
+                        variant="secondary"
+                        className="bg-gray-100 font-normal text-gray-600"
+                      >
+                        {c}
+                      </Badge>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <StatusBadge
+                    label={e.statut}
+                    className={
+                      e.statut === "Actif"
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-gray-100 text-gray-500"
+                    }
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Panel>
+    </div>
+  );
+}

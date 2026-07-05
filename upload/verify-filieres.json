@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "YES. The main heading is \"Filières & Classes\" with a subtitle \"Référentiels : filières, classes, matières et affectations (F6.2)\". The content shows filière cards: \"BTS SIO\" (with green book icon, description, 2 classes, 4 matières, + Classe/+ Matière buttons) and \"BTS MCO\" (similar structure), plus a partial \"Licence Informatique\" card below. Each card includes student counts, class lists (with student numbers), matière lists (with coefficients), and action buttons.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783267633,
+  "id": "20260706000709d145133f352643ca",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706000709d145133f352643ca",
+  "usage": {
+    "completion_tokens": 126,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1725,
+    "prompt_tokens_details": {
+      "cached_tokens": 5
+    },
+    "total_tokens": 1851
+  }
+}

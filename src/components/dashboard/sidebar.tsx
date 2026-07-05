@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { GraduationCap, ChevronRight, LifeBuoy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems } from "./data";
+import { useAppStore } from "@/lib/view-store";
 
 export function Sidebar() {
-  const [active, setActive] = useState("Tableau de bord");
+  const view = useAppStore((s) => s.view);
+  const setView = useAppStore((s) => s.setView);
 
   return (
     <aside className="hidden lg:flex w-[260px] shrink-0 flex-col border-r border-gray-100 bg-white">
@@ -27,13 +28,13 @@ export function Sidebar() {
         </p>
         <ul className="space-y-1">
           {navItems.map((item) => {
-            const isActive = active === item.label;
+            const isActive = view === item.key;
             const Icon = item.icon;
             return (
-              <li key={item.label}>
+              <li key={item.key}>
                 <button
                   type="button"
-                  onClick={() => setActive(item.label)}
+                  onClick={() => setView(item.key)}
                   className={cn(
                     "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     isActive

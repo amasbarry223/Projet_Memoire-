@@ -2,18 +2,22 @@
 
 import { Search, Bell, ChevronDown } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { MobileNav } from "./mobile-nav";
 
 export function Header() {
   return (
     <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-gray-100 bg-white px-4 lg:px-6">
-      {/* Search */}
-      <div className="relative max-w-md flex-1">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Rechercher un étudiant, un dossier, une classe…"
-          className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-4 text-sm text-gray-700 placeholder:text-gray-400 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/10"
-        />
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <MobileNav />
+        {/* Search */}
+        <div className="relative max-w-md flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Rechercher un étudiant, un dossier, une classe…"
+            className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-4 text-sm text-gray-700 placeholder:text-gray-400 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/10"
+          />
+        </div>
       </div>
 
       {/* Right actions */}
