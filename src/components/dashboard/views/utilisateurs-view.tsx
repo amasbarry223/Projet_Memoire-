@@ -105,8 +105,10 @@ export function UtilisateursView() {
   }
 
   function handleDelete(u: Utilisateur) {
+    // Défer l'ouverture du dialog pour éviter le conflit de focus Radix
+    // entre la fermeture du DropdownMenu et l'ouverture de l'AlertDialog.
     setDeleting(u);
-    setDeleteOpen(true);
+    requestAnimationFrame(() => setDeleteOpen(true));
   }
 
   function handleSave(
@@ -132,8 +134,11 @@ export function UtilisateursView() {
   }
 
   function handleConfirmDelete() {
-    if (!deleting) return;
-    const result = deleteUtilisateur(deleting.id);
+    // Capture locale : l'AlertDialogAction ferme le dialog automatiquement,
+    // ce qui peut clearer `deleting` avant la fin de cette fonction.
+    const target = deleting;
+    if (!target) return;
+    const result = deleteUtilisateur(target.id);
     if (!result.ok) {
       toast({
         title: "Suppression refusée",
@@ -146,7 +151,7 @@ export function UtilisateursView() {
     }
     toast({
       title: "Utilisateur supprimé",
-      description: `${deleting.prenom} ${deleting.nom} a été supprimé. Journalisé dans l'audit.`,
+      description: `${target.prenom} ${target.nom} a été supprimé. Journalisé dans l'audit.`,
       variant: "destructive",
     });
     setDeleteOpen(false);

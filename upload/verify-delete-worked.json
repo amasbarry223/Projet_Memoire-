@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS. The red toast displays \"Utilisateur supprimé — Drissa Coulibaly a été supprimé\" (User deleted — Drissa Coulibaly has been deleted). The table now shows 3 users: Amadou Touré, Rokia Keïta, and Aminata Traoré (Drissa Coulibaly is no longer present).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783294674,
+  "id": "202607060737472f0a9eb5bb1a432f",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607060737472f0a9eb5bb1a432f",
+  "usage": {
+    "completion_tokens": 78,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1075,
+    "prompt_tokens_details": {
+      "cached_tokens": 6
+    },
+    "total_tokens": 1153
+  }
+}

@@ -44,8 +44,8 @@ export function EtudiantDeleteDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction
+          <AlertDialogCancel type="button">Annuler</AlertDialogCancel>
+          <AlertDialogAction type="button"
             className="bg-red-500 text-white hover:bg-red-600"
             onClick={onConfirm}
           >

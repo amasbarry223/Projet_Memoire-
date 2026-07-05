@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "(1) Yes, there is a red/destructive toast saying \"Utilisateur supprimé — Rokia Keïta a été supprimé\". (2) No error toast is visible. (3) Rokia Keïta is no longer in the table (removed).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783294405,
+  "id": "20260706073319ad6fb16bd68e4e0e",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706073319ad6fb16bd68e4e0e",
+  "usage": {
+    "completion_tokens": 61,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1069,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1130
+  }
+}

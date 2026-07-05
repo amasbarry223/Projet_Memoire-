@@ -116,7 +116,7 @@ export function EtudiantsView() {
 
   function handleDelete(e: Etudiant) {
     setDeleting(e);
-    setDeleteOpen(true);
+    requestAnimationFrame(() => setDeleteOpen(true));
   }
 
   function handleSave(data: Omit<Etudiant, "id"> & { id?: string }) {
@@ -142,11 +142,12 @@ export function EtudiantsView() {
   }
 
   function handleConfirmDelete() {
-    if (!deleting) return;
-    deleteEtudiant(deleting.id);
+    const target = deleting;
+    if (!target) return;
+    deleteEtudiant(target.id);
     toast({
       title: "Étudiant supprimé",
-      description: `${deleting.prenom} ${deleting.nom} (${deleting.matricule}) a été supprimé. Journalisé dans l'audit.`,
+      description: `${target.prenom} ${target.nom} (${target.matricule}) a été supprimé. Journalisé dans l'audit.`,
       variant: "destructive",
     });
     setDeleteOpen(false);

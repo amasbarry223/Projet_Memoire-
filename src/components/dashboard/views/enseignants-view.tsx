@@ -61,7 +61,7 @@ export function EnseignantsView() {
 
   function handleDelete(e: Enseignant) {
     setDeleting(e);
-    setDeleteOpen(true);
+    requestAnimationFrame(() => setDeleteOpen(true));
   }
 
   function handleSave(data: Omit<Enseignant, "id"> & { id?: string }) {
@@ -85,11 +85,12 @@ export function EnseignantsView() {
   }
 
   function handleConfirmDelete() {
-    if (!deleting) return;
-    deleteEnseignant(deleting.id);
+    const target = deleting;
+    if (!target) return;
+    deleteEnseignant(target.id);
     toast({
       title: "Enseignant supprimé",
-      description: `${deleting.prenom} ${deleting.nom} a été supprimé. Affectations retirées. Journalisé.`,
+      description: `${target.prenom} ${target.nom} a été supprimé. Affectations retirées. Journalisé.`,
       variant: "destructive",
     });
     setDeleteOpen(false);
