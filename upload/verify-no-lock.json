@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS. The red toast confirms \"Utilisateur supprimé\" (user deleted) with additional text \"Rokia Keita a été supprimé. Journalisé dans l'audit.\" The table now shows 4 users (Amadou Touré, Drissa Coulibaly, Aminata Traoré, Moussa Diabaté) instead of the original 5, confirming the deleted user is no longer present.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783294844,
+  "id": "2026070607404056ab0778e5f14e1d",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "2026070607404056ab0778e5f14e1d",
+  "usage": {
+    "completion_tokens": 91,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1032,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1123
+  }
+}

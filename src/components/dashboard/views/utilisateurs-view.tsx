@@ -280,21 +280,17 @@ export function UtilisateursView() {
                           <Pencil className="size-4 text-gray-500" />
                           Modifier
                         </DropdownMenuItem>
-                        {session?.role === "admin" && (
-                          <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600 focus:text-red-700"
-                              disabled={session?.email === u.email}
-                              onClick={() => handleDelete(u)}
-                            >
-                              <Trash2 className="size-4" />
-                              {session?.email === u.email
-                                ? "Supprimer (verrouillé — votre compte)"
-                                : "Supprimer"}
-                            </DropdownMenuItem>
-                          </>
-                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-red-600 focus:text-red-700"
+                          disabled={session?.email === u.email}
+                          onClick={() => handleDelete(u)}
+                        >
+                          <Trash2 className="size-4" />
+                          {session?.email === u.email
+                            ? "Supprimer (verrouillé — votre compte)"
+                            : "Supprimer"}
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
