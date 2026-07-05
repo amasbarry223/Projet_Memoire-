@@ -36,16 +36,14 @@ export default function Home() {
   const ActiveView = views[view];
 
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-900">
+    <div className="flex h-screen bg-gray-50 text-gray-900 overflow-hidden">
       <Sidebar />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Header />
 
         <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8">
-          <div className="mx-auto max-w-[1400px]">
-            <ActiveView />
-          </div>
+          <ActiveView />
         </main>
       </div>
 
