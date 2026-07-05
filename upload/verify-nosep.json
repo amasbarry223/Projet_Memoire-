@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS. The ESGic logo is directly followed by the email field (\"Adresse email\") with minimal vertical gap, and there is no separator line containing \"Connexion\" text between them. The layout is a centered white card with the logo at the top, followed by the email input field, then the password field, a green \"Se connecter\" button, and a \"Comptes de démonstration\" dropdown at the bottom.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783295985,
+  "id": "202607060759425dd30b8bcfd848fc",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607060759425dd30b8bcfd848fc",
+  "usage": {
+    "completion_tokens": 91,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1019,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1110
+  }
+}
