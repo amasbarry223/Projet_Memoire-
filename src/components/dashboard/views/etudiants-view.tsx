@@ -45,13 +45,13 @@ import { EtudiantDeleteDialog } from "../modals/etudiant-delete-dialog";
 import { useToast } from "@/hooks/use-toast";
 
 function moyenneColor(m: number) {
-  if (m >= 14) return "text-emerald-600";
+  if (m >= 14) return "text-blue-700";
   if (m >= 10) return "text-gray-700";
   return "text-red-500";
 }
 
 function assiduiteColor(a: number) {
-  if (a >= 90) return "bg-emerald-500";
+  if (a >= 90) return "bg-blue-500";
   if (a >= 75) return "bg-amber-500";
   return "bg-red-500";
 }
@@ -198,7 +198,7 @@ export function EtudiantsView() {
               <TableRow key={e.id} className="border-gray-50">
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="flex size-9 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700">
+                    <div className="flex size-9 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-800">
                       {e.prenom.charAt(0)}
                       {e.nom.charAt(0)}
                     </div>
@@ -242,7 +242,7 @@ export function EtudiantsView() {
                     label={e.statut}
                     className={
                       e.statut === "Actif"
-                        ? "bg-emerald-50 text-emerald-600"
+                        ? "bg-blue-50 text-blue-700"
                         : "bg-gray-100 text-gray-500"
                     }
                   />
@@ -275,7 +275,7 @@ export function EtudiantsView() {
                             openModal({ type: "note", etudiant: e.nom })
                           }
                         >
-                          <ClipboardEdit className="size-4 text-emerald-500" />
+                          <ClipboardEdit className="size-4 text-blue-500" />
                           Saisir une note
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -310,7 +310,7 @@ export function EtudiantsView() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                      className="border-blue-200 text-blue-700 hover:bg-blue-50"
                       onClick={handleAdd}
                     >
                       <UserPlus className="size-4" />

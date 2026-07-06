@@ -22,8 +22,8 @@ const actionConfig = {
   valider: {
     title: "Valider le dossier",
     icon: CheckCircle2,
-    color: "text-emerald-500",
-    btnClass: "bg-emerald-500 text-white hover:bg-emerald-600",
+    color: "text-blue-500",
+    btnClass: "bg-blue-500 text-white hover:bg-blue-700",
     verb: "validé",
   },
   rejeter: {
@@ -178,7 +178,7 @@ export function TraitementDossierModal() {
           )}
 
           {action === "valider" && (
-            <div className="rounded-lg border border-emerald-100 bg-emerald-50/50 p-4 text-sm text-gray-700">
+            <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-4 text-sm text-gray-700">
               Vous êtes sur le point de <strong>valider</strong> ce dossier. Le
               candidat sera automatiquement notifié par email (via n8n) et son
               rôle passera de <code>candidat</code> à <code>étudiant</code>.

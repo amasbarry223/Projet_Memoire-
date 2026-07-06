@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 function typeBadge(type: string) {
   switch (type) {
     case "Mensuel":
-      return "bg-emerald-50 text-emerald-600";
+      return "bg-blue-50 text-blue-700";
     case "Hebdomadaire":
       return "bg-amber-50 text-amber-600";
     case "Trimestriel":
@@ -45,7 +45,7 @@ export function RapportsView() {
           <p className="text-xs text-gray-500">Rapports disponibles</p>
         </Panel>
         <Panel className="p-4">
-          <p className="text-2xl font-bold text-emerald-600">100%</p>
+          <p className="text-2xl font-bold text-blue-700">100%</p>
           <p className="text-xs text-gray-500">Générés par l'IA</p>
         </Panel>
         <Panel className="p-4">
@@ -65,7 +65,7 @@ export function RapportsView() {
             className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex items-start gap-3">
-              <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-500">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-blue-50 text-blue-500">
                 <FileText className="size-5" />
               </div>
               <div>

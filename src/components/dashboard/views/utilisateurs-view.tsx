@@ -48,13 +48,13 @@ function initials(prenom: string, nom: string) {
 function avatarBg(role: Role) {
   switch (role) {
     case "admin":
-      return "bg-emerald-500";
+      return "bg-blue-500";
     case "responsable":
       return "bg-orange-500";
     case "enseignant":
       return "bg-amber-500";
     case "etudiant":
-      return "bg-emerald-100 text-emerald-700";
+      return "bg-blue-100 text-blue-800";
     default:
       return "bg-gray-300";
   }
@@ -171,7 +171,7 @@ export function UtilisateursView() {
       {/* Légende RBAC */}
       <Panel className="mb-6 p-4">
         <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-          <Shield className="size-4 text-emerald-500" />
+          <Shield className="size-4 text-blue-500" />
           Contrôle d&apos;accès basé sur les rôles (RBAC)
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -248,7 +248,7 @@ export function UtilisateursView() {
                     label={u.statut}
                     className={
                       u.statut === "Actif"
-                        ? "bg-emerald-50 text-emerald-600"
+                        ? "bg-blue-50 text-blue-700"
                         : "bg-gray-100 text-gray-500"
                     }
                   />

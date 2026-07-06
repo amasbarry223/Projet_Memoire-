@@ -14,7 +14,7 @@ export function N8nStatus() {
   const evenementsTraites = audit.length;
 
   return (
-    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-5 text-white shadow-sm">
+    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 p-5 text-white shadow-sm">
       {/* Décor */}
       <div className="pointer-events-none absolute -right-8 -top-8 size-32 rounded-full bg-white/10" />
       <div className="pointer-events-none absolute -bottom-10 -left-6 size-28 rounded-full bg-white/5" />
@@ -30,7 +30,7 @@ export function N8nStatus() {
       </div>
 
       <div className="relative mt-6 flex items-center gap-3">
-        <button className="flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-emerald-600 shadow-sm transition hover:bg-emerald-50">
+        <button className="flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50">
           Workflows actifs
           <ArrowRight className="size-4" />
         </button>

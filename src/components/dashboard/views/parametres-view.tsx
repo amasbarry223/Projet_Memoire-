@@ -92,7 +92,7 @@ export function ParametresView() {
         {/* Sécurité & session */}
         <Panel className="p-5">
           <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
-            <Shield className="size-4 text-emerald-500" />
+            <Shield className="size-4 text-blue-500" />
             Sécurité & session
           </h3>
           <div className="divide-y divide-gray-100">
@@ -163,7 +163,7 @@ export function ParametresView() {
         {/* Intégration IA */}
         <Panel className="p-5">
           <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
-            <Globe className="size-4 text-emerald-500" />
+            <Globe className="size-4 text-blue-500" />
             Intégration IA & n8n
           </h3>
           <div className="space-y-4">
@@ -195,7 +195,7 @@ export function ParametresView() {
 
       <div className="mt-6 flex justify-end">
         <Button
-          className="bg-emerald-500 text-white hover:bg-emerald-600"
+          className="bg-blue-500 text-white hover:bg-blue-700"
           onClick={handleSave}
         >
           <Save className="size-4" />

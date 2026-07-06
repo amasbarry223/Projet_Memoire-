@@ -23,7 +23,7 @@ export function PageHeader({
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-3">
         {Icon && (
-          <div className="mt-0.5 flex size-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-500">
+          <div className="mt-0.5 flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-500">
             <Icon className="size-5" />
           </div>
         )}
@@ -37,7 +37,7 @@ export function PageHeader({
       {actionLabel && onAction && (
         <Button
           onClick={onAction}
-          className="bg-emerald-500 text-white hover:bg-emerald-600"
+          className="bg-blue-500 text-white hover:bg-blue-700"
         >
           <Plus className="size-4" />
           {actionLabel}
@@ -124,7 +124,7 @@ export function niveauBadge(niveau: string) {
 export function statutBadge(statut: string) {
   switch (statut) {
     case "Validé":
-      return "bg-emerald-50 text-emerald-600";
+      return "bg-blue-50 text-blue-700";
     case "En attente":
       return "bg-amber-50 text-amber-600";
     case "Incomplet":

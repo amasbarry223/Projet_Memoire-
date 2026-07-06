@@ -43,9 +43,9 @@ export function StatsCards() {
       label: "Total Étudiants",
       value: totalEtudiants.toLocaleString("fr-FR"),
       icon: GraduationCap,
-      iconBg: "bg-emerald-50",
-      iconColor: "text-emerald-500",
-      statusColor: "bg-emerald-500",
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-500",
+      statusColor: "bg-blue-500",
       hint: "Inscrits actifs",
     },
     {
@@ -54,16 +54,16 @@ export function StatsCards() {
       icon: FileText,
       iconBg: "bg-amber-50",
       iconColor: "text-amber-500",
-      statusColor: "bg-emerald-500",
+      statusColor: "bg-blue-500",
       hint: "En attente",
     },
     {
       label: "Dossiers Validés",
       value: dossiersValides.toString(),
       icon: CheckCircle2,
-      iconBg: "bg-emerald-50",
-      iconColor: "text-emerald-500",
-      statusColor: "bg-emerald-500",
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-500",
+      statusColor: "bg-blue-500",
       hint: "Traités",
     },
     {
@@ -72,7 +72,7 @@ export function StatsCards() {
       icon: AlertCircle,
       iconBg: "bg-red-50",
       iconColor: "text-red-500",
-      statusColor: dossiersIncomplets > 0 ? "bg-amber-500" : "bg-emerald-500",
+      statusColor: dossiersIncomplets > 0 ? "bg-amber-500" : "bg-blue-500",
       hint: dossiersIncomplets > 0 ? "Action requise" : "Aucun",
     },
     {
@@ -81,16 +81,16 @@ export function StatsCards() {
       icon: BrainCircuit,
       iconBg: "bg-amber-50",
       iconColor: "text-amber-500",
-      statusColor: alertesActives > 0 ? "bg-amber-500" : "bg-emerald-500",
+      statusColor: alertesActives > 0 ? "bg-amber-500" : "bg-blue-500",
       hint: alertesActives > 0 ? "Risque pédagogique" : "Aucune alerte",
     },
     {
       label: "Taux d'Assiduité",
       value: `${tauxAssiduite}%`,
       icon: TrendingUp,
-      iconBg: "bg-emerald-50",
-      iconColor: "text-emerald-500",
-      statusColor: tauxAssiduite >= 85 ? "bg-emerald-500" : "bg-amber-500",
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-500",
+      statusColor: tauxAssiduite >= 85 ? "bg-blue-500" : "bg-amber-500",
       hint: "Établissement",
     },
   ];
@@ -115,7 +115,7 @@ export function StatsCards() {
               </div>
               <span
                 className={cn(
-                  "size-2.5 rounded-full ring-4 ring-emerald-50",
+                  "size-2.5 rounded-full ring-4 ring-blue-50",
                   stat.statusColor
                 )}
                 title="En direct"

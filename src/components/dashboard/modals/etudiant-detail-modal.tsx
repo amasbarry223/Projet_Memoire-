@@ -23,7 +23,7 @@ import type { Etudiant } from "@/components/dashboard/data";
 import { StatusBadge } from "../views/shared";
 
 function moyenneColor(m: number) {
-  if (m >= 14) return "text-emerald-600";
+  if (m >= 14) return "text-blue-700";
   if (m >= 10) return "text-gray-700";
   return "text-red-500";
 }
@@ -39,7 +39,7 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50 p-3">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-emerald-500 shadow-sm">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-blue-500 shadow-sm">
         <Icon className="size-4" />
       </div>
       <div className="min-w-0">
@@ -69,7 +69,7 @@ export function EtudiantDetailModal({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-full bg-emerald-100 text-base font-bold text-emerald-700">
+            <div className="flex size-11 items-center justify-center rounded-full bg-blue-100 text-base font-bold text-blue-800">
               {initials}
             </div>
             <div>
@@ -109,7 +109,7 @@ export function EtudiantDetailModal({
               label={etudiant.statut}
               className={
                 etudiant.statut === "Actif"
-                  ? "bg-emerald-50 text-emerald-600"
+                  ? "bg-blue-50 text-blue-700"
                   : "bg-gray-100 text-gray-500"
               }
             />
@@ -121,7 +121,7 @@ export function EtudiantDetailModal({
             Fermer
           </Button>
           <Button
-            className="bg-emerald-500 text-white hover:bg-emerald-600"
+            className="bg-blue-500 text-white hover:bg-blue-700"
             onClick={onEdit}
           >
             <GraduationCap className="size-4" />

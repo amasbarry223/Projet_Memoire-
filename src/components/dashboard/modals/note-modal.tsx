@@ -95,7 +95,7 @@ export function NoteModal() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ClipboardEdit className="size-5 text-emerald-500" />
+            <ClipboardEdit className="size-5 text-blue-500" />
             Saisir une note
           </DialogTitle>
           <DialogDescription>
@@ -202,7 +202,7 @@ export function NoteModal() {
             Annuler
           </Button>
           <Button
-            className="bg-emerald-500 text-white hover:bg-emerald-600"
+            className="bg-blue-500 text-white hover:bg-blue-700"
             onClick={handleSubmit}
           >
             Enregistrer la note

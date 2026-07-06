@@ -25,7 +25,7 @@ export function DossiersRecents() {
         </div>
         <button
           onClick={() => setView("candidatures")}
-          className="flex items-center gap-1 text-xs font-medium text-emerald-600 transition hover:text-emerald-700"
+          className="flex items-center gap-1 text-xs font-medium text-blue-700 transition hover:text-blue-800"
         >
           Voir tout
           <ChevronRight className="size-3.5" />
@@ -38,7 +38,7 @@ export function DossiersRecents() {
             key={dossier.id}
             className="flex items-center gap-3 rounded-lg border border-gray-100 p-3 transition hover:bg-gray-50"
           >
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-emerald-500 text-base font-bold text-white">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-blue-500 text-base font-bold text-white">
               {dossier.prenom.charAt(0)}
               {dossier.nom.charAt(0)}
             </div>

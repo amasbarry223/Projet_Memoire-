@@ -79,7 +79,7 @@ function InfoCard({
 function statutBadgeClass(statut: string) {
   switch (statut) {
     case "Validé":
-      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      return "bg-blue-50 text-blue-800 border-blue-200";
     case "En attente":
       return "bg-amber-50 text-amber-700 border-amber-200";
     case "Incomplet":
@@ -94,7 +94,7 @@ function statutBadgeClass(statut: string) {
 function statutDot(statut: string) {
   switch (statut) {
     case "Validé":
-      return "bg-emerald-500";
+      return "bg-blue-500";
     case "En attente":
       return "bg-amber-500";
     case "Incomplet":
@@ -155,7 +155,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
           <div
             className={`h-full w-full ${
               dossier.statut === "Validé"
-                ? "bg-emerald-500"
+                ? "bg-blue-500"
                 : dossier.statut === "En attente"
                   ? "bg-amber-500"
                   : dossier.statut === "Incomplet"
@@ -169,7 +169,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             {/* Identité */}
             <div className="flex items-start gap-4">
-              <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-xl font-bold text-white shadow-lg shadow-emerald-500/20">
+              <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 text-xl font-bold text-white shadow-lg shadow-blue-500/20">
                 {dossier.prenom.charAt(0)}
                 {dossier.nom.charAt(0)}
               </div>
@@ -216,7 +216,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
                 Rejeter
               </Button>
               <Button
-                className="gap-2 bg-emerald-500 text-white hover:bg-emerald-600"
+                className="gap-2 bg-blue-500 text-white hover:bg-blue-700"
                 onClick={() => handleAction("valider")}
               >
                 <CheckCircle2 className="size-4" />
@@ -231,7 +231,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
               icon={GraduationCap}
               label="Filière visée"
               value={dossier.filiere}
-              color="bg-emerald-50 text-emerald-500"
+              color="bg-blue-50 text-blue-500"
             />
             <StatPill
               icon={FileText}
@@ -243,7 +243,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
               icon={CheckCircle2}
               label="Pièces fournies"
               value={`${piecesPresentes}/${dossier.pieces.length}`}
-              color="bg-emerald-50 text-emerald-500"
+              color="bg-blue-50 text-blue-500"
             />
             <StatPill
               icon={BrainCircuit}
@@ -251,7 +251,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
               value={`${dossier.completude}%`}
               color={
                 dossier.completude === 100
-                  ? "bg-emerald-50 text-emerald-500"
+                  ? "bg-blue-50 text-blue-500"
                   : "bg-amber-50 text-amber-500"
               }
             />
@@ -266,8 +266,8 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
           {/* Informations personnelles */}
           <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-50">
-                <User className="size-4 text-emerald-500" />
+              <div className="flex size-8 items-center justify-center rounded-lg bg-blue-50">
+                <User className="size-4 text-blue-500" />
               </div>
               <h2 className="text-base font-semibold text-gray-900">
                 Informations personnelles
@@ -317,8 +317,8 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
           <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-50">
-                  <FileText className="size-4 text-emerald-500" />
+                <div className="flex size-8 items-center justify-center rounded-lg bg-blue-50">
+                  <FileText className="size-4 text-blue-500" />
                 </div>
                 <h2 className="text-base font-semibold text-gray-900">
                   Pièces justificatives
@@ -341,14 +341,14 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
                   key={idx}
                   className={`flex items-center gap-3 rounded-lg border p-3 transition ${
                     piece.present
-                      ? "border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/30"
+                      ? "border-gray-100 hover:border-blue-200 hover:bg-blue-50/30"
                       : "border-red-100 bg-red-50/30"
                   }`}
                 >
                   <div
                     className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
                       piece.present
-                        ? "bg-emerald-50 text-emerald-500"
+                        ? "bg-blue-50 text-blue-500"
                         : "bg-red-50 text-red-500"
                     }`}
                   >
@@ -372,7 +372,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-8 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600"
+                      className="size-8 text-gray-400 hover:bg-blue-50 hover:text-blue-700"
                       onClick={() => handleDownload(piece.nom)}
                       aria-label={`Télécharger ${piece.nom}`}
                     >
@@ -415,7 +415,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
                   <span
                     className={`text-sm font-bold ${
                       dossier.completude === 100
-                        ? "text-emerald-600"
+                        ? "text-blue-700"
                         : "text-amber-600"
                     }`}
                   >
@@ -426,7 +426,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
                   <div
                     className={`h-full rounded-full transition-all ${
                       dossier.completude === 100
-                        ? "bg-emerald-500"
+                        ? "bg-blue-500"
                         : "bg-amber-500"
                     }`}
                     style={{ width: `${dossier.completude}%` }}
@@ -456,7 +456,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
                   <span
                     className={`absolute -left-[21px] top-1 size-2.5 rounded-full ring-4 ring-white ${
                       idx === dossier.historique.length - 1
-                        ? "bg-emerald-500"
+                        ? "bg-blue-500"
                         : "bg-gray-300"
                     }`}
                   />

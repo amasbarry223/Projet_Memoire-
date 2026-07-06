@@ -198,7 +198,7 @@ export function EnseignantFormModal({
                     onClick={() => toggle(matieres, m, setMatieres)}
                     className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
                       active
-                        ? "bg-emerald-500 text-white"
+                        ? "bg-blue-500 text-white"
                         : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                     }`}
                   >

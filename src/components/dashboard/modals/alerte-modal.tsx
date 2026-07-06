@@ -122,7 +122,7 @@ export function AlerteModal() {
             Annuler
           </Button>
           <Button
-            className="bg-emerald-500 text-white hover:bg-emerald-600"
+            className="bg-blue-500 text-white hover:bg-blue-700"
             onClick={handleSubmit}
           >
             Enregistrer

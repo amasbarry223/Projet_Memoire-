@@ -90,16 +90,16 @@ export function LoginView() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-emerald-50/40 px-4 py-8">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50/40 px-4 py-8">
       {/* Décor d'arrière-plan */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-24 -top-24 size-80 rounded-full bg-emerald-100/40 blur-3xl" />
-        <div className="absolute -right-24 -bottom-24 size-96 rounded-full bg-emerald-100/30 blur-3xl" />
+        <div className="absolute -left-24 -top-24 size-80 rounded-full bg-blue-100/40 blur-3xl" />
+        <div className="absolute -right-24 -bottom-24 size-96 rounded-full bg-blue-100/30 blur-3xl" />
       </div>
 
       {/* Conteneur centré */}
       <div className="relative w-full max-w-md">
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-emerald-900/5 sm:p-8">
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-xl shadow-blue-900/5 sm:p-8">
           {/* Logo centré — bien visible (logo rogné + agrandi) */}
           <div className="flex justify-center">
             <Logo size={140} showText={false} />
@@ -138,7 +138,7 @@ export function LoginView() {
                 <Label htmlFor="password">Mot de passe</Label>
                 <button
                   type="button"
-                  className="text-xs font-medium text-emerald-600 hover:text-emerald-700"
+                  className="text-xs font-medium text-blue-700 hover:text-blue-800"
                 >
                   Mot de passe oublié ?
                 </button>
@@ -168,7 +168,7 @@ export function LoginView() {
             <Button
               type="submit"
               disabled={loading}
-              className="h-11 w-full bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-60"
+              className="h-11 w-full bg-blue-500 text-white hover:bg-blue-700 disabled:opacity-60"
             >
               {loading ? (
                 "Connexion…"
@@ -209,9 +209,9 @@ export function LoginView() {
                       key={account.role}
                       type="button"
                       onClick={() => quickLogin(account.role)}
-                      className="group flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition hover:border-emerald-300 hover:bg-emerald-50/40"
+                      className="group flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left transition hover:border-blue-300 hover:bg-blue-50/40"
                     >
-                      <div className="flex size-9 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition group-hover:bg-emerald-100 group-hover:text-emerald-600">
+                      <div className="flex size-9 items-center justify-center rounded-lg bg-gray-100 text-gray-500 transition group-hover:bg-blue-100 group-hover:text-blue-700">
                         <Icon className="size-4" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -229,7 +229,7 @@ export function LoginView() {
                           {roleDesc[account.role]}
                         </p>
                       </div>
-                      <ArrowRight className="size-4 text-gray-300 transition group-hover:text-emerald-500" />
+                      <ArrowRight className="size-4 text-gray-300 transition group-hover:text-blue-500" />
                     </button>
                   );
                 })}

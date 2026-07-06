@@ -24,13 +24,13 @@ function initials(prenom: string, nom: string) {
 function avatarBg(role: string) {
   switch (role) {
     case "admin":
-      return "bg-emerald-500";
+      return "bg-blue-500";
     case "responsable":
       return "bg-orange-500";
     case "enseignant":
       return "bg-amber-500";
     case "etudiant":
-      return "bg-emerald-400";
+      return "bg-blue-500";
     default:
       return "bg-gray-400";
   }
@@ -116,7 +116,7 @@ export function Header() {
           <input
             type="text"
             placeholder="Rechercher…"
-            className="h-10 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/10"
+            className="h-10 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/10"
           />
         </div>
       </div>

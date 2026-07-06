@@ -66,7 +66,7 @@ export function UtilisateurFormModal({
       <DialogContent className="sm:max-w-md" key={formKey}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserCog className="size-5 text-emerald-500" />
+            <UserCog className="size-5 text-blue-500" />
             {isEditing ? "Modifier l'utilisateur" : "Nouvel utilisateur"}
           </DialogTitle>
           <DialogDescription>
@@ -145,7 +145,7 @@ export function UtilisateurFormModal({
             </Button>
             <Button
               type="submit"
-              className="bg-emerald-500 text-white hover:bg-emerald-600"
+              className="bg-blue-500 text-white hover:bg-blue-700"
             >
               {isEditing ? "Enregistrer" : "Créer le compte"}
             </Button>

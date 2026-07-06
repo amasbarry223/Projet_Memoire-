@@ -70,8 +70,8 @@ export function MobileNav() {
                       className={cn(
                         "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                         isActive
-                          ? "bg-emerald-500 text-white"
-                          : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-600"
+                          ? "bg-blue-500 text-white"
+                          : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
                       )}
                     >
                       <Icon
@@ -79,7 +79,7 @@ export function MobileNav() {
                           "size-[18px] shrink-0",
                           isActive
                             ? "text-white"
-                            : "text-gray-400 group-hover:text-emerald-500"
+                            : "text-gray-400 group-hover:text-blue-500"
                         )}
                       />
                       <span className="flex-1 text-left">{item.label}</span>

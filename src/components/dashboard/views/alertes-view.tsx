@@ -36,7 +36,7 @@ function statutBadgeClass(statut: string) {
     case "Prise en charge":
       return "bg-orange-50 text-orange-600";
     case "Clôturée":
-      return "bg-emerald-50 text-emerald-600";
+      return "bg-blue-50 text-blue-700";
     default:
       return "bg-gray-100 text-gray-600";
   }
@@ -87,7 +87,7 @@ export function AlertesView() {
           <p className="text-xs text-gray-500">Prises en charge</p>
         </Panel>
         <Panel className="p-4">
-          <p className="text-2xl font-bold text-emerald-600">
+          <p className="text-2xl font-bold text-blue-700">
             {compteurs["Clôturée"]}
           </p>
           <p className="text-xs text-gray-500">Clôturées</p>
@@ -152,7 +152,7 @@ export function AlertesView() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                    className="border-blue-200 text-blue-700 hover:bg-blue-50"
                     onClick={() =>
                       openModal({ type: "alerte", alerteId: a.id })
                     }

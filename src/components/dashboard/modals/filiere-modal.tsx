@@ -140,7 +140,7 @@ export function FiliereModal() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Icon className="size-5 text-emerald-500" />
+            <Icon className="size-5 text-blue-500" />
             {config.title}
           </DialogTitle>
           <DialogDescription>{config.desc}</DialogDescription>
@@ -287,7 +287,7 @@ export function FiliereModal() {
             Annuler
           </Button>
           <Button
-            className="bg-emerald-500 text-white hover:bg-emerald-600"
+            className="bg-blue-500 text-white hover:bg-blue-700"
             onClick={handleSubmit}
           >
             Créer

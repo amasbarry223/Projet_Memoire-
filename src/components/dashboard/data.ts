@@ -69,10 +69,10 @@ export const roleLabels: Record<Role, string> = {
 
 export const roleBadgeBg: Record<Role, string> = {
   candidat: "bg-gray-100 text-gray-600",
-  etudiant: "bg-emerald-50 text-emerald-600",
+  etudiant: "bg-blue-50 text-blue-700",
   enseignant: "bg-amber-50 text-amber-600",
   responsable: "bg-orange-50 text-orange-600",
-  admin: "bg-emerald-500 text-white",
+  admin: "bg-blue-500 text-white",
 };
 
 // Mapping rôle → vues accessibles (matrice de permissions §2.2)
@@ -141,9 +141,9 @@ export const stats: StatCard[] = [
     label: "Total Étudiants",
     value: "2,458",
     icon: GraduationCap,
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-500",
-    statusColor: "bg-emerald-500",
+    iconBg: "bg-blue-50",
+    iconColor: "text-blue-500",
+    statusColor: "bg-blue-500",
     hint: "Inscrits actifs",
   },
   {
@@ -152,16 +152,16 @@ export const stats: StatCard[] = [
     icon: FileText,
     iconBg: "bg-amber-50",
     iconColor: "text-amber-500",
-    statusColor: "bg-emerald-500",
+    statusColor: "bg-blue-500",
     hint: "En attente",
   },
   {
     label: "Dossiers Validés",
     value: "156",
     icon: CheckCircle2,
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-500",
-    statusColor: "bg-emerald-500",
+    iconBg: "bg-blue-50",
+    iconColor: "text-blue-500",
+    statusColor: "bg-blue-500",
     hint: "Ce mois-ci",
   },
   {
@@ -179,16 +179,16 @@ export const stats: StatCard[] = [
     icon: BrainCircuit,
     iconBg: "bg-amber-50",
     iconColor: "text-amber-500",
-    statusColor: "bg-emerald-500",
+    statusColor: "bg-blue-500",
     hint: "Risque pédagogique",
   },
   {
     label: "Taux d'Assiduité",
     value: "91%",
     icon: TrendingUp,
-    iconBg: "bg-emerald-50",
-    iconColor: "text-emerald-500",
-    statusColor: "bg-emerald-500",
+    iconBg: "bg-blue-50",
+    iconColor: "text-blue-500",
+    statusColor: "bg-blue-500",
     hint: "Établissement",
   },
 ];
@@ -231,7 +231,7 @@ export type DossierRecent = {
 
 export const dossiersRecents: DossierRecent[] = [
   { candidat: "Kadiatou Konaté", filiere: "BTS SIO", date: "01 Nov 2024", statut: "En attente", statutBg: "bg-amber-50 text-amber-600", initialBg: "bg-amber-500" },
-  { candidat: "Ibrahim Touré", filiere: "BTS MCO", date: "31 Oct 2024", statut: "Validé", statutBg: "bg-emerald-50 text-emerald-600", initialBg: "bg-emerald-500" },
+  { candidat: "Ibrahim Touré", filiere: "BTS MCO", date: "31 Oct 2024", statut: "Validé", statutBg: "bg-blue-50 text-blue-700", initialBg: "bg-blue-500" },
   { candidat: "Rokia Diallo", filiere: "Licence 3", date: "30 Oct 2024", statut: "Incomplet", statutBg: "bg-orange-50 text-orange-600", initialBg: "bg-orange-500" },
   { candidat: "Seydou Bagayoko", filiere: "BTS NDRC", date: "29 Oct 2024", statut: "Rejeté", statutBg: "bg-red-50 text-red-500", initialBg: "bg-red-500" },
 ];
@@ -551,7 +551,7 @@ export const alertesIAComplete: AlerteIA[] = [
   ...alertesIA,
   { id: "ALT-005", etudiant: "Mariam Cissé", classe: "BTS MCO 2", niveau: "Moyen", motif: "3 absences non justifiées ce mois", date: "28 Oct 2024", statut: "Prise en charge", indicatorColor: "bg-orange-500" },
   { id: "ALT-006", etudiant: "Boubacar Traoré", classe: "BTS SIO 1", niveau: "Faible", motif: "Légère baisse sur la dernière évaluation", date: "27 Oct 2024", statut: "Clôturée", indicatorColor: "bg-amber-400" },
-  { id: "ALT-007", etudiant: "Lassana Touré", classe: "Licence 3", niveau: "Faible", motif: "Signalement de suivi positif", date: "26 Oct 2024", statut: "Clôturée", indicatorColor: "bg-emerald-400" },
+  { id: "ALT-007", etudiant: "Lassana Touré", classe: "Licence 3", niveau: "Faible", motif: "Signalement de suivi positif", date: "26 Oct 2024", statut: "Clôturée", indicatorColor: "bg-blue-500" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────

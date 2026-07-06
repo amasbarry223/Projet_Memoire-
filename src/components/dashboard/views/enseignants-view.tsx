@@ -109,8 +109,8 @@ export function EnseignantsView() {
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Panel className="flex items-center gap-3 p-4">
-          <div className="flex size-10 items-center justify-center rounded-full bg-emerald-50">
-            <Users className="size-5 text-emerald-500" />
+          <div className="flex size-10 items-center justify-center rounded-full bg-blue-50">
+            <Users className="size-5 text-blue-500" />
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-900">{list.length}</p>
@@ -180,7 +180,7 @@ export function EnseignantsView() {
                       <Badge
                         key={m}
                         variant="secondary"
-                        className="bg-emerald-50 font-normal text-emerald-700"
+                        className="bg-blue-50 font-normal text-blue-800"
                       >
                         {m}
                       </Badge>
@@ -205,7 +205,7 @@ export function EnseignantsView() {
                     label={e.statut}
                     className={
                       e.statut === "Actif"
-                        ? "bg-emerald-50 text-emerald-600"
+                        ? "bg-blue-50 text-blue-700"
                         : "bg-gray-100 text-gray-500"
                     }
                   />

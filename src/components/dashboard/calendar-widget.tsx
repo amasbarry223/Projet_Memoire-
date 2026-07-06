@@ -13,7 +13,7 @@ const EVENT_DAYS: Record<number, string> = {
   8: "bg-orange-500",
   12: "bg-red-500",
   15: "bg-amber-400",
-  22: "bg-emerald-500",
+  22: "bg-blue-500",
   28: "bg-orange-500",
 };
 
@@ -79,8 +79,8 @@ export function CalendarWidget() {
               className={cn(
                 "relative flex h-9 items-center justify-center rounded-lg text-sm transition",
                 isToday
-                  ? "bg-emerald-500 font-semibold text-white shadow-sm shadow-emerald-500/30"
-                  : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-600"
+                  ? "bg-blue-500 font-semibold text-white shadow-sm shadow-blue-500/30"
+                  : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
               )}
             >
               {day}

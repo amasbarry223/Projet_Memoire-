@@ -19,7 +19,7 @@ import { PageHeader, Panel, StatusBadge } from "./shared";
 import { usePagination, DataTablePagination } from "./data-table-pagination";
 
 function noteColor(n: number) {
-  if (n >= 14) return "text-emerald-600";
+  if (n >= 14) return "text-blue-700";
   if (n >= 10) return "text-gray-700";
   return "text-red-500";
 }
@@ -58,7 +58,7 @@ export function SuiviView() {
               </h3>
               <Button
                 size="sm"
-                className="bg-emerald-500 text-white hover:bg-emerald-600"
+                className="bg-blue-500 text-white hover:bg-blue-700"
                 onClick={() => openModal({ type: "note" })}
               >
                 <ClipboardEdit className="size-4" />
@@ -151,7 +151,7 @@ export function SuiviView() {
                     </TableCell>
                     <TableCell>
                       {a.justifiee ? (
-                        <StatusBadge label="Justifiée" className="bg-emerald-50 text-emerald-600" />
+                        <StatusBadge label="Justifiée" className="bg-blue-50 text-blue-700" />
                       ) : (
                         <StatusBadge label="Non justifiée" className="bg-red-50 text-red-500" />
                       )}
@@ -172,7 +172,7 @@ export function SuiviView() {
             />
             <div className="mt-4 flex items-center gap-4 rounded-lg bg-gray-50 p-3 text-xs text-gray-500">
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="size-4 text-emerald-500" /> Absences justifiées
+                <CheckCircle2 className="size-4 text-blue-500" /> Absences justifiées
               </span>
               <span className="flex items-center gap-1.5">
                 <XCircle className="size-4 text-red-500" /> Absences non justifiées (alimentent l'IA)

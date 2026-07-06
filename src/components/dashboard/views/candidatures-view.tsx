@@ -75,7 +75,7 @@ export function CandidaturesView() {
 
   const indicateurs = [
     { label: "En attente", value: compteurs["En attente"], icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
-    { label: "Validés", value: compteurs["Validé"], icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Validés", value: compteurs["Validé"], icon: CheckCircle2, color: "text-blue-500", bg: "bg-blue-50" },
     { label: "Incomplets", value: compteurs["Incomplet"], icon: AlertCircle, color: "text-orange-500", bg: "bg-orange-50" },
     { label: "Rejetés", value: compteurs["Rejeté"], icon: XCircle, color: "text-red-500", bg: "bg-red-50" },
   ];
@@ -140,7 +140,7 @@ export function CandidaturesView() {
               <TableRow key={c.id} className="border-gray-50">
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="flex size-9 items-center justify-center rounded-full bg-emerald-500 text-sm font-semibold text-white">
+                    <div className="flex size-9 items-center justify-center rounded-full bg-blue-500 text-sm font-semibold text-white">
                       {c.prenom.charAt(0)}
                       {c.nom.charAt(0)}
                     </div>
@@ -165,7 +165,7 @@ export function CandidaturesView() {
                   <div className="flex items-center gap-2">
                     <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-200">
                       <div
-                        className="h-full rounded-full bg-emerald-500"
+                        className="h-full rounded-full bg-blue-500"
                         style={{ width: `${c.completude}%` }}
                       />
                     </div>
@@ -208,7 +208,7 @@ export function CandidaturesView() {
                             })
                           }
                         >
-                          <CheckCircle2 className="size-4 text-emerald-500" />
+                          <CheckCircle2 className="size-4 text-blue-500" />
                           Valider
                         </DropdownMenuItem>
                         <DropdownMenuItem

@@ -115,7 +115,7 @@ export function FilieresView() {
               {/* En-tête filière */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3">
-                  <div className="flex size-12 items-center justify-center rounded-xl bg-emerald-500 text-white">
+                  <div className="flex size-12 items-center justify-center rounded-xl bg-blue-500 text-white">
                     <BookOpen className="size-6" />
                   </div>
                   <div>
@@ -198,7 +198,7 @@ export function FilieresView() {
                           <p className="text-xs text-gray-400">{c.niveau}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="bg-emerald-50 font-normal text-emerald-700">
+                          <Badge variant="secondary" className="bg-blue-50 font-normal text-blue-800">
                             {c.effectif} élèves
                           </Badge>
                           <button
@@ -272,7 +272,7 @@ export function FilieresView() {
       <div className="mt-6 flex justify-center">
         <Button
           variant="outline"
-          className="border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+          className="border-blue-200 text-blue-700 hover:bg-blue-50"
           onClick={() => openModal({ type: "filiere", sub: "filiere" })}
         >
           <Plus className="size-4" />

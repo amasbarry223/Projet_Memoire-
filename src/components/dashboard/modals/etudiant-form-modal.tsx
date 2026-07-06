@@ -81,7 +81,7 @@ export function EtudiantFormModal({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <GraduationCap className="size-5 text-emerald-500" />
+            <GraduationCap className="size-5 text-blue-500" />
             {isEditing ? "Modifier l'étudiant" : "Nouvel étudiant"}
           </DialogTitle>
           <DialogDescription>
@@ -210,7 +210,7 @@ export function EtudiantFormModal({
             </Button>
             <Button
               type="submit"
-              className="bg-emerald-500 text-white hover:bg-emerald-600"
+              className="bg-blue-500 text-white hover:bg-blue-700"
             >
               {isEditing ? "Enregistrer" : "Créer l'étudiant"}
             </Button>

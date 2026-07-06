@@ -27,7 +27,7 @@ function InscriptionsTooltip({
   return (
     <div className="rounded-lg border border-gray-100 bg-white px-3 py-2 text-xs shadow-lg">
       <p className="font-semibold text-gray-900">{data.mois}</p>
-      <p className="mt-1 text-emerald-600">
+      <p className="mt-1 text-blue-700">
         Inscriptions :{" "}
         <span className="font-semibold">{data.inscriptions}</span>
       </p>
@@ -45,8 +45,8 @@ export function InscriptionsChart() {
           </h3>
           <p className="text-xs text-gray-400">Nouveaux dossiers par mois</p>
         </div>
-        <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
-          <span className="size-2 rounded-full bg-emerald-500" />
+        <div className="flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
+          <span className="size-2 rounded-full bg-blue-500" />
           2024
         </div>
       </div>

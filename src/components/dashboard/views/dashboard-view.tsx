@@ -90,7 +90,7 @@ function CandidatDashboard() {
         <div
           className={`h-1.5 w-full ${
             monDossier.statut === "Validé"
-              ? "bg-emerald-500"
+              ? "bg-blue-500"
               : monDossier.statut === "En attente"
                 ? "bg-amber-500"
                 : monDossier.statut === "Incomplet"
@@ -101,7 +101,7 @@ function CandidatDashboard() {
         <div className="p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-xl font-bold text-white shadow-lg shadow-emerald-500/20">
+              <div className="flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 text-xl font-bold text-white shadow-lg shadow-blue-500/20">
                 {monDossier.prenom.charAt(0)}
                 {monDossier.nom.charAt(0)}
               </div>
@@ -123,7 +123,7 @@ function CandidatDashboard() {
             </div>
             <button
               onClick={() => openDossier(monDossier.id)}
-              className="flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600"
+              className="flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
             >
               Voir le détail
               <ArrowRight className="size-4" />
@@ -135,7 +135,7 @@ function CandidatDashboard() {
               icon={GraduationCap}
               label="Filière"
               value={monDossier.filiere}
-              color="bg-emerald-50 text-emerald-500"
+              color="bg-blue-50 text-blue-500"
             />
             <StatPill
               icon={FileText}
@@ -147,7 +147,7 @@ function CandidatDashboard() {
               icon={CheckCircle2}
               label="Pièces fournies"
               value={`${piecesPresentes}/${monDossier.pieces.length}`}
-              color="bg-emerald-50 text-emerald-500"
+              color="bg-blue-50 text-blue-500"
             />
             <StatPill
               icon={BrainCircuit}
@@ -155,7 +155,7 @@ function CandidatDashboard() {
               value={`${monDossier.completude}%`}
               color={
                 monDossier.completude === 100
-                  ? "bg-emerald-50 text-emerald-500"
+                  ? "bg-blue-50 text-blue-500"
                   : "bg-amber-50 text-amber-500"
               }
             />
@@ -253,7 +253,7 @@ function EtudiantDashboard() {
           value={`${moyenneCalculee}/20`}
           color={
             parseFloat(moyenneCalculee) >= 14
-              ? "bg-emerald-50 text-emerald-500"
+              ? "bg-blue-50 text-blue-500"
               : parseFloat(moyenneCalculee) >= 10
                 ? "bg-gray-100 text-gray-500"
                 : "bg-red-50 text-red-500"
@@ -265,7 +265,7 @@ function EtudiantDashboard() {
           value={`${monProfil.assiduite}%`}
           color={
             monProfil.assiduite >= 90
-              ? "bg-emerald-50 text-emerald-500"
+              ? "bg-blue-50 text-blue-500"
               : monProfil.assiduite >= 75
                 ? "bg-amber-50 text-amber-500"
                 : "bg-red-50 text-red-500"
@@ -275,7 +275,7 @@ function EtudiantDashboard() {
           icon={ClipboardList}
           label="Notes saisies"
           value={String(mesNotes.length)}
-          color="bg-emerald-50 text-emerald-500"
+          color="bg-blue-50 text-blue-500"
         />
         <StatPill
           icon={Clock}
@@ -283,7 +283,7 @@ function EtudiantDashboard() {
           value={String(absencesNonJustifiees)}
           color={
             absencesNonJustifiees === 0
-              ? "bg-emerald-50 text-emerald-500"
+              ? "bg-blue-50 text-blue-500"
               : "bg-red-50 text-red-500"
           }
         />
@@ -296,7 +296,7 @@ function EtudiantDashboard() {
           </h3>
           <button
             onClick={() => setView("suivi")}
-            className="flex items-center gap-1 text-xs font-medium text-emerald-600 transition hover:text-emerald-700"
+            className="flex items-center gap-1 text-xs font-medium text-blue-700 transition hover:text-blue-800"
           >
             Voir tout le suivi
             <ArrowRight className="size-3.5" />
@@ -324,7 +324,7 @@ function EtudiantDashboard() {
                 <span
                   className={`text-sm font-bold ${
                     (n.note ?? 0) >= 14
-                      ? "text-emerald-600"
+                      ? "text-blue-700"
                       : (n.note ?? 0) >= 10
                         ? "text-gray-700"
                         : "text-red-500"

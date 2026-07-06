@@ -27,7 +27,7 @@ const actionsUniques = ["Toutes", ...Array.from(new Set(seedAudit.map((a) => a.a
 function actionColor(action: string) {
   switch (action) {
     case "Validation dossier":
-      return "bg-emerald-50 text-emerald-600";
+      return "bg-blue-50 text-blue-700";
     case "Rejet dossier":
       return "bg-red-50 text-red-500";
     case "Marquage incomplet":
@@ -35,11 +35,11 @@ function actionColor(action: string) {
     case "Clôture alerte":
       return "bg-amber-50 text-amber-600";
     case "Saisie de notes":
-      return "bg-emerald-50 text-emerald-600";
+      return "bg-blue-50 text-blue-700";
     case "Modification rôle":
       return "bg-orange-50 text-orange-600";
     case "Création compte":
-      return "bg-emerald-50 text-emerald-600";
+      return "bg-blue-50 text-blue-700";
     case "Désactivation compte":
       return "bg-gray-100 text-gray-500";
     default:

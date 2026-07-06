@@ -36,7 +36,7 @@ export function Logo({
       </div>
       {showText && (
         <span className="text-xl font-bold text-gray-900">
-          ESG<span className="text-emerald-500">ic</span>
+          ESG<span className="text-blue-500">ic</span>
         </span>
       )}
     </div>
