@@ -9,10 +9,10 @@ const WEEKDAYS = ["L", "M", "M", "J", "V", "S", "D"];
 
 // Marqueurs d'événements : jour -> couleur du point
 const EVENT_DAYS: Record<number, string> = {
-  3: "bg-amber-400",
+  3: "bg-yellow-400",
   8: "bg-orange-500",
   12: "bg-red-500",
-  15: "bg-amber-400",
+  15: "bg-yellow-400",
   22: "bg-blue-500",
   28: "bg-orange-500",
 };
@@ -102,7 +102,7 @@ export function CalendarWidget() {
 
       <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-gray-100 pt-3 text-xs text-gray-500">
         <span className="flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-amber-400" /> Événement
+          <span className="size-2 rounded-full bg-yellow-400" /> Événement
         </span>
         <span className="flex items-center gap-1.5">
           <span className="size-2 rounded-full bg-orange-500" /> Réunion

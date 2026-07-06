@@ -52,7 +52,7 @@ function avatarBg(role: Role) {
     case "responsable":
       return "bg-orange-500";
     case "enseignant":
-      return "bg-amber-500";
+      return "bg-yellow-500";
     case "etudiant":
       return "bg-blue-100 text-blue-800";
     default:

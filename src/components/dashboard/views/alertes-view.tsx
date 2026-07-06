@@ -32,7 +32,7 @@ import { usePagination, DataTablePagination } from "./data-table-pagination";
 function statutBadgeClass(statut: string) {
   switch (statut) {
     case "Nouvelle":
-      return "bg-amber-50 text-amber-600";
+      return "bg-yellow-50 text-yellow-700";
     case "Prise en charge":
       return "bg-orange-50 text-orange-600";
     case "Clôturée":
@@ -75,7 +75,7 @@ export function AlertesView() {
 
       <div className="mb-6 grid grid-cols-3 gap-4">
         <Panel className="p-4">
-          <p className="text-2xl font-bold text-amber-600">
+          <p className="text-2xl font-bold text-yellow-700">
             {compteurs["Nouvelle"]}
           </p>
           <p className="text-xs text-gray-500">Nouvelles</p>

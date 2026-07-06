@@ -81,7 +81,7 @@ function statutBadgeClass(statut: string) {
     case "Validé":
       return "bg-blue-50 text-blue-800 border-blue-200";
     case "En attente":
-      return "bg-amber-50 text-amber-700 border-amber-200";
+      return "bg-yellow-50 text-yellow-800 border-yellow-200";
     case "Incomplet":
       return "bg-orange-50 text-orange-700 border-orange-200";
     case "Rejeté":
@@ -96,7 +96,7 @@ function statutDot(statut: string) {
     case "Validé":
       return "bg-blue-500";
     case "En attente":
-      return "bg-amber-500";
+      return "bg-yellow-500";
     case "Incomplet":
       return "bg-orange-500";
     case "Rejeté":
@@ -157,7 +157,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
               dossier.statut === "Validé"
                 ? "bg-blue-500"
                 : dossier.statut === "En attente"
-                  ? "bg-amber-500"
+                  ? "bg-yellow-500"
                   : dossier.statut === "Incomplet"
                     ? "bg-orange-500"
                     : "bg-red-500"
@@ -237,7 +237,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
               icon={FileText}
               label="Niveau"
               value={dossier.niveau}
-              color="bg-amber-50 text-amber-500"
+              color="bg-yellow-50 text-yellow-600"
             />
             <StatPill
               icon={CheckCircle2}
@@ -252,7 +252,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
               color={
                 dossier.completude === 100
                   ? "bg-blue-50 text-blue-500"
-                  : "bg-amber-50 text-amber-500"
+                  : "bg-yellow-50 text-yellow-600"
               }
             />
           </div>
@@ -392,10 +392,10 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
         {/* Colonne droite : synthèse IA + historique (1/3) */}
         <div className="space-y-6">
           {/* Synthèse IA */}
-          <section className="overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-sm">
-            <div className="flex items-center gap-2 border-b border-amber-100 bg-amber-50/60 px-5 py-3.5">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-amber-100">
-                <BrainCircuit className="size-4 text-amber-600" />
+          <section className="overflow-hidden rounded-2xl border border-yellow-100 bg-white shadow-sm">
+            <div className="flex items-center gap-2 border-b border-yellow-100 bg-yellow-50/60 px-5 py-3.5">
+              <div className="flex size-8 items-center justify-center rounded-lg bg-yellow-100">
+                <BrainCircuit className="size-4 text-yellow-700" />
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-gray-900">
@@ -416,7 +416,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
                     className={`text-sm font-bold ${
                       dossier.completude === 100
                         ? "text-blue-700"
-                        : "text-amber-600"
+                        : "text-yellow-700"
                     }`}
                   >
                     {dossier.completude}%
@@ -427,7 +427,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
                     className={`h-full rounded-full transition-all ${
                       dossier.completude === 100
                         ? "bg-blue-500"
-                        : "bg-amber-500"
+                        : "bg-yellow-500"
                     }`}
                     style={{ width: `${dossier.completude}%` }}
                   />

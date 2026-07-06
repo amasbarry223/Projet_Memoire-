@@ -92,7 +92,7 @@ function CandidatDashboard() {
             monDossier.statut === "Validé"
               ? "bg-blue-500"
               : monDossier.statut === "En attente"
-                ? "bg-amber-500"
+                ? "bg-yellow-500"
                 : monDossier.statut === "Incomplet"
                   ? "bg-orange-500"
                   : "bg-red-500"
@@ -141,7 +141,7 @@ function CandidatDashboard() {
               icon={FileText}
               label="Niveau"
               value={monDossier.niveau}
-              color="bg-amber-50 text-amber-500"
+              color="bg-yellow-50 text-yellow-600"
             />
             <StatPill
               icon={CheckCircle2}
@@ -156,7 +156,7 @@ function CandidatDashboard() {
               color={
                 monDossier.completude === 100
                   ? "bg-blue-50 text-blue-500"
-                  : "bg-amber-50 text-amber-500"
+                  : "bg-yellow-50 text-yellow-600"
               }
             />
           </div>
@@ -165,8 +165,8 @@ function CandidatDashboard() {
 
       {/* Synthèse IA du dossier */}
       <Panel className="overflow-hidden p-0">
-        <div className="flex items-center gap-2 border-b border-amber-100 bg-amber-50/60 px-5 py-3.5">
-          <BrainCircuit className="size-4 text-amber-600" />
+        <div className="flex items-center gap-2 border-b border-yellow-100 bg-yellow-50/60 px-5 py-3.5">
+          <BrainCircuit className="size-4 text-yellow-700" />
           <h3 className="text-sm font-semibold text-gray-900">
             Synthèse d&apos;analyse IA
           </h3>
@@ -267,7 +267,7 @@ function EtudiantDashboard() {
             monProfil.assiduite >= 90
               ? "bg-blue-50 text-blue-500"
               : monProfil.assiduite >= 75
-                ? "bg-amber-50 text-amber-500"
+                ? "bg-yellow-50 text-yellow-600"
                 : "bg-red-50 text-red-500"
           }
         />

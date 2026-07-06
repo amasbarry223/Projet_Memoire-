@@ -132,7 +132,7 @@ export function ParametresView() {
         {/* Notifications */}
         <Panel className="p-5">
           <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
-            <Bell className="size-4 text-amber-500" />
+            <Bell className="size-4 text-yellow-600" />
             Notifications n8n
           </h3>
           <div className="divide-y divide-gray-100">

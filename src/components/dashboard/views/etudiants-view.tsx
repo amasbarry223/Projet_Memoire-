@@ -52,7 +52,7 @@ function moyenneColor(m: number) {
 
 function assiduiteColor(a: number) {
   if (a >= 90) return "bg-blue-500";
-  if (a >= 75) return "bg-amber-500";
+  if (a >= 75) return "bg-yellow-500";
   return "bg-red-500";
 }
 

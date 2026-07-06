@@ -7,7 +7,7 @@ import { useAppStore } from "@/lib/view-store";
 const niveauBg: Record<string, string> = {
   "Élevé": "bg-red-50 text-red-600",
   "Moyen": "bg-orange-50 text-orange-600",
-  "Faible": "bg-amber-50 text-amber-600",
+  "Faible": "bg-yellow-50 text-yellow-700",
 };
 
 export function AlertesIA() {
@@ -34,7 +34,7 @@ export function AlertesIA() {
         </div>
         <button
           onClick={() => setView("alertes")}
-          className="flex size-9 items-center justify-center rounded-full bg-amber-50 text-amber-500 transition hover:bg-amber-100"
+          className="flex size-9 items-center justify-center rounded-full bg-yellow-50 text-yellow-600 transition hover:bg-yellow-100"
           aria-label="Voir toutes les alertes"
         >
           <BrainCircuit className="size-4" />

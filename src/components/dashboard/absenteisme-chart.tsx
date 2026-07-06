@@ -27,7 +27,7 @@ function AbsenteismeTooltip({
   return (
     <div className="rounded-lg border border-gray-100 bg-white px-3 py-2 text-xs shadow-lg">
       <p className="font-semibold text-gray-900">{data.mois}</p>
-      <p className="mt-1 text-amber-500">
+      <p className="mt-1 text-yellow-600">
         Taux d&apos;absentéisme :{" "}
         <span className="font-semibold">{data.taux}%</span>
       </p>
@@ -45,8 +45,8 @@ export function AbsenteismeChart() {
           </h3>
           <p className="text-xs text-gray-400">Moyenne mensuelle (%)</p>
         </div>
-        <div className="flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-600">
-          <span className="size-2 rounded-full bg-amber-500" />
+        <div className="flex items-center gap-1.5 rounded-full bg-yellow-50 px-2.5 py-1 text-xs font-medium text-yellow-700">
+          <span className="size-2 rounded-full bg-yellow-500" />
           Objectif &lt; 8%
         </div>
       </div>

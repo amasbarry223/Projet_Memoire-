@@ -74,7 +74,7 @@ export function CandidaturesView() {
   };
 
   const indicateurs = [
-    { label: "En attente", value: compteurs["En attente"], icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
+    { label: "En attente", value: compteurs["En attente"], icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50" },
     { label: "Validés", value: compteurs["Validé"], icon: CheckCircle2, color: "text-blue-500", bg: "bg-blue-50" },
     { label: "Incomplets", value: compteurs["Incomplet"], icon: AlertCircle, color: "text-orange-500", bg: "bg-orange-50" },
     { label: "Rejetés", value: compteurs["Rejeté"], icon: XCircle, color: "text-red-500", bg: "bg-red-50" },

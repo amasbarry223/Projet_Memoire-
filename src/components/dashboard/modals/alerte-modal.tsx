@@ -58,7 +58,7 @@ export function AlerteModal() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BrainCircuit className="size-5 text-amber-500" />
+            <BrainCircuit className="size-5 text-yellow-600" />
             Traiter l&apos;alerte IA
           </DialogTitle>
           <DialogDescription>

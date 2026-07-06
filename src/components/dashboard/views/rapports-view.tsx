@@ -12,7 +12,7 @@ function typeBadge(type: string) {
     case "Mensuel":
       return "bg-blue-50 text-blue-700";
     case "Hebdomadaire":
-      return "bg-amber-50 text-amber-600";
+      return "bg-yellow-50 text-yellow-700";
     case "Trimestriel":
       return "bg-orange-50 text-orange-600";
     default:
@@ -76,7 +76,7 @@ export function RapportsView() {
                     {r.dateGeneration}
                   </span>
                   <span className="flex items-center gap-1">
-                    <Sparkles className="size-3 text-amber-500" />
+                    <Sparkles className="size-3 text-yellow-600" />
                     {r.genePar}
                   </span>
                   <span>{r.taille}</span>

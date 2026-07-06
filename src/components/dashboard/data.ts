@@ -70,9 +70,9 @@ export const roleLabels: Record<Role, string> = {
 export const roleBadgeBg: Record<Role, string> = {
   candidat: "bg-gray-100 text-gray-600",
   etudiant: "bg-blue-50 text-blue-700",
-  enseignant: "bg-amber-50 text-amber-600",
+  enseignant: "bg-yellow-50 text-yellow-700",
   responsable: "bg-orange-50 text-orange-600",
-  admin: "bg-blue-500 text-white",
+  admin: "bg-blue-600 text-white",
 };
 
 // Mapping rôle → vues accessibles (matrice de permissions §2.2)
@@ -150,8 +150,8 @@ export const stats: StatCard[] = [
     label: "Nouvelles Candidatures",
     value: "48",
     icon: FileText,
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-500",
+    iconBg: "bg-yellow-50",
+    iconColor: "text-yellow-600",
     statusColor: "bg-blue-500",
     hint: "En attente",
   },
@@ -170,15 +170,15 @@ export const stats: StatCard[] = [
     icon: AlertCircle,
     iconBg: "bg-red-50",
     iconColor: "text-red-500",
-    statusColor: "bg-amber-500",
+    statusColor: "bg-yellow-500",
     hint: "Action requise",
   },
   {
     label: "Alertes IA Actives",
     value: "7",
     icon: BrainCircuit,
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-500",
+    iconBg: "bg-yellow-50",
+    iconColor: "text-yellow-600",
     statusColor: "bg-blue-500",
     hint: "Risque pédagogique",
   },
@@ -230,7 +230,7 @@ export type DossierRecent = {
 };
 
 export const dossiersRecents: DossierRecent[] = [
-  { candidat: "Kadiatou Konaté", filiere: "BTS SIO", date: "01 Nov 2024", statut: "En attente", statutBg: "bg-amber-50 text-amber-600", initialBg: "bg-amber-500" },
+  { candidat: "Kadiatou Konaté", filiere: "BTS SIO", date: "01 Nov 2024", statut: "En attente", statutBg: "bg-yellow-50 text-yellow-700", initialBg: "bg-yellow-500" },
   { candidat: "Ibrahim Touré", filiere: "BTS MCO", date: "31 Oct 2024", statut: "Validé", statutBg: "bg-blue-50 text-blue-700", initialBg: "bg-blue-500" },
   { candidat: "Rokia Diallo", filiere: "Licence 3", date: "30 Oct 2024", statut: "Incomplet", statutBg: "bg-orange-50 text-orange-600", initialBg: "bg-orange-500" },
   { candidat: "Seydou Bagayoko", filiere: "BTS NDRC", date: "29 Oct 2024", statut: "Rejeté", statutBg: "bg-red-50 text-red-500", initialBg: "bg-red-500" },
@@ -250,7 +250,7 @@ export type AlerteIA = {
 export const alertesIA: AlerteIA[] = [
   { id: "ALT-001", etudiant: "Moussa Diabaté", classe: "BTS SIO 2", niveau: "Élevé", motif: "Chute des notes + absences répétées", date: "01 Nov 2024", statut: "Nouvelle", indicatorColor: "bg-red-500" },
   { id: "ALT-002", etudiant: "Aïssata Diallo", classe: "BTS MCO 1", niveau: "Moyen", motif: "Baisse continue sur 3 évaluations", date: "31 Oct 2024", statut: "Nouvelle", indicatorColor: "bg-orange-500" },
-  { id: "ALT-003", etudiant: "Modibo Keïta", classe: "Licence 2", niveau: "Faible", motif: "Premier signalement d'assiduité", date: "30 Oct 2024", statut: "Prise en charge", indicatorColor: "bg-amber-400" },
+  { id: "ALT-003", etudiant: "Modibo Keïta", classe: "Licence 2", niveau: "Faible", motif: "Premier signalement d'assiduité", date: "30 Oct 2024", statut: "Prise en charge", indicatorColor: "bg-yellow-400" },
   { id: "ALT-004", etudiant: "Fatoumata Diarra", classe: "BTS SIO 1", niveau: "Élevé", motif: "Risque de décrochage détecté", date: "29 Oct 2024", statut: "Nouvelle", indicatorColor: "bg-red-500" },
 ];
 
@@ -550,7 +550,7 @@ export const absences: Absence[] = [
 export const alertesIAComplete: AlerteIA[] = [
   ...alertesIA,
   { id: "ALT-005", etudiant: "Mariam Cissé", classe: "BTS MCO 2", niveau: "Moyen", motif: "3 absences non justifiées ce mois", date: "28 Oct 2024", statut: "Prise en charge", indicatorColor: "bg-orange-500" },
-  { id: "ALT-006", etudiant: "Boubacar Traoré", classe: "BTS SIO 1", niveau: "Faible", motif: "Légère baisse sur la dernière évaluation", date: "27 Oct 2024", statut: "Clôturée", indicatorColor: "bg-amber-400" },
+  { id: "ALT-006", etudiant: "Boubacar Traoré", classe: "BTS SIO 1", niveau: "Faible", motif: "Légère baisse sur la dernière évaluation", date: "27 Oct 2024", statut: "Clôturée", indicatorColor: "bg-yellow-400" },
   { id: "ALT-007", etudiant: "Lassana Touré", classe: "Licence 3", niveau: "Faible", motif: "Signalement de suivi positif", date: "26 Oct 2024", statut: "Clôturée", indicatorColor: "bg-blue-500" },
 ];
 

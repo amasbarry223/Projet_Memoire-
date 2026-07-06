@@ -24,13 +24,13 @@ function initials(prenom: string, nom: string) {
 function avatarBg(role: string) {
   switch (role) {
     case "admin":
-      return "bg-blue-500";
+      return "bg-blue-600";
     case "responsable":
       return "bg-orange-500";
     case "enseignant":
-      return "bg-amber-500";
+      return "bg-yellow-500";
     case "etudiant":
-      return "bg-blue-500";
+      return "bg-blue-400";
     default:
       return "bg-gray-400";
   }
@@ -129,7 +129,7 @@ export function Header() {
           aria-label="Notifications"
         >
           <Bell className="size-5" />
-          <span className="absolute right-2 top-2 size-2 rounded-full bg-amber-500 ring-2 ring-white" />
+          <span className="absolute right-2 top-2 size-2 rounded-full bg-red-500 ring-2 ring-white" />
         </button>
 
         {session && (

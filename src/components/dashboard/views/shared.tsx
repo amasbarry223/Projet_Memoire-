@@ -117,7 +117,7 @@ export function StatusBadge({
 export function niveauBadge(niveau: string) {
   if (niveau === "Élevé") return "bg-red-50 text-red-600";
   if (niveau === "Moyen") return "bg-orange-50 text-orange-600";
-  return "bg-amber-50 text-amber-600";
+  return "bg-yellow-50 text-yellow-700";
 }
 
 // Badge de statut de dossier
@@ -126,7 +126,7 @@ export function statutBadge(statut: string) {
     case "Validé":
       return "bg-blue-50 text-blue-700";
     case "En attente":
-      return "bg-amber-50 text-amber-600";
+      return "bg-yellow-50 text-yellow-700";
     case "Incomplet":
       return "bg-orange-50 text-orange-600";
     case "Rejeté":

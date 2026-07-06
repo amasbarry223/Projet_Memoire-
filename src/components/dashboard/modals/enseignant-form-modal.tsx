@@ -127,7 +127,7 @@ export function EnseignantFormModal({
       <DialogContent key={formKey} className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Users className="size-5 text-amber-500" />
+            <Users className="size-5 text-yellow-600" />
             {isEditing ? "Modifier l'enseignant" : "Nouvel enseignant"}
           </DialogTitle>
           <DialogDescription>
@@ -228,7 +228,7 @@ export function EnseignantFormModal({
                     onClick={() => toggle(classes, c, setClasses)}
                     className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
                       active
-                        ? "bg-amber-500 text-white"
+                        ? "bg-yellow-500 text-white"
                         : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                     }`}
                   >
@@ -251,7 +251,7 @@ export function EnseignantFormModal({
             </Button>
             <Button
               type="submit"
-              className="bg-amber-500 text-white hover:bg-amber-600"
+              className="bg-yellow-500 text-white hover:bg-yellow-600"
             >
               {isEditing ? "Enregistrer" : "Créer l'enseignant"}
             </Button>

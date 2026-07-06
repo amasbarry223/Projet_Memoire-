@@ -33,7 +33,7 @@ function actionColor(action: string) {
     case "Marquage incomplet":
       return "bg-orange-50 text-orange-600";
     case "Clôture alerte":
-      return "bg-amber-50 text-amber-600";
+      return "bg-yellow-50 text-yellow-700";
     case "Saisie de notes":
       return "bg-blue-50 text-blue-700";
     case "Modification rôle":

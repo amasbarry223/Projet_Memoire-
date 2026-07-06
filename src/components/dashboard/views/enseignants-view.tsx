@@ -118,8 +118,8 @@ export function EnseignantsView() {
           </div>
         </Panel>
         <Panel className="flex items-center gap-3 p-4">
-          <div className="flex size-10 items-center justify-center rounded-full bg-amber-50">
-            <BookOpen className="size-5 text-amber-500" />
+          <div className="flex size-10 items-center justify-center rounded-full bg-yellow-50">
+            <BookOpen className="size-5 text-yellow-600" />
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-900">
@@ -159,7 +159,7 @@ export function EnseignantsView() {
               <TableRow key={e.id} className="border-gray-50">
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="flex size-9 items-center justify-center rounded-full bg-amber-100 text-sm font-semibold text-amber-700">
+                    <div className="flex size-9 items-center justify-center rounded-full bg-yellow-100 text-sm font-semibold text-yellow-800">
                       {e.prenom.charAt(0)}
                       {e.nom.charAt(0)}
                     </div>

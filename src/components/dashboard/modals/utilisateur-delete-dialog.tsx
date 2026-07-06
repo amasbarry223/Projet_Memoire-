@@ -45,7 +45,7 @@ export function UtilisateurDeleteDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="flex items-start gap-2 rounded-lg border border-amber-100 bg-amber-50/60 p-3 text-xs text-amber-700">
+        <div className="flex items-start gap-2 rounded-lg border border-yellow-100 bg-yellow-50/60 p-3 text-xs text-yellow-800">
           <ShieldAlert className="mt-0.5 size-4 shrink-0" />
           <span>
             R2 : vous ne pouvez pas modifier votre propre rôle. Vérifiez que
