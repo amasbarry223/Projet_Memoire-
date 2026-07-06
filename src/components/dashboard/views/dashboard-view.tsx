@@ -8,8 +8,10 @@ import { WelcomeSection } from "../welcome-section";
 import { StatsCards } from "../stats-cards";
 import { InscriptionsChart } from "../inscriptions-chart";
 import { AbsenteismeChart } from "../absenteisme-chart";
+import { RepartitionFiliereChart } from "../repartition-filiere-chart";
 import { N8nStatus } from "../n8n-status";
 import { DossiersRecents } from "../dossiers-recents";
+import { ClassesARisque } from "../classes-risque";
 import { CalendarWidget } from "../calendar-widget";
 import { AlertesIA } from "../alertes-ia";
 import { StatusBadge, Panel, PageHeader, statutBadge } from "./shared";
@@ -347,29 +349,24 @@ function GlobalDashboard() {
     <div className="mx-auto w-full max-w-[1600px] space-y-6">
       <WelcomeSection />
 
-      <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[1fr_360px]">
-        {/* Colonne principale */}
-        <div className="space-y-6 min-w-0">
-          <StatsCards />
+      <StatsCards />
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <InscriptionsChart />
-            <AbsenteismeChart />
-          </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <InscriptionsChart />
+        <AbsenteismeChart />
+        <RepartitionFiliereChart />
+      </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <N8nStatus />
-            <DossiersRecents />
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <N8nStatus />
+        <DossiersRecents />
+        <ClassesARisque />
+      </div>
 
-        {/* Colonne droite — visible dès xl pour éviter le grand vide sur desktop */}
-        <aside className="hidden 2xl:block space-y-6">
-          <div className="sticky top-0 space-y-6">
-            <CalendarWidget />
-            <AlertesIA />
-          </div>
-        </aside>
+      {/* Sidebar droite — calendrier + alertes (visible sur très grand écran) */}
+      <div className="hidden 2xl:grid grid-cols-2 gap-6">
+        <CalendarWidget />
+        <AlertesIA />
       </div>
     </div>
   );

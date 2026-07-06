@@ -7,6 +7,9 @@ import {
   AlertCircle,
   BrainCircuit,
   TrendingUp,
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDataStore } from "@/lib/data-store";
@@ -47,6 +50,7 @@ export function StatsCards() {
       iconColor: "text-blue-500",
       statusColor: "bg-blue-500",
       hint: "Inscrits actifs",
+      trend: { dir: "up" as const, pct: "+12%" },
     },
     {
       label: "Nouvelles Candidatures",
@@ -56,6 +60,7 @@ export function StatsCards() {
       iconColor: "text-yellow-600",
       statusColor: "bg-blue-500",
       hint: "En attente",
+      trend: { dir: "up" as const, pct: "+8%" },
     },
     {
       label: "Dossiers Validés",
@@ -65,6 +70,7 @@ export function StatsCards() {
       iconColor: "text-blue-500",
       statusColor: "bg-blue-500",
       hint: "Traités",
+      trend: { dir: "up" as const, pct: "+5%" },
     },
     {
       label: "Dossiers Incomplets",
@@ -74,6 +80,10 @@ export function StatsCards() {
       iconColor: "text-red-500",
       statusColor: dossiersIncomplets > 0 ? "bg-yellow-500" : "bg-blue-500",
       hint: dossiersIncomplets > 0 ? "Action requise" : "Aucun",
+      trend: {
+        dir: (dossiersIncomplets > 0 ? "down" : "flat") as "up" | "down" | "flat",
+        pct: dossiersIncomplets > 0 ? "-3%" : "0%",
+      },
     },
     {
       label: "Alertes IA Actives",
@@ -83,6 +93,10 @@ export function StatsCards() {
       iconColor: "text-yellow-600",
       statusColor: alertesActives > 0 ? "bg-yellow-500" : "bg-blue-500",
       hint: alertesActives > 0 ? "Risque pédagogique" : "Aucune alerte",
+      trend: {
+        dir: (alertesActives > 0 ? "down" : "flat") as "up" | "down" | "flat",
+        pct: alertesActives > 0 ? "+2" : "0%",
+      },
     },
     {
       label: "Taux d'Assiduité",
@@ -92,6 +106,7 @@ export function StatsCards() {
       iconColor: "text-blue-500",
       statusColor: tauxAssiduite >= 85 ? "bg-blue-500" : "bg-yellow-500",
       hint: "Établissement",
+      trend: { dir: "up" as const, pct: "+2%" },
     },
   ];
 
@@ -122,9 +137,29 @@ export function StatsCards() {
               />
             </div>
             <p className="mt-4 text-2xl font-bold text-gray-900">{stat.value}</p>
-            <p className="mt-1 text-xs font-medium text-gray-700">
-              {stat.label}
-            </p>
+            <div className="mt-1 flex items-center gap-1.5">
+              <p className="text-xs font-medium text-gray-700">
+                {stat.label}
+              </p>
+              {stat.trend.dir === "up" && (
+                <span className="flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600">
+                  <ArrowUpRight className="size-3" />
+                  {stat.trend.pct}
+                </span>
+              )}
+              {stat.trend.dir === "down" && (
+                <span className="flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">
+                  <ArrowDownRight className="size-3" />
+                  {stat.trend.pct}
+                </span>
+              )}
+              {stat.trend.dir === "flat" && (
+                <span className="flex items-center gap-0.5 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">
+                  <Minus className="size-3" />
+                  stable
+                </span>
+              )}
+            </div>
             <p className="text-[11px] text-gray-400">{stat.hint}</p>
           </div>
         );
