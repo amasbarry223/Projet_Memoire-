@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "PASS. The ESGic logo appears to be approximately 52px tall and ~107px wide, centered in the sidebar, and fits well within the 260px sidebar width without appearing oversized or cramped.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783296987,
+  "id": "20260706081625d805fb13233e41a4",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260706081625d805fb13233e41a4",
+  "usage": {
+    "completion_tokens": 45,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1027,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1072
+  }
+}

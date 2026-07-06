@@ -51,9 +51,9 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0 flex flex-col">
-        <SheetHeader className="flex h-20 items-center justify-center border-b border-gray-100 px-6 py-0">
+        <SheetHeader className="flex h-24 items-center justify-center border-b border-gray-100 px-6 py-0">
           <SheetTitle>
-            <Logo size={40} showText={false} />
+            <Logo size={52} showText={false} />
           </SheetTitle>
         </SheetHeader>
         <nav className="flex-1 overflow-y-auto px-3 py-4">
