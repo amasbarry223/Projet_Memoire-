@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { navItems, roleLabels } from "./data";
+import { navItems } from "./data";
 import { Logo } from "./logo";
 import { useAppStore } from "@/lib/view-store";
 import { useAuthStore } from "@/lib/auth-store";
@@ -21,7 +21,6 @@ export function MobileNav() {
   const [open, setOpen] = useState(false);
   const view = useAppStore((s) => s.view);
   const setView = useAppStore((s) => s.setView);
-  const session = useAuthStore((s) => s.session);
   const logout = useAuthStore((s) => s.logout);
   const allowedViews = useAuthStore((s) => s.allowedViews());
 
@@ -52,15 +51,12 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0 flex flex-col">
-        <SheetHeader className="px-6 py-4">
-          <SheetTitle className="text-left">
-            <Logo size={28} />
+        <SheetHeader className="flex h-20 items-center justify-center border-b border-gray-100 px-6 py-0">
+          <SheetTitle>
+            <Logo size={40} showText={false} />
           </SheetTitle>
         </SheetHeader>
-        <nav className="flex-1 overflow-y-auto px-3 py-2">
-          <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
-            {session ? roleLabels[session.role] : "Espace"}
-          </p>
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="space-y-1">
             {visibleItems.map((item) => {
               const isActive = view === item.key;

@@ -2,7 +2,7 @@
 
 import { ChevronRight, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { navItems, roleLabels } from "./data";
+import { navItems } from "./data";
 import { Logo } from "./logo";
 import { useAppStore } from "@/lib/view-store";
 import { useAuthStore } from "@/lib/auth-store";
@@ -10,7 +10,6 @@ import { useAuthStore } from "@/lib/auth-store";
 export function Sidebar() {
   const view = useAppStore((s) => s.view);
   const setView = useAppStore((s) => s.setView);
-  const session = useAuthStore((s) => s.session);
   const logout = useAuthStore((s) => s.logout);
   const allowedViews = useAuthStore((s) => s.allowedViews());
 
@@ -20,16 +19,13 @@ export function Sidebar() {
 
   return (
     <aside className="hidden lg:flex w-[260px] shrink-0 flex-col border-r border-gray-100 bg-white">
-      {/* Logo */}
-      <div className="flex h-16 items-center border-b border-gray-100 px-6">
-        <Logo size={28} />
+      {/* Logo centré et agrandi */}
+      <div className="flex h-20 items-center justify-center border-b border-gray-100 px-6">
+        <Logo size={40} showText={false} />
       </div>
 
       {/* Nav items */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
-          {session ? roleLabels[session.role] : "Espace"}
-        </p>
         <ul className="space-y-1">
           {visibleItems.map((item) => {
             const isActive = view === item.key;
