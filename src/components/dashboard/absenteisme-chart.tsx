@@ -27,7 +27,7 @@ function AbsenteismeTooltip({
   return (
     <div className="rounded-lg border border-gray-100 bg-white px-3 py-2 text-xs shadow-lg">
       <p className="font-semibold text-gray-900">{data.mois}</p>
-      <p className="mt-1 text-yellow-600">
+      <p className="mt-1 text-red-600">
         Taux d&apos;absentéisme :{" "}
         <span className="font-semibold">{data.taux}%</span>
       </p>
@@ -45,8 +45,8 @@ export function AbsenteismeChart() {
           </h3>
           <p className="text-xs text-gray-400">Moyenne mensuelle (%)</p>
         </div>
-        <div className="flex items-center gap-1.5 rounded-full bg-yellow-50 px-2.5 py-1 text-xs font-medium text-yellow-700">
-          <span className="size-2 rounded-full bg-yellow-500" />
+        <div className="flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600">
+          <span className="size-2 rounded-full bg-red-500" />
           Objectif &lt; 8%
         </div>
       </div>
@@ -58,8 +58,8 @@ export function AbsenteismeChart() {
           >
             <defs>
               <linearGradient id="absFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="#f59e0b" stopOpacity={0} />
+                <stop offset="0%" stopColor="#F00000" stopOpacity={0.30} />
+                <stop offset="100%" stopColor="#F00000" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid
@@ -85,11 +85,11 @@ export function AbsenteismeChart() {
             <Area
               type="monotone"
               dataKey="taux"
-              stroke="#f59e0b"
+              stroke="#F00000"
               strokeWidth={3}
               fill="url(#absFill)"
-              dot={{ r: 4, fill: "#f59e0b", stroke: "#fff", strokeWidth: 2 }}
-              activeDot={{ r: 6, fill: "#f59e0b", stroke: "#fff", strokeWidth: 2 }}
+              dot={{ r: 4, fill: "#F00000", stroke: "#fff", strokeWidth: 2 }}
+              activeDot={{ r: 6, fill: "#F00000", stroke: "#fff", strokeWidth: 2 }}
             />
           </AreaChart>
         </ResponsiveContainer>

@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "(1) PASS — 'Évolution des inscriptions' bar chart bars are BLUE (#0048C0, ESGic blue).  \n(2) PASS — 'Taux d'absentéisme' area chart area/line is RED (#F00000, ESGic red).  \n(3) PASS — The badge on the absentéisme chart says 'Objectif < 8%' in red.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1783302500,
+  "id": "202607060948130fcca78fab224fb5",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202607060948130fcca78fab224fb5",
+  "usage": {
+    "completion_tokens": 90,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1098,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1188
+  }
+}

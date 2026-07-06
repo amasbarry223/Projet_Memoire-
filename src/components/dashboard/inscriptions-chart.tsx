@@ -76,12 +76,12 @@ export function InscriptionsChart() {
               ticks={[0, 75, 150, 225, 300]}
             />
             <Tooltip
-              cursor={{ fill: "rgba(16, 185, 129, 0.06)" }}
+              cursor={{ fill: "rgba(0, 72, 192, 0.06)" }}
               content={<InscriptionsTooltip />}
             />
             <Bar
               dataKey="inscriptions"
-              fill="#10b981"
+              fill="#0048C0"
               radius={[6, 6, 0, 0]}
               maxBarSize={36}
             />
