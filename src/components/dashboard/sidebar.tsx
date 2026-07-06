@@ -22,7 +22,7 @@ export function Sidebar() {
     <aside className="hidden lg:flex w-[260px] shrink-0 flex-col border-r border-gray-100 bg-white">
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-gray-100 px-6">
-        <Logo size={36} />
+        <Logo size={28} />
       </div>
 
       {/* Nav items */}

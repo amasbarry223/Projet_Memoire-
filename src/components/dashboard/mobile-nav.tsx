@@ -54,7 +54,7 @@ export function MobileNav() {
       <SheetContent side="left" className="w-[280px] p-0 flex flex-col">
         <SheetHeader className="px-6 py-4">
           <SheetTitle className="text-left">
-            <Logo size={36} />
+            <Logo size={28} />
           </SheetTitle>
         </SheetHeader>
         <nav className="flex-1 overflow-y-auto px-3 py-2">
