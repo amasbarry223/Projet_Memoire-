@@ -18,3 +18,32 @@ Cela lit `supabase_migrations.schema_migrations` et écrit un fichier `.sql` par
 
 1. Configurer `.env.local` avec les clés Supabase
 2. Exécuter les migrations dans l'ordre (Supabase CLI ou MCP `apply_migration`)
+
+## Points d'attention
+
+### Migration `20260707190000_fix_handle_new_user_trigger.sql`
+
+La création d'utilisateur (`Nouvel utilisateur`, mot de passe ou invitation par email) échouait avec `500 Database error creating new user` : le trigger `handle_new_user()` sur `auth.users` levait une exception non interceptée dès qu'il ne pouvait pas insérer dans `public.profiles`. Cette migration rend le trigger tolérant aux erreurs — `/api/users` fait de toute façon un upsert complet du profil juste après.
+
+**Statut** : appliquée sur le projet distant `xttajufueeacefrvxbrq` (juillet 2026).
+
+Pour un nouvel environnement, exécuter le fichier [`migrations/20260707190000_fix_handle_new_user_trigger.sql`](./migrations/20260707190000_fix_handle_new_user_trigger.sql).
+
+### Migration `20260707160150_fix_absences_insert_enseignant.sql`
+
+Cette migration insère les paramètres par défaut (`ON CONFLICT DO NOTHING`). Si elle a **déjà été appliquée** en production avec une URL n8n factice (`https://n8n.local/webhook/esgic`), **modifier le fichier SQL ne met pas à jour la base** : la ligne `integrations` existe déjà.
+
+**Action manuelle** : Paramètres → Intégrations → vider ou reconfigurer le champ « URL du webhook n8n », puis enregistrer.
+
+Alternative SQL (admin) :
+
+```sql
+UPDATE parametres
+SET value = jsonb_set(value, '{n8nUrl}', '""'::jsonb, true)
+WHERE key = 'integrations';
+```
+
+### Comportements voulus (non bugs)
+
+- **Paramètres pour non-admins** : la table `parametres` est protégée par RLS ; le fallback côté client masque gracieusement l'accès refusé.
+- **Libellés / couleurs UI** : constantes d'interface, pas des données métier persistées.

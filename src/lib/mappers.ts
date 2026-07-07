@@ -109,6 +109,7 @@ export function mapCandidature(row: DbCandidature): Candidature {
     niveau: row.niveau,
     statut: row.statut,
     dateSoumission: fmtDate(row.date_soumission),
+    dateSoumissionIso: row.date_soumission,
     pieces: (row.pieces as PieceJustificative[]) ?? [],
     syntheseIA: row.synthese_ia,
     completude: row.completude,
@@ -138,6 +139,7 @@ export function mapAbsence(row: Tables<"absences"> & { etudiants?: { prenom: str
     classe: row.classe_nom,
     matiere: row.matiere,
     date: fmtDate(row.date_absence),
+    dateIso: row.date_absence,
     justifiee: row.justifiee,
   };
 }

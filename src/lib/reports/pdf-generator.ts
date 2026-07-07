@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export type RapportPdfData = {
+  etablissementNom: string;
   titre: string;
   periode: string;
   type: string;
@@ -14,7 +15,7 @@ export type RapportPdfData = {
 export function generateRapportPdf(data: RapportPdfData): Uint8Array {
   const doc = new jsPDF();
   doc.setFontSize(18);
-  doc.text("ESGIC — Rapport pédagogique", 14, 20);
+  doc.text(`${data.etablissementNom} — Rapport pédagogique`, 14, 20);
   doc.setFontSize(12);
   doc.text(data.titre, 14, 30);
   doc.setFontSize(10);

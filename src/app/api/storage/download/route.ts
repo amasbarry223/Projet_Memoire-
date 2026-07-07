@@ -29,9 +29,10 @@ export async function GET(req: Request) {
 
     if (bucket === "candidatures" && !isAdmin && !isOwner) {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
-    }
-    if (bucket === "rapports" && !isAdmin && !isResponsable) {
+    } else if (bucket === "rapports" && !isAdmin && !isResponsable) {
       return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+    } else if (bucket !== "candidatures" && bucket !== "rapports") {
+      return NextResponse.json({ error: "Bucket invalide" }, { status: 403 });
     }
 
     const admin = adminClient();

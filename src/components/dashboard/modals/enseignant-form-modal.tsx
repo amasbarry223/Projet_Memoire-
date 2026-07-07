@@ -23,33 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import type { Enseignant } from "@/components/dashboard/data";
 import { useToast } from "@/hooks/use-toast";
-
-const ALL_MATIERES = [
-  "Développement Web",
-  "Base de données",
-  "Réseaux",
-  "Système",
-  "Algorithmique",
-  "Mathématiques",
-  "Management",
-  "Marketing",
-  "Gestion",
-  "Économie",
-  "Communication",
-  "Négociation",
-];
-
-const ALL_CLASSES = [
-  "BTS SIO 1",
-  "BTS SIO 2",
-  "BTS MCO 1",
-  "BTS MCO 2",
-  "BTS NDRC 1",
-  "BTS NDRC 2",
-  "Licence 1",
-  "Licence 2",
-  "Licence 3",
-];
+import { useDataStore } from "@/lib/data-store";
 
 export function EnseignantFormModal({
   open,
@@ -65,6 +39,14 @@ export function EnseignantFormModal({
   const { toast } = useToast();
   const isEditing = !!enseignant;
 
+  const filieres = useDataStore((s) => s.filieres);
+  const ALL_MATIERES = [...new Set(filieres.flatMap((f) => f.matieres.map((m) => m.nom)))].sort(
+    (a, b) => a.localeCompare(b)
+  );
+  const ALL_CLASSES = [...new Set(filieres.flatMap((f) => f.classes.map((c) => c.nom)))].sort(
+    (a, b) => a.localeCompare(b)
+  );
+
   const [prenom, setPrenom] = useState(enseignant?.prenom ?? "");
   const [nom, setNom] = useState(enseignant?.nom ?? "");
   const [email, setEmail] = useState(enseignant?.email ?? "");
@@ -74,7 +56,6 @@ export function EnseignantFormModal({
   const [matieres, setMatieres] = useState<string[]>(enseignant?.matieres ?? []);
   const [classes, setClasses] = useState<string[]>(enseignant?.classes ?? []);
 
-  // Réinitialise quand on ouvre pour un nouvel/autre enseignant
   const formKey = enseignant?.id ?? "new";
 
   function reset() {
@@ -207,10 +188,16 @@ export function EnseignantFormModal({
                   </button>
                 );
               })}
-              {matieres.length === 0 && (
+              {ALL_MATIERES.length === 0 ? (
                 <span className="text-xs text-gray-400">
-                  Aucune matière sélectionnée
+                  Aucune matière définie — ajoutez-en depuis Filières &amp; Classes.
                 </span>
+              ) : (
+                matieres.length === 0 && (
+                  <span className="text-xs text-gray-400">
+                    Aucune matière sélectionnée
+                  </span>
+                )
               )}
             </div>
           </div>
@@ -237,10 +224,16 @@ export function EnseignantFormModal({
                   </button>
                 );
               })}
-              {classes.length === 0 && (
+              {ALL_CLASSES.length === 0 ? (
                 <span className="text-xs text-gray-400">
-                  Aucune classe affectée
+                  Aucune classe définie — ajoutez-en depuis Filières &amp; Classes.
                 </span>
+              ) : (
+                classes.length === 0 && (
+                  <span className="text-xs text-gray-400">
+                    Aucune classe affectée
+                  </span>
+                )
               )}
             </div>
           </div>

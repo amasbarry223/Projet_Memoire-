@@ -14,7 +14,9 @@ import {
 
 export type DeleteTarget = {
   type: "filiere" | "classe" | "matiere";
+  id: string;
   nom: string;
+  parentId?: string;
   parent?: string;
 };
 

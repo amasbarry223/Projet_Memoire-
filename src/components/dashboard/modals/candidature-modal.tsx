@@ -25,8 +25,7 @@ import { useAppStore } from "@/lib/view-store";
 import { useDataStore } from "@/lib/data-store";
 import { useAuthStore } from "@/lib/auth-store";
 import { useToast } from "@/hooks/use-toast";
-
-const NIVEAUX = ["1ère année", "2ème année", "3ème année"] as const;
+import { getNiveauxDisponibles } from "@/components/dashboard/data";
 
 const PIECE_FIELDS = [
   { key: "identite", label: "Pièce d'identité (PDF, max 5 Mo)" },
@@ -54,6 +53,7 @@ export function CandidatureModal() {
   const [dateNaissance, setDateNaissance] = useState("");
   const [adresse, setAdresse] = useState("");
   const [filiereId, setFiliereId] = useState(filieres[0]?.id ?? "");
+  const NIVEAUX = getNiveauxDisponibles(filieres);
   const [niveau, setNiveau] = useState<string>(NIVEAUX[0]);
   const [files, setFiles] = useState<Record<string, File>>({});
   const [loading, setLoading] = useState(false);

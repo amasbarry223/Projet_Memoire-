@@ -24,6 +24,7 @@ import {
 import { useAppStore } from "@/lib/view-store";
 import { useDataStore } from "@/lib/data-store";
 import { useToast } from "@/hooks/use-toast";
+import { getNiveauxDisponibles } from "@/components/dashboard/data";
 
 export function FiliereModal() {
   const modal = useAppStore((s) => s.modal);
@@ -64,11 +65,9 @@ export function FiliereModal() {
   const [selectedFiliere, setSelectedFiliere] = useState(
     presetFiliereId ?? filieres[0]?.id ?? ""
   );
+  const NIVEAUX = getNiveauxDisponibles(filieres);
   const [classeNom, setClasseNom] = useState(editingClasse?.nom ?? "");
-  const [classeNiveau, setClasseNiveau] = useState(editingClasse?.niveau ?? "1ère année");
-  const [classeEffectif, setClasseEffectif] = useState(
-    editingClasse ? String(editingClasse.effectif) : ""
-  );
+  const [classeNiveau, setClasseNiveau] = useState(editingClasse?.niveau ?? NIVEAUX[0]);
   const [matiereNom, setMatiereNom] = useState(editingMatiere?.nom ?? "");
   const [matiereCoef, setMatiereCoef] = useState(
     editingMatiere ? String(editingMatiere.coefficient) : "1"
@@ -134,7 +133,6 @@ export function FiliereModal() {
         const payload = {
           nom: classeNom.trim(),
           niveau: classeNiveau,
-          effectif: parseInt(classeEffectif || "0", 10) || 0,
         };
         if (isEdit && editId) {
           await updateClasse(selectedFiliere, editId, payload);
@@ -164,7 +162,6 @@ export function FiliereModal() {
       setFiliereCode("");
       setFiliereDesc("");
       setClasseNom("");
-      setClasseEffectif("");
       setMatiereNom("");
       closeModal();
     } catch (e) {
@@ -219,22 +216,19 @@ export function FiliereModal() {
               <Label htmlFor="cnom">Nom de la classe</Label>
               <Input id="cnom" value={classeNom} onChange={(e) => setClasseNom(e.target.value)} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Niveau</Label>
-                <Select value={classeNiveau} onValueChange={setClasseNiveau}>
-                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1ère année">1ère année</SelectItem>
-                    <SelectItem value="2ème année">2ème année</SelectItem>
-                    <SelectItem value="3ème année">3ème année</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ceff">Effectif</Label>
-                <Input id="ceff" type="number" value={classeEffectif} onChange={(e) => setClasseEffectif(e.target.value)} />
-              </div>
+            <div className="space-y-2">
+              <Label>Niveau</Label>
+              <Select value={classeNiveau} onValueChange={setClasseNiveau}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {NIVEAUX.map((n) => (
+                    <SelectItem key={n} value={n}>{n}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-400">
+                L&apos;effectif est calculé automatiquement à partir des étudiants inscrits dans cette classe.
+              </p>
             </div>
           </div>
         )}

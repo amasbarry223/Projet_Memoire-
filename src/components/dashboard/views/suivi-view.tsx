@@ -24,6 +24,16 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
@@ -87,6 +97,14 @@ export function SuiviView() {
   const deleteNote = useDataStore((s) => s.deleteNote);
   const deleteAbsence = useDataStore((s) => s.deleteAbsence);
   const enseignants = useDataStore((s) => s.enseignants);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: "note" | "absence"; id: string } | null>(null);
+
+  function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    if (deleteTarget.type === "note") void deleteNote(deleteTarget.id);
+    else void deleteAbsence(deleteTarget.id);
+    setDeleteTarget(null);
+  }
 
   const role = session?.role;
   const isEtudiant = role === "etudiant";
@@ -488,7 +506,7 @@ export function SuiviView() {
                                     variant="ghost"
                                     size="icon"
                                     className="size-8 text-red-600"
-                                    onClick={() => void deleteNote(n.id!)}
+                                    onClick={() => setDeleteTarget({ type: "note", id: n.id! })}
                                   >
                                     <Trash2 className="size-3.5" />
                                   </Button>
@@ -709,7 +727,7 @@ export function SuiviView() {
                                     variant="ghost"
                                     size="icon"
                                     className="size-8 text-red-600"
-                                    onClick={() => void deleteAbsence(a.id!)}
+                                    onClick={() => setDeleteTarget({ type: "absence", id: a.id! })}
                                   >
                                     <Trash2 className="size-3.5" />
                                   </Button>
@@ -746,6 +764,29 @@ export function SuiviView() {
           </FullWidthSection>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent className="sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Supprimer {deleteTarget?.type === "note" ? "cette note" : "cette absence"} ?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible et journalisée.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel type="button">Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              type="button"
+              className="bg-red-500 text-white hover:bg-red-600"
+              onClick={handleConfirmDelete}
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </FullWidthPage>
   );
 }

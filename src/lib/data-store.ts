@@ -80,8 +80,8 @@ interface DataState {
 
   addFiliere: (f: { nom: string; code: string; description: string }) => Promise<void>;
   updateFiliere: (id: string, f: { nom: string; code: string; description: string }) => Promise<void>;
-  addClasse: (filiereId: string, c: { nom: string; niveau: string; effectif: number }) => Promise<void>;
-  updateClasse: (filiereId: string, classeId: string, c: { nom: string; niveau: string; effectif: number }) => Promise<void>;
+  addClasse: (filiereId: string, c: { nom: string; niveau: string }) => Promise<void>;
+  updateClasse: (filiereId: string, classeId: string, c: { nom: string; niveau: string }) => Promise<void>;
   addMatiere: (filiereId: string, m: { nom: string; coefficient: number }) => Promise<void>;
   updateMatiere: (filiereId: string, matiereId: string, m: { nom: string; coefficient: number }) => Promise<void>;
   deleteFiliere: (id: string) => Promise<void>;
@@ -103,7 +103,7 @@ interface DataState {
   addNote: (n: Note) => Promise<void>;
   updateNote: (id: string, n: Partial<Note>) => Promise<void>;
   deleteNote: (id: string) => Promise<void>;
-  addAbsence: (a: Omit<Absence, "date"> & { date: string }) => Promise<void>;
+  addAbsence: (a: Omit<Absence, "date" | "dateIso"> & { date: string }) => Promise<void>;
   updateAbsence: (id: string, a: Partial<Absence>) => Promise<void>;
   deleteAbsence: (id: string) => Promise<void>;
   addCandidature: (
@@ -158,6 +158,46 @@ async function resolveClasseUuid(legacyOrUuid: string) {
   const sb = getSupabase();
   const { data } = await sb.from("classes").select("id, nom, filiere_id, filieres(nom)").or(`legacy_id.eq.${legacyOrUuid},id.eq.${legacyOrUuid}`).maybeSingle();
   return data;
+}
+
+// Un même nom de matière/classe peut exister dans plusieurs filières (ex.
+// "Algorithmique"). On ne scope la recherche qu'aux filières correspondant
+// aux classes affectées à l'enseignant, et on déduplique par nom, pour
+// éviter d'insérer deux fois enseignant_matieres/enseignant_classes pour
+// une même sélection faite dans le formulaire (qui est une liste plate,
+// sans notion de filière).
+async function assignMatieresEtClasses(
+  sb: ReturnType<typeof getSupabase>,
+  enseignantId: string,
+  matieres: string[],
+  classes: string[],
+  filieres: Filiere[]
+) {
+  const filieresConcernees = classes.length > 0
+    ? filieres.filter((f) => f.classes.some((c) => classes.includes(c.nom)))
+    : filieres;
+
+  const matiereNomsInseres = new Set<string>();
+  const classeNomsInseres = new Set<string>();
+
+  for (const filiere of filieresConcernees) {
+    for (const m of filiere.matieres.filter((x) => matieres.includes(x.nom))) {
+      if (matiereNomsInseres.has(m.nom)) continue;
+      const { data: mat } = await sb.from("matieres").select("id").or(`legacy_id.eq.${m.id},id.eq.${m.id}`).maybeSingle();
+      if (mat) {
+        matiereNomsInseres.add(m.nom);
+        await sb.from("enseignant_matieres").insert({ enseignant_id: enseignantId, matiere_id: mat.id });
+      }
+    }
+    for (const c of filiere.classes.filter((x) => classes.includes(x.nom))) {
+      if (classeNomsInseres.has(c.nom)) continue;
+      const { data: cl } = await sb.from("classes").select("id").or(`legacy_id.eq.${c.id},id.eq.${c.id}`).maybeSingle();
+      if (cl) {
+        classeNomsInseres.add(c.nom);
+        await sb.from("enseignant_classes").insert({ enseignant_id: enseignantId, classe_id: cl.id });
+      }
+    }
+  }
 }
 
 async function resolveEtudiantUuid(legacyOrUuid: string) {
@@ -249,6 +289,7 @@ export const useDataStore = create<DataState>((set, get) => ({
         set({ isInitialized: true });
       } catch (e) {
         set({ error: e instanceof Error ? e.message : "Erreur de chargement" });
+        initializeDataPromise = null;
       } finally {
         set({ isLoading: false });
       }
@@ -380,16 +421,7 @@ export const useDataStore = create<DataState>((set, get) => ({
       statut: e.statut,
     }).select("id").single();
     if (error || !data) throw error;
-    for (const filiere of get().filieres) {
-      for (const m of filiere.matieres.filter((x) => e.matieres.includes(x.nom))) {
-        const { data: mat } = await sb.from("matieres").select("id").or(`legacy_id.eq.${m.id},id.eq.${m.id}`).maybeSingle();
-        if (mat) await sb.from("enseignant_matieres").insert({ enseignant_id: data.id, matiere_id: mat.id });
-      }
-      for (const c of filiere.classes.filter((x) => e.classes.includes(x.nom))) {
-        const { data: cl } = await sb.from("classes").select("id").or(`legacy_id.eq.${c.id},id.eq.${c.id}`).maybeSingle();
-        if (cl) await sb.from("enseignant_classes").insert({ enseignant_id: data.id, classe_id: cl.id });
-      }
-    }
+    await assignMatieresEtClasses(sb, data.id, e.matieres, e.classes, get().filieres);
     await logAudit("Création enseignant", `${e.prenom} ${e.nom}`, `Enseignant ajouté — ${e.matieres.length} matière(s), ${e.classes.length} classe(s).`);
     await get().refresh();
   },
@@ -409,16 +441,7 @@ export const useDataStore = create<DataState>((set, get) => ({
       await sb.from("enseignant_classes").delete().eq("enseignant_id", ens.id);
       const matieres = e.matieres ?? get().enseignants.find((x) => x.id === id)?.matieres ?? [];
       const classes = e.classes ?? get().enseignants.find((x) => x.id === id)?.classes ?? [];
-      for (const filiere of get().filieres) {
-        for (const m of filiere.matieres.filter((x) => matieres.includes(x.nom))) {
-          const { data: mat } = await sb.from("matieres").select("id").or(`legacy_id.eq.${m.id},id.eq.${m.id}`).maybeSingle();
-          if (mat) await sb.from("enseignant_matieres").insert({ enseignant_id: ens.id, matiere_id: mat.id });
-        }
-        for (const c of filiere.classes.filter((x) => classes.includes(x.nom))) {
-          const { data: cl } = await sb.from("classes").select("id").or(`legacy_id.eq.${c.id},id.eq.${c.id}`).maybeSingle();
-          if (cl) await sb.from("enseignant_classes").insert({ enseignant_id: ens.id, classe_id: cl.id });
-        }
-      }
+      await assignMatieresEtClasses(sb, ens.id, matieres, classes, get().filieres);
     }
     await logAudit("Modification enseignant", id, "Fiche enseignant mise à jour.");
     await get().refresh();
@@ -443,7 +466,8 @@ export const useDataStore = create<DataState>((set, get) => ({
       const err = await res.json();
       throw new Error(err.error ?? "Échec création utilisateur");
     }
-    await logAudit("Création compte", `${u.prenom} ${u.nom}`, `Compte créé — rôle ${u.role}.`);
+    // La route /api/users journalise déjà la création côté serveur — un
+    // second appel ici créerait une entrée d'audit dupliquée.
     await get().refresh();
   },
 
@@ -472,7 +496,7 @@ export const useDataStore = create<DataState>((set, get) => ({
       const err = await res.json().catch(() => ({}));
       return { ok: false, error: (err as { error?: string }).error ?? "Échec suppression" };
     }
-    await logAudit("Suppression compte", usr ? `${usr.prenom} ${usr.nom}` : id, "Compte utilisateur supprimé (Auth + profil).");
+    // La route DELETE /api/users journalise déjà côté serveur.
     await get().refresh();
     return { ok: true };
   },
@@ -499,7 +523,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     const filiereUuid = await resolveFiliereUuid(filiereId);
     if (!filiereUuid) return;
     const legacy_id = `CL-${Date.now()}`;
-    const { error } = await sb.from("classes").insert({ legacy_id, filiere_id: filiereUuid, nom: c.nom, niveau: c.niveau, effectif: c.effectif });
+    const { error } = await sb.from("classes").insert({ legacy_id, filiere_id: filiereUuid, nom: c.nom, niveau: c.niveau });
     if (error) throw error;
     await logAudit("Création classe", c.nom, `Classe ajoutée à la filière.`);
     await get().refresh();
@@ -507,7 +531,7 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   updateClasse: async (filiereId, classeId, c) => {
     const sb = getSupabase();
-    const { error } = await sb.from("classes").update({ nom: c.nom, niveau: c.niveau, effectif: c.effectif }).or(`legacy_id.eq.${classeId},id.eq.${classeId}`);
+    const { error } = await sb.from("classes").update({ nom: c.nom, niveau: c.niveau }).or(`legacy_id.eq.${classeId},id.eq.${classeId}`);
     if (error) throw error;
     await logAudit("Modification classe", c.nom, `Classe mise à jour dans la filière.`);
     await get().refresh();

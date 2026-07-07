@@ -36,6 +36,15 @@ export async function GET() {
         online = res.ok;
         latencyMs = Date.now() - start;
       } catch {
+        online = false;
+      }
+
+      // /healthz peut ne pas exister sur certaines instances n8n (404/405)
+      // sans que le service soit réellement down : on retente alors un HEAD
+      // sur l'URL du webhook lui-même. On ne déclenchait avant ce fallback
+      // que sur une exception réseau — jamais sur un simple statut non-2xx,
+      // ce qui affichait "hors ligne" à tort tant que /healthz n'existait pas.
+      if (!online) {
         try {
           const res = await fetch(n8nUrl, {
             method: "HEAD",

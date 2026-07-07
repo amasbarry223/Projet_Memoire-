@@ -42,64 +42,67 @@ export function FilieresView() {
   const { toast } = useToast();
 
   const list = useDataStore((s) => s.filieres);
+  const etudiants = useDataStore((s) => s.etudiants);
   const deleteFiliereStore = useDataStore((s) => s.deleteFiliere);
   const deleteClasseStore = useDataStore((s) => s.deleteClasse);
   const deleteMatiereStore = useDataStore((s) => s.deleteMatiere);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
 
+  // L'effectif d'une classe est calculé depuis les vrais étudiants inscrits
+  // (classes.effectif était un champ saisi à la main, jamais resynchronisé).
+  const effectifParClasse = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const e of etudiants) {
+      map.set(e.classe, (map.get(e.classe) ?? 0) + 1);
+    }
+    return map;
+  }, [etudiants]);
+
   const stats = useMemo(
     () => ({
       filieres: list.length,
       classes: list.reduce((s, f) => s + f.classes.length, 0),
-      effectif: list.reduce(
-        (s, f) => s + f.classes.reduce((cs, c) => cs + c.effectif, 0),
-        0
-      ),
+      effectif: etudiants.length,
     }),
-    [list]
+    [list, etudiants]
   );
 
   function handleDeleteFiliere(f: Filiere) {
-    setDeleteTarget({ type: "filiere", nom: f.nom });
+    setDeleteTarget({ type: "filiere", id: f.id, nom: f.nom });
     setDeleteOpen(true);
   }
 
   function handleDeleteClasse(filiereId: string, c: Classe) {
     const f = list.find((x) => x.id === filiereId);
-    setDeleteTarget({ type: "classe", nom: c.nom, parent: f?.nom });
+    setDeleteTarget({ type: "classe", id: c.id, nom: c.nom, parentId: filiereId, parent: f?.nom });
     setDeleteOpen(true);
   }
 
   function handleDeleteMatiere(filiereId: string, m: Matiere) {
     const f = list.find((x) => x.id === filiereId);
-    setDeleteTarget({ type: "matiere", nom: m.nom, parent: f?.nom });
+    setDeleteTarget({ type: "matiere", id: m.id, nom: m.nom, parentId: filiereId, parent: f?.nom });
     setDeleteOpen(true);
   }
 
   function handleConfirmDelete() {
     if (!deleteTarget) return;
     if (deleteTarget.type === "filiere") {
-      const f = list.find((x) => x.nom === deleteTarget.nom);
-      if (f) deleteFiliereStore(f.id);
+      deleteFiliereStore(deleteTarget.id);
       toast({
         title: "Filière supprimée",
         description: `${deleteTarget.nom} et ses classes/matières ont été supprimés. Journalisé.`,
         variant: "destructive",
       });
     } else if (deleteTarget.type === "classe") {
-      const f = list.find((x) => x.nom === deleteTarget.parent);
-      const c = f?.classes.find((x) => x.nom === deleteTarget.nom);
-      if (f && c) deleteClasseStore(f.id, c.id);
+      if (deleteTarget.parentId) deleteClasseStore(deleteTarget.parentId, deleteTarget.id);
       toast({
         title: "Classe supprimée",
         description: `${deleteTarget.nom} a été retirée. Journalisé dans l'audit.`,
         variant: "destructive",
       });
     } else {
-      const f = list.find((x) => x.nom === deleteTarget.parent);
-      const m = f?.matieres.find((x) => x.nom === deleteTarget.nom);
-      if (f && m) deleteMatiereStore(f.id, m.id);
+      if (deleteTarget.parentId) deleteMatiereStore(deleteTarget.parentId, deleteTarget.id);
       toast({
         title: "Matière supprimée",
         description: `${deleteTarget.nom} a été retirée. Journalisé dans l'audit.`,
@@ -168,7 +171,10 @@ export function FilieresView() {
         ) : (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {list.map((f) => {
-              const effectifTotal = f.classes.reduce((sum, c) => sum + c.effectif, 0);
+              const effectifTotal = f.classes.reduce(
+                (sum, c) => sum + (effectifParClasse.get(c.nom) ?? 0),
+                0
+              );
               return (
                 <div
                   key={f.id}
@@ -261,7 +267,7 @@ export function FilieresView() {
                             </div>
                             <div className="flex items-center gap-2">
                               <Badge variant="secondary" className="bg-blue-50 font-normal text-blue-800">
-                                {c.effectif} élèves
+                                {effectifParClasse.get(c.nom) ?? 0} élèves
                               </Badge>
                               <button
                                 type="button"

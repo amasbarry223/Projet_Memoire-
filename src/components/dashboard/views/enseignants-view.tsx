@@ -387,6 +387,10 @@ export function EnseignantsView() {
       </FullWidthSection>
 
       <EnseignantFormModal
+        // Remonte tout le formulaire (donc réinitialise ses champs) dès que
+        // la cible change, plutôt que de dépendre d'onOpenChange qui ne se
+        // déclenche pas quand ce parent pilote `open`/`enseignant` lui-même.
+        key={editing?.id ?? "new"}
         open={formOpen}
         enseignant={editing}
         onClose={() => {

@@ -12,3 +12,4 @@ Projet : xttajufueeacefrvxbrq
 - `20260707153820_seed_admin_mody_barry.sql`
 - `20260707154611_seed_demo_auth_users.sql`
 - `20260707160150_fix_absences_insert_enseignant.sql`
+- `20260707190000_fix_handle_new_user_trigger.sql`

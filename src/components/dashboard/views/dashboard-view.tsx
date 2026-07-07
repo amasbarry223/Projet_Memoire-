@@ -235,11 +235,12 @@ function EtudiantDashboard() {
     (a) => a.etudiant === `${monProfil.prenom} ${monProfil.nom}`
   );
   const absencesNonJustifiees = mesAbsences.filter((a) => !a.justifiee).length;
+  const mesNotesNotees = mesNotes.filter((n) => n.note !== null);
   const moyenneCalculee =
-    mesNotes.length > 0
+    mesNotesNotees.length > 0
       ? (
-          mesNotes.reduce((s, n) => s + noteSur20(n.note, n.sur) * n.coefficient, 0) /
-          mesNotes.reduce((s, n) => s + n.coefficient, 0)
+          mesNotesNotees.reduce((s, n) => s + noteSur20(n.note, n.sur) * n.coefficient, 0) /
+          mesNotesNotees.reduce((s, n) => s + n.coefficient, 0)
         ).toFixed(2)
       : "—";
 

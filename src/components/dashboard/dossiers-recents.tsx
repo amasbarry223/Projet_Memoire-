@@ -9,9 +9,9 @@ export function DossiersRecents() {
   const candidatures = useDataStore((s) => s.candidatures);
   const setView = useAppStore((s) => s.setView);
 
-  // 4 dossiers les plus récents (déjà triés par date de soumission desc dans les data)
+  // 4 dossiers les plus récents (tri sur la date ISO, pas le libellé affiché)
   const recents = [...candidatures]
-    .sort((a, b) => b.dateSoumission.localeCompare(a.dateSoumission))
+    .sort((a, b) => b.dateSoumissionIso.localeCompare(a.dateSoumissionIso))
     .slice(0, 4);
 
   return (

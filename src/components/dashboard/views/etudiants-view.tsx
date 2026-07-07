@@ -193,7 +193,7 @@ export function EtudiantsView() {
               <Pencil className="size-4 text-gray-500" />
               Modifier
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => openModal({ type: "note", etudiant: e.nom })}>
+            <DropdownMenuItem onClick={() => openModal({ type: "note", etudiant: e.id })}>
               <ClipboardEdit className="size-4 text-blue-500" />
               Saisir une note
             </DropdownMenuItem>

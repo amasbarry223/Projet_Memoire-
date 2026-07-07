@@ -10,5 +10,5 @@ INSERT INTO parametres (key, value) VALUES
   ('etablissement', '{"nom":"École Supérieure ESGIC","tel":"+223 20 22 33 44","email":"contact@esgic.ml","adresse":"Avenue de l''Indépendance, ACI 2000, Bamako"}'::jsonb),
   ('securite', '{"sessionHours":"24","rlsEnabled":true,"httpsOnly":true}'::jsonb),
   ('notifications', '{"emailConfirmation":true,"validationRejet":true,"alertesHebdo":true}'::jsonb),
-  ('integrations', '{"n8nUrl":"https://n8n.local/webhook/esgic","n8nUrl":"https://n8n.local/webhook/esgic","iaModel":"claude","mentionIa":true}'::jsonb)
+  ('integrations', '{"n8nUrl":"","iaModel":"claude","mentionIa":true}'::jsonb)
 ON CONFLICT (key) DO NOTHING;

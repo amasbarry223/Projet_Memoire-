@@ -87,13 +87,26 @@ export async function analyseDossier(
   };
 }
 
+export type AlerteType = "assiduite" | "moyenne" | "absences";
+
 export type AlerteCandidate = {
   etudiantId: string;
   etudiantNom: string;
   classe: string;
   niveau: "Faible" | "Moyen" | "Élevé";
   motif: string;
+  type: AlerteType;
 };
+
+// Les alertes existantes en base n'ont pas de colonne "type" dédiée — on le
+// redéduit du motif pour dédupliquer/clôturer par type stable plutôt que
+// par texte exact (qui varie à chaque légère fluctuation d'un pourcentage).
+export function motifType(motif: string): AlerteType | null {
+  if (motif.startsWith("Assiduité faible")) return "assiduite";
+  if (motif.startsWith("Moyenne insuffisante")) return "moyenne";
+  if (motif.endsWith("absences non justifiées ce semestre.")) return "absences";
+  return null;
+}
 
 export function detectAlertesLocales(
   etudiants: {
@@ -102,6 +115,7 @@ export function detectAlertesLocales(
     prenom: string;
     classe: string;
     moyenne: number;
+    notesCount?: number;
     assiduite: number;
   }[],
   absences: { etudiant: string; justifiee: boolean }[]
@@ -112,6 +126,7 @@ export function detectAlertesLocales(
     const absNonJust = absences.filter(
       (a) => a.etudiant === nomComplet && !a.justifiee
     ).length;
+    const aDesNotes = (e.notesCount ?? (e.moyenne > 0 ? 1 : 0)) > 0;
 
     if (e.assiduite < 75) {
       alertes.push({
@@ -120,15 +135,17 @@ export function detectAlertesLocales(
         classe: e.classe,
         niveau: e.assiduite < 60 ? "Élevé" : "Moyen",
         motif: `Assiduité faible (${e.assiduite} %) — risque de décrochage.`,
+        type: "assiduite",
       });
     }
-    if (e.moyenne < 10 && e.moyenne > 0) {
+    if (aDesNotes && e.moyenne < 10) {
       alertes.push({
         etudiantId: e.id,
         etudiantNom: nomComplet,
         classe: e.classe,
         niveau: e.moyenne < 8 ? "Élevé" : "Moyen",
         motif: `Moyenne insuffisante (${e.moyenne}/20) — accompagnement recommandé.`,
+        type: "moyenne",
       });
     }
     if (absNonJust >= 3) {
@@ -138,6 +155,7 @@ export function detectAlertesLocales(
         classe: e.classe,
         niveau: "Moyen",
         motif: `${absNonJust} absences non justifiées ce semestre.`,
+        type: "absences",
       });
     }
   }

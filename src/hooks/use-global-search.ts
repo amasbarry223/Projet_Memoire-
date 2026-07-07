@@ -32,9 +32,15 @@ export function useGlobalSearch(query: string) {
     const q = debounced.trim().toLowerCase();
     const allowed = new Set(roleViews[session.role]);
     const results: SearchResult[] = [];
+    // Limite par catégorie plutôt qu'une troncature globale post-concaténation
+    // — sans quoi une catégorie remontant beaucoup de résultats (ex.
+    // étudiants) masquait silencieusement les résultats des catégories
+    // suivantes (alertes, audit…), même pertinents pour le rôle courant.
+    const CATEGORY_LIMIT = 5;
 
     if (allowed.has("etudiants")) {
       for (const e of etudiants) {
+        if (results.filter((r) => r.view === "etudiants").length >= CATEGORY_LIMIT) break;
         const label = `${e.prenom} ${e.nom}`;
         if (
           label.toLowerCase().includes(q) ||
@@ -53,6 +59,7 @@ export function useGlobalSearch(query: string) {
 
     if (allowed.has("candidatures")) {
       for (const c of candidatures) {
+        if (results.filter((r) => r.view === "candidatures").length >= CATEGORY_LIMIT) break;
         const label = `${c.prenom} ${c.nom}`;
         if (
           label.toLowerCase().includes(q) ||
@@ -72,6 +79,7 @@ export function useGlobalSearch(query: string) {
 
     if (allowed.has("enseignants")) {
       for (const e of enseignants) {
+        if (results.filter((r) => r.view === "enseignants").length >= CATEGORY_LIMIT) break;
         const label = `${e.prenom} ${e.nom}`;
         if (label.toLowerCase().includes(q) || e.email.toLowerCase().includes(q)) {
           results.push({
@@ -86,6 +94,7 @@ export function useGlobalSearch(query: string) {
 
     if (allowed.has("alertes")) {
       for (const a of alertes) {
+        if (results.filter((r) => r.view === "alertes").length >= CATEGORY_LIMIT) break;
         if (
           a.etudiant.toLowerCase().includes(q) ||
           a.motif.toLowerCase().includes(q) ||
@@ -102,7 +111,8 @@ export function useGlobalSearch(query: string) {
     }
 
     if (allowed.has("audit")) {
-      for (const a of audit.slice(0, 50)) {
+      for (const a of audit) {
+        if (results.filter((r) => r.view === "audit").length >= CATEGORY_LIMIT) break;
         if (
           a.action.toLowerCase().includes(q) ||
           a.cible.toLowerCase().includes(q) ||
@@ -118,7 +128,7 @@ export function useGlobalSearch(query: string) {
       }
     }
 
-    return results.slice(0, 12);
+    return results;
   }, [session, debounced, etudiants, candidatures, enseignants, alertes, audit]);
 }
 

@@ -26,13 +26,13 @@ export function CalendarWidget() {
   const eventDays = useMemo(() => {
     const days = new Map<number, string>();
     for (const a of absences) {
-      const d = new Date(a.date.split("/").reverse().join("-") || a.date);
-      if (d.getFullYear() === viewYear && d.getMonth() === viewMonth) {
+      const d = new Date(a.dateIso);
+      if (!Number.isNaN(d.getTime()) && d.getFullYear() === viewYear && d.getMonth() === viewMonth) {
         days.set(d.getDate(), a.justifiee ? "bg-yellow-400" : "bg-red-500");
       }
     }
     for (const c of candidatures) {
-      const d = new Date(c.dateSoumission);
+      const d = new Date(c.dateSoumissionIso);
       if (!Number.isNaN(d.getTime()) && d.getFullYear() === viewYear && d.getMonth() === viewMonth) {
         if (!days.has(d.getDate())) days.set(d.getDate(), "bg-blue-500");
       }

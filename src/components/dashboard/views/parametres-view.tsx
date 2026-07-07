@@ -348,6 +348,7 @@ export function ParametresView() {
                 <Label htmlFor="n8n-url">URL du webhook n8n</Label>
                 <Input
                   id="n8n-url"
+                  placeholder="https://votre-instance.n8n.cloud/webhook/..."
                   value={form.integrations.n8nUrl}
                   onChange={(e) =>
                     setForm((f) => ({

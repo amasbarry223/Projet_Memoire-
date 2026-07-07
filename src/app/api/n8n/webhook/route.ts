@@ -13,16 +13,24 @@ function adminClient() {
 
 export async function POST(req: Request) {
   try {
+    const expectedSecret = process.env.N8N_WEBHOOK_SECRET;
+    if (!expectedSecret || req.headers.get("x-n8n-secret") !== expectedSecret) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
     const body = await req.json();
     const workflowName = String(body.workflow_name ?? body.workflow ?? "workflow");
     const eventType = String(body.event_type ?? body.event ?? "execution");
 
     const admin = adminClient();
-    await admin.from("n8n_events").insert({
+    const { error } = await admin.from("n8n_events").insert({
       workflow_name: workflowName,
       event_type: eventType,
       payload: body,
     });
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (e) {

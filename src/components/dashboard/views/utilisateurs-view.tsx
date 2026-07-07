@@ -464,6 +464,9 @@ export function UtilisateursView() {
       </FullWidthSection>
 
       <UtilisateurFormModal
+        // Remonte tout le formulaire (donc réinitialise inviteByEmail) dès
+        // que la cible change — même raison que enseignant-form-modal.
+        key={editing?.id ?? "new"}
         open={formOpen}
         utilisateur={editing}
         onClose={() => {

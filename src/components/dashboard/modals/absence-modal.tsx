@@ -68,11 +68,7 @@ export function AbsenceModal() {
   const editingEtudiant = editingAbsence
     ? etudiants.find((e) => `${e.prenom} ${e.nom}` === editingAbsence.etudiant)
     : undefined;
-  const editingDateIso = editingAbsence
-    ? editingAbsence.date.includes("/")
-      ? editingAbsence.date.split("/").reverse().join("-")
-      : editingAbsence.date
-    : undefined;
+  const editingDateIso = editingAbsence?.dateIso;
 
   const [etudiantId, setEtudiantId] = useState(
     editingEtudiant?.id ??

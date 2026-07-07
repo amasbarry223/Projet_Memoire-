@@ -100,7 +100,7 @@ export function TraitementDossierModal() {
       });
       toast({
         title: "Dossier traité",
-        description: `Le dossier ${dossierId} a été ${cfg.verb}. Notification envoyée via n8n.`,
+        description: `Le dossier ${dossierId} a été ${cfg.verb}.`,
       });
       reset();
       closeModal();
@@ -184,9 +184,9 @@ export function TraitementDossierModal() {
 
           {action === "valider" && (
             <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-4 text-sm text-gray-700">
-              Vous êtes sur le point de <strong>valider</strong> ce dossier. Le
-              candidat sera automatiquement notifié par email (via n8n).
-              Pensez à créer son compte étudiant depuis le module Étudiants.
+              Vous êtes sur le point de <strong>valider</strong> ce dossier.
+              Pensez à créer son compte étudiant depuis le module Étudiants
+              et à notifier vous-même le candidat.
             </div>
           )}
         </div>

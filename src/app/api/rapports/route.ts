@@ -48,11 +48,10 @@ export async function POST(req: Request) {
     }
 
     const admin = adminClient();
-    const { data: paramRow } = await admin
-      .from("parametres")
-      .select("value")
-      .eq("key", "integrations")
-      .maybeSingle();
+    const [{ data: paramRow }, { data: etablissementRow }] = await Promise.all([
+      admin.from("parametres").select("value").eq("key", "integrations").maybeSingle(),
+      admin.from("parametres").select("value").eq("key", "etablissement").maybeSingle(),
+    ]);
 
     const integrations =
       (paramRow?.value as { n8nUrl?: string; iaModel?: string } | null) ??
@@ -60,10 +59,14 @@ export async function POST(req: Request) {
     const n8nUrl = integrations.n8nUrl?.trim();
     const iaModel = integrations.iaModel ?? "claude";
     const generePar = `IA (${iaModel})`;
+    const etablissementNom =
+      (etablissementRow?.value as { nom?: string } | null)?.nom ??
+      defaultParametres.etablissement.nom;
 
-    const [etudiantsRes, alertesRes] = await Promise.all([
-      admin.from("etudiants").select("nom, prenom, moyenne, assiduite, classes(nom, filieres(nom))"),
-      admin.from("alertes").select("id").eq("statut", "Nouvelle"),
+    const [etudiantsRes, alertesRes, notesRes] = await Promise.all([
+      admin.from("etudiants").select("id, nom, prenom, assiduite, classes(nom, filieres(nom))"),
+      admin.from("alertes").select("id").neq("statut", "Clôturée"),
+      admin.from("notes").select("etudiant_id, note, sur, coefficient"),
     ]);
 
     const etudiants = etudiantsRes.data ?? [];
@@ -73,6 +76,25 @@ export async function POST(req: Request) {
             etudiants.reduce((s, e) => s + Number(e.assiduite), 0) / etudiants.length
           )
         : 0;
+
+    // La moyenne n'est pas stockée sur la fiche étudiant (saisie manuelle,
+    // jamais resynchronisée) — on la recalcule depuis les vraies notes,
+    // comme le fait déjà suivi-view.tsx côté client.
+    const notesParEtudiant = new Map<string, { note: number | null; sur: number; coefficient: number }[]>();
+    for (const n of notesRes.data ?? []) {
+      const list = notesParEtudiant.get(n.etudiant_id) ?? [];
+      list.push(n);
+      notesParEtudiant.set(n.etudiant_id, list);
+    }
+    function moyenneReelle(etudiantId: string): number {
+      const notees = (notesParEtudiant.get(etudiantId) ?? []).filter((n) => n.note !== null);
+      const sommeCoef = notees.reduce((s, n) => s + Number(n.coefficient), 0);
+      if (sommeCoef === 0) return 0;
+      return notees.reduce(
+        (s, n) => s + (Number(n.note) / Number(n.sur)) * 20 * Number(n.coefficient),
+        0
+      ) / sommeCoef;
+    }
 
     if (n8nUrl) {
       try {
@@ -101,6 +123,7 @@ export async function POST(req: Request) {
     });
 
     const pdfBytes = generateRapportPdf({
+      etablissementNom,
       titre,
       periode,
       type,
@@ -117,7 +140,7 @@ export async function POST(req: Request) {
         return {
           nom: `${e.prenom} ${e.nom}`,
           filiere: cls?.filieres?.nom ?? "",
-          moyenne: Number(e.moyenne),
+          moyenne: Math.round(moyenneReelle(e.id) * 10) / 10,
           assiduite: Number(e.assiduite),
         };
       }),

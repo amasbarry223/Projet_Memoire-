@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import { getSupabaseSecretKey, getSupabaseUrl } from "@/lib/supabase/env";
-import { requireSession } from "@/lib/api/auth";
+import { requireRoleSession } from "@/lib/api/auth";
 import { analyseDossier, fetchIntegrations } from "@/lib/ia/analyse";
 import type { PieceJustificative } from "@/components/dashboard/data";
 
@@ -16,7 +16,7 @@ function adminClient() {
 
 export async function POST(req: Request) {
   try {
-    const auth = await requireSession();
+    const auth = await requireRoleSession(["admin", "responsable"]);
     if ("error" in auth) return auth.error;
 
     const { candidatureId } = await req.json();

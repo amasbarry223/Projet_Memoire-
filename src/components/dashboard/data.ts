@@ -194,7 +194,10 @@ export const defaultParametres: AppParametres = {
     alertesHebdo: true,
   },
   integrations: {
-    n8nUrl: "https://n8n.local/webhook/esgic",
+    // Vide par défaut : une URL factice ici ferait passer n8nConfigured à
+    // true et le statut d'intégration afficherait "en ligne/hors ligne"
+    // pour un service qui n'a jamais été réellement configuré par l'admin.
+    n8nUrl: "",
     iaModel: "claude",
     mentionIa: true,
   },
@@ -243,6 +246,7 @@ export type Candidature = {
   niveau: string;
   statut: StatutDossier;
   dateSoumission: string;
+  dateSoumissionIso: string;
   pieces: PieceJustificative[];
   syntheseIA: string;
   completude: number;
@@ -301,6 +305,7 @@ export type Absence = {
   classe: string;
   matiere: string;
   date: string;
+  dateIso: string;
   justifiee: boolean;
 };
 
@@ -349,6 +354,18 @@ export type Filiere = {
   classes: Classe[];
   matieres: Matiere[];
 };
+
+// Niveaux de repli proposés tant qu'aucune classe n'existe encore en base
+// (bootstrap d'un établissement neuf). Dès qu'une classe existe, on propose
+// les niveaux réellement utilisés plutôt qu'une liste figée.
+const NIVEAUX_PAR_DEFAUT = ["1ère année", "2ème année", "3ème année"];
+
+export function getNiveauxDisponibles(filieres: Filiere[]): string[] {
+  const niveaux = [...new Set(filieres.flatMap((f) => f.classes.map((c) => c.niveau)))]
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b));
+  return niveaux.length > 0 ? niveaux : NIVEAUX_PAR_DEFAUT;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Utilisateurs & rôles (F6.1, RBAC §2)
