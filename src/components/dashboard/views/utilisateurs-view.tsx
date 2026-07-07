@@ -203,6 +203,7 @@ export function UtilisateursView() {
         const { id: _id, ...rest } = data;
         void _id;
         await addUtilisateur(rest);
+        resetFilters();
         toast({ title: "Utilisateur créé", description: `${data.prenom} ${data.nom} — Rôle : ${roleLabels[data.role]}.` });
       }
       setFormOpen(false);

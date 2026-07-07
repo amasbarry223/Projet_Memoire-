@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import { getSupabaseSecretKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { requireAdminSession } from "@/lib/api/auth";
+import { mapUtilisateur } from "@/lib/mappers";
 
 function adminClient() {
   return createClient<Database>(
@@ -49,15 +50,30 @@ export async function POST(req: Request) {
       userId = data.user.id;
     }
 
-    await sb.from("profiles").upsert({
-      id: userId,
-      legacy_id: `U-${Date.now()}`,
-      email,
-      nom,
-      prenom,
-      role,
-      statut: statut ?? "Actif",
-    });
+    const { data: profile, error: profileError } = await sb
+      .from("profiles")
+      .upsert(
+        {
+          id: userId,
+          legacy_id: `U-${Date.now()}`,
+          email,
+          nom,
+          prenom,
+          role,
+          statut: statut ?? "Actif",
+        },
+        { onConflict: "id" }
+      )
+      .select()
+      .single();
+
+    if (profileError || !profile) {
+      await sb.auth.admin.deleteUser(userId).catch(() => undefined);
+      return NextResponse.json(
+        { error: profileError?.message ?? "Échec création du profil" },
+        { status: 400 }
+      );
+    }
 
     await sb.rpc("log_audit", {
       p_action: "Création compte",
@@ -65,7 +81,7 @@ export async function POST(req: Request) {
       p_details: `Compte créé par ${auth.profile.prenom} ${auth.profile.nom} — rôle ${role}.`,
     });
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, utilisateur: mapUtilisateur(profile) });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Erreur" }, { status: 500 });
   }

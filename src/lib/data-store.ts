@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { getSupabase } from "@/lib/supabase/client";
+import { getSupabase, getSupabaseAsync } from "@/lib/supabase/client";
 import type { Json } from "@/lib/supabase/types";
 import {
   mapAbsence,
@@ -144,8 +144,15 @@ function currentAuthor(): string {
 }
 
 async function logAudit(action: string, cible: string, details: string) {
-  const sb = getSupabase();
+  const sb = await getSupabaseAsync();
   await sb.rpc("log_audit", { p_action: action, p_cible: cible, p_details: details });
+}
+
+async function fetchUtilisateursFromDb() {
+  const sb = await getSupabaseAsync();
+  const { data, error } = await sb.from("profiles").select("*").order("nom");
+  if (error) throw error;
+  return (data ?? []).map(mapUtilisateur);
 }
 
 async function resolveFiliereUuid(legacyOrUuid: string) {
@@ -299,7 +306,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   },
 
   refresh: async () => {
-    const sb = getSupabase();
+    const sb = await getSupabaseAsync();
     const session = useAuthStore.getState().session;
     const isAdmin = session?.role === "admin";
     await ensureParametresDefaults(sb);
@@ -320,6 +327,8 @@ export const useDataStore = create<DataState>((set, get) => ({
         : Promise.resolve({ data: null, error: null }),
     ] as const;
     const [filieresRes, etudiantsRes, enseignantsRes, candidaturesRes, utilisateursRes, alertesRes, auditRes, notesRes, absencesRes, rapportsRes, chartsRes, parametresRes] = await Promise.all(queries);
+
+    if (utilisateursRes.error) throw utilisateursRes.error;
 
     const charts = chartsRes.data ?? [];
     const insc = charts.find((c) => c.key === "inscriptions");
@@ -461,19 +470,35 @@ export const useDataStore = create<DataState>((set, get) => ({
     const res = await fetch("/api/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
       body: JSON.stringify(u),
     });
+    const payload = (await res.json()) as {
+      error?: string;
+      utilisateur?: Utilisateur;
+    };
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error ?? "Échec création utilisateur");
+      throw new Error(payload.error ?? "Échec création utilisateur");
     }
     // La route /api/users journalise déjà la création côté serveur — un
     // second appel ici créerait une entrée d'audit dupliquée.
-    await get().refresh();
+    if (payload.utilisateur) {
+      set((state) => {
+        const exists = state.utilisateurs.some((x) => x.id === payload.utilisateur!.id);
+        const utilisateurs = exists
+          ? state.utilisateurs.map((x) =>
+              x.id === payload.utilisateur!.id ? payload.utilisateur! : x
+            )
+          : [...state.utilisateurs, payload.utilisateur!];
+        return { utilisateurs };
+      });
+    }
+    const utilisateurs = await fetchUtilisateursFromDb();
+    set({ utilisateurs });
   },
 
   updateUtilisateur: async (id, u) => {
-    const sb = getSupabase();
+    const sb = await getSupabaseAsync();
     const { error } = await sb.from("profiles").update({
       email: u.email,
       nom: u.nom,
@@ -483,7 +508,8 @@ export const useDataStore = create<DataState>((set, get) => ({
     }).or(`legacy_id.eq.${id},id.eq.${id}`);
     if (error) throw error;
     await logAudit("Modification compte", id, u.role ? `Rôle mis à jour → ${u.role}.` : "Compte modifié.");
-    await get().refresh();
+    const utilisateurs = await fetchUtilisateursFromDb();
+    set({ utilisateurs });
   },
 
   deleteUtilisateur: async (id) => {
@@ -492,13 +518,17 @@ export const useDataStore = create<DataState>((set, get) => ({
     if (session && usr && usr.email === session.email) {
       return { ok: false, error: "Vous ne pouvez pas supprimer votre propre compte (R2)." };
     }
-    const res = await fetch(`/api/users?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    const res = await fetch(`/api/users?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      credentials: "same-origin",
+    });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       return { ok: false, error: (err as { error?: string }).error ?? "Échec suppression" };
     }
     // La route DELETE /api/users journalise déjà côté serveur.
-    await get().refresh();
+    const utilisateurs = await fetchUtilisateursFromDb();
+    set({ utilisateurs });
     return { ok: true };
   },
 
