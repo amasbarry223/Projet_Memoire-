@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/supabase/types";
 import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/env";
 
-const PUBLIC_API_PREFIXES = ["/api/n8n/webhook", "/api/health"];
+const PUBLIC_API_PREFIXES = ["/api/n8n/webhook", "/api/health", "/api/config"];
 
 function isPublicApi(pathname: string) {
   if (pathname === "/api") return true;

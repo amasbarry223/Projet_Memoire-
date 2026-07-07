@@ -3,8 +3,12 @@
 import { create } from "zustand";
 import type { Role, ViewKey } from "@/components/dashboard/data";
 import { roleViews } from "@/components/dashboard/data";
-import { getSupabase } from "@/lib/supabase/client";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { getSupabase, getSupabaseAsync, resetSupabaseClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured, isSupabaseConfiguredWithRuntime } from "@/lib/supabase/env";
+import {
+  ensureRuntimeSupabaseConfig,
+  getRuntimeSupabaseConfig,
+} from "@/lib/supabase/runtime-config";
 
 export type Session = {
   email: string;
@@ -46,7 +50,7 @@ async function withTimeout<T>(
 }
 
 async function loadSession(): Promise<Session | null> {
-  const sb = getSupabase();
+  const sb = await getSupabaseAsync();
   const { data: { user } } = await withTimeout(
     sb.auth.getUser(),
     10000,
@@ -79,7 +83,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     initializePromise = (async () => {
       set({ isLoading: true, initError: null });
       try {
+        let runtimeConfig: Awaited<ReturnType<typeof ensureRuntimeSupabaseConfig>> = null;
         if (!isSupabaseConfigured()) {
+          runtimeConfig = await ensureRuntimeSupabaseConfig();
+        }
+
+        if (!isSupabaseConfiguredWithRuntime(runtimeConfig)) {
           set({
             initError:
               "Configuration Supabase manquante. Définissez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY sur Vercel.",
@@ -87,7 +96,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           return;
         }
 
-        const sb = getSupabase();
+        resetSupabaseClient();
+        const sb = await getSupabaseAsync();
         sb.auth.onAuthStateChange(async () => {
           try {
             const session = await loadSession();
@@ -116,6 +126,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   login: async (email, password) => {
     if (!isSupabaseConfigured()) {
+      await ensureRuntimeSupabaseConfig();
+    }
+    if (!isSupabaseConfiguredWithRuntime(getRuntimeSupabaseConfig())) {
       return {
         ok: false,
         error:
@@ -123,7 +136,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       };
     }
     set({ isLoading: true });
-    const sb = getSupabase();
+    const sb = await getSupabaseAsync();
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
       set({ isLoading: false });
@@ -143,7 +156,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!email.trim()) {
       return { ok: false, error: "Veuillez saisir votre adresse email." };
     }
-    const sb = getSupabase();
+    const sb = await getSupabaseAsync();
     const redirectTo =
       typeof window !== "undefined" ? `${window.location.origin}/` : undefined;
     const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
@@ -154,7 +167,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: async () => {
-    const sb = getSupabase();
+    const sb = await getSupabaseAsync();
     await sb.auth.signOut();
     set({ session: null });
   },

@@ -32,7 +32,11 @@ import type {
 } from "@/components/dashboard/data";
 import { defaultParametres as DEFAULT_PARAMETRES } from "@/components/dashboard/data";
 import { useAuthStore } from "@/lib/auth-store";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { isSupabaseConfigured, isSupabaseConfiguredWithRuntime } from "@/lib/supabase/env";
+import {
+  ensureRuntimeSupabaseConfig,
+  getRuntimeSupabaseConfig,
+} from "@/lib/supabase/runtime-config";
 import {
   uploadCandidaturePiece,
   deleteStorageFiles,
@@ -234,6 +238,9 @@ export const useDataStore = create<DataState>((set, get) => ({
       set({ isLoading: true, error: null });
       try {
         if (!isSupabaseConfigured()) {
+          await ensureRuntimeSupabaseConfig();
+        }
+        if (!isSupabaseConfiguredWithRuntime(getRuntimeSupabaseConfig())) {
           throw new Error(
             "Configuration Supabase manquante. Vérifiez les variables d'environnement."
           );

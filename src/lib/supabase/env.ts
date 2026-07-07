@@ -10,6 +10,14 @@ export function isSupabaseConfigured(): boolean {
   return Boolean(getSupabaseUrl() && getSupabasePublishableKey());
 }
 
+/** Vérifie la config build-time OU runtime (après ensureRuntimeSupabaseConfig). */
+export function isSupabaseConfiguredWithRuntime(
+  runtime?: { url: string; anonKey: string } | null
+): boolean {
+  if (isSupabaseConfigured()) return true;
+  return Boolean(runtime?.url && runtime.anonKey);
+}
+
 /** Clé publique côté client (publishable ou anon legacy). */
 export function getSupabasePublishableKey(): string {
   return (
