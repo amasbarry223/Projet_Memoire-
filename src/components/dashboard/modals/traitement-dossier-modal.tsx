@@ -75,7 +75,7 @@ export function TraitementDossierModal() {
     setMissing([]);
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (action === "rejeter" && !motif.trim()) {
       toast({
         title: "Motif requis",
@@ -93,20 +93,25 @@ export function TraitementDossierModal() {
       return;
     }
 
-    // Applique réellement le changement dans le store
-    traiterDossier(dossierId, action, {
-      motif: motif.trim() || undefined,
-      piecesManquantes: missing.length > 0 ? missing : undefined,
-    });
-
-    toast({
-      title: "Dossier traité",
-      description: `Le dossier ${dossierId} a été ${cfg.verb}. Notification envoyée via n8n.`,
-    });
-    reset();
-    closeModal();
-    // Retour à la liste des candidatures (ferme la page détail si ouverte)
-    closeDossier();
+    try {
+      await traiterDossier(dossierId, action, {
+        motif: motif.trim() || undefined,
+        piecesManquantes: missing.length > 0 ? missing : undefined,
+      });
+      toast({
+        title: "Dossier traité",
+        description: `Le dossier ${dossierId} a été ${cfg.verb}. Notification envoyée via n8n.`,
+      });
+      reset();
+      closeModal();
+      closeDossier();
+    } catch (e) {
+      toast({
+        title: "Erreur",
+        description: e instanceof Error ? e.message : "Traitement échoué",
+        variant: "destructive",
+      });
+    }
   }
 
   return (
@@ -180,8 +185,8 @@ export function TraitementDossierModal() {
           {action === "valider" && (
             <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-4 text-sm text-gray-700">
               Vous êtes sur le point de <strong>valider</strong> ce dossier. Le
-              candidat sera automatiquement notifié par email (via n8n) et son
-              rôle passera de <code>candidat</code> à <code>étudiant</code>.
+              candidat sera automatiquement notifié par email (via n8n).
+              Pensez à créer son compte étudiant depuis le module Étudiants.
             </div>
           )}
         </div>

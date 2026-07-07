@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { inscriptionsParMois } from "./data";
+import { useDataStore } from "@/lib/data-store";
 
 type TooltipPayload = {
   payload: { mois: string; inscriptions: number };
@@ -36,6 +36,24 @@ function InscriptionsTooltip({
 }
 
 export function InscriptionsChart() {
+  const chartData = useDataStore((s) => s.inscriptionsParMois);
+  const year = new Date().getFullYear();
+
+  if (chartData.length === 0) {
+    return (
+      <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+        <h3 className="text-base font-semibold text-gray-900">
+          Évolution des inscriptions
+        </h3>
+        <p className="mt-8 text-center text-sm text-gray-400">
+          Aucune donnée disponible pour le moment.
+        </p>
+      </div>
+    );
+  }
+
+  const maxVal = Math.max(...chartData.map((d) => d.inscriptions), 1);
+
   return (
     <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
@@ -47,13 +65,13 @@ export function InscriptionsChart() {
         </div>
         <div className="flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700">
           <span className="size-2 rounded-full bg-blue-500" />
-          2024
+          {year}
         </div>
       </div>
       <div className="h-[220px] sm:h-[260px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={inscriptionsParMois}
+            data={chartData}
             barGap={4}
             margin={{ top: 10, right: 0, left: -16, bottom: 0 }}
           >
@@ -72,8 +90,7 @@ export function InscriptionsChart() {
               tickLine={false}
               axisLine={false}
               tick={{ fill: "#9ca3af", fontSize: 12 }}
-              domain={[0, 300]}
-              ticks={[0, 75, 150, 225, 300]}
+              domain={[0, Math.ceil(maxVal * 1.2)]}
             />
             <Tooltip
               cursor={{ fill: "rgba(0, 72, 192, 0.06)" }}

@@ -41,16 +41,17 @@ export function AlerteModal() {
   >("Prise en charge");
   const [commentaire, setCommentaire] = useState("");
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!alerte) return;
-    traiterAlerte(alerte.id, nouveauStatut, commentaire.trim() || undefined);
-    toast({
-      title: "Alerte traitée",
-      description: `Alerte ${alerte.id} — statut mis à jour « ${nouveauStatut} ». Journalisé dans l'audit.`,
-    });
-    setCommentaire("");
-    setNouveauStatut("Prise en charge");
-    closeModal();
+    try {
+      await traiterAlerte(alerte.id, nouveauStatut, commentaire.trim() || undefined);
+      toast({ title: "Alerte traitée", description: `Alerte ${alerte.id} — statut mis à jour « ${nouveauStatut} ».` });
+      setCommentaire("");
+      setNouveauStatut("Prise en charge");
+      closeModal();
+    } catch (e) {
+      toast({ title: "Erreur", description: e instanceof Error ? e.message : "Échec", variant: "destructive" });
+    }
   }
 
   return (

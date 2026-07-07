@@ -19,8 +19,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/view-store";
-import { useDataStore } from "@/lib/data-store";
 import { type Candidature } from "@/components/dashboard/data";
 import { useToast } from "@/hooks/use-toast";
 
@@ -36,15 +36,13 @@ function StatPill({
   color: string;
 }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-lg border border-gray-100 bg-white px-3 py-2">
-      <div className={`flex size-8 items-center justify-center rounded-md ${color}`}>
-        <Icon className="size-4" />
+    <div className="flex min-w-0 items-center gap-2 rounded-lg border border-gray-100 bg-white px-2.5 py-2">
+      <div className={cn("flex size-7 shrink-0 items-center justify-center rounded-md", color)}>
+        <Icon className="size-3.5" />
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] leading-none text-gray-400">{label}</p>
-        <p className="mt-0.5 truncate text-sm font-semibold text-gray-900">
-          {value}
-        </p>
+        <p className="text-[10px] leading-none text-gray-400">{label}</p>
+        <p className="mt-0.5 truncate text-xs font-semibold text-gray-900">{value}</p>
       </div>
     </div>
   );
@@ -62,15 +60,11 @@ function InfoCard({
   iconColor: string;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-gray-100 p-3.5">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-gray-50">
-        <Icon className={`size-4 ${iconColor}`} />
-      </div>
+    <div className="flex items-start gap-2.5 rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2.5">
+      <Icon className={cn("mt-0.5 size-3.5 shrink-0", iconColor)} />
       <div className="min-w-0">
-        <p className="text-xs text-gray-400">{label}</p>
-        <p className="mt-0.5 break-words text-sm font-medium text-gray-900">
-          {value}
-        </p>
+        <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">{label}</p>
+        <p className="mt-0.5 break-words text-sm font-medium text-gray-900">{value}</p>
       </div>
     </div>
   );
@@ -91,7 +85,7 @@ function statutBadgeClass(statut: string) {
   }
 }
 
-function statutDot(statut: string) {
+function statutAccent(statut: string) {
   switch (statut) {
     case "Validé":
       return "bg-blue-500";
@@ -132,254 +126,206 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
   const piecesManquantes = dossier.pieces.length - piecesPresentes;
 
   return (
-    <div className="space-y-6">
-      {/* ─── Barre de navigation supérieure ─── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+    <div className="flex h-full min-h-0 w-full flex-col">
+      {/* Barre supérieure sticky — fil d'Ariane + actions */}
+      <div className="sticky top-0 z-10 flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 py-2 sm:px-4 lg:px-5">
+        <div className="flex min-w-0 items-center gap-1.5 text-sm">
           <button
+            type="button"
             onClick={handleBack}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 font-medium text-gray-600 transition hover:bg-gray-100 hover:text-gray-900"
+            className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 font-medium text-gray-600 transition hover:bg-gray-100 hover:text-gray-900"
           >
             <ArrowLeft className="size-4" />
-            Candidatures
+            <span className="hidden sm:inline">Candidatures</span>
           </button>
-          <ChevronRight className="size-4 text-gray-300" />
-          <span className="font-mono text-gray-400">{dossier.id}</span>
+          <ChevronRight className="size-3.5 shrink-0 text-gray-300" />
+          <span className="truncate font-mono text-xs font-medium text-gray-500 sm:text-sm">
+            {dossier.id}
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 border-orange-200 px-2.5 text-xs text-orange-600 hover:bg-orange-50"
+            onClick={() => handleAction("incomplet")}
+          >
+            <AlertCircle className="size-3.5" />
+            <span className="hidden sm:inline">Incomplet</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 border-red-200 px-2.5 text-xs text-red-600 hover:bg-red-50"
+            onClick={() => handleAction("rejeter")}
+          >
+            <XCircle className="size-3.5" />
+            <span className="hidden sm:inline">Rejeter</span>
+          </Button>
+          <Button
+            size="sm"
+            className="h-8 gap-1.5 bg-blue-500 px-2.5 text-xs text-white hover:bg-blue-700"
+            onClick={() => handleAction("valider")}
+          >
+            <CheckCircle2 className="size-3.5" />
+            Valider
+          </Button>
         </div>
       </div>
 
-      {/* ─── En-tête du dossier ─── */}
-      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-        {/* Bandeau coloré selon le statut */}
-        <div className="relative h-1.5 w-full">
-          <div
-            className={`h-full w-full ${
-              dossier.statut === "Validé"
-                ? "bg-blue-500"
-                : dossier.statut === "En attente"
-                  ? "bg-yellow-500"
-                  : dossier.statut === "Incomplet"
-                    ? "bg-orange-500"
-                    : "bg-red-500"
-            }`}
-          />
-        </div>
-
-        <div className="p-5 sm:p-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            {/* Identité */}
-            <div className="flex items-start gap-4">
-              <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 text-xl font-bold text-white shadow-lg shadow-blue-500/20">
+      {/* En-tête identité — pleine largeur */}
+      <div className="shrink-0 border-b border-gray-200 bg-white">
+        <div className={cn("h-1 w-full", statutAccent(dossier.statut))} />
+        <div className="px-3 py-3 sm:px-4 lg:px-5">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-lg font-bold text-white shadow-md shadow-blue-500/20">
                 {dossier.prenom.charAt(0)}
                 {dossier.nom.charAt(0)}
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-bold text-gray-900">
+                  <h1 className="truncate text-lg font-bold text-gray-900 sm:text-xl">
                     {dossier.prenom} {dossier.nom}
                   </h1>
                   <span
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statutBadgeClass(dossier.statut)}`}
+                    className={cn(
+                      "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold",
+                      statutBadgeClass(dossier.statut)
+                    )}
                   >
-                    <span
-                      className={`size-1.5 rounded-full ${statutDot(dossier.statut)}`}
-                    />
+                    <span className={cn("size-1.5 rounded-full", statutAccent(dossier.statut))} />
                     {dossier.statut}
                   </span>
                 </div>
-                <p className="mt-1 flex items-center gap-2 text-sm text-gray-500">
-                  <Hash className="size-3.5" />
-                  <span className="font-mono">{dossier.id}</span>
+                <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-500">
+                  <span className="inline-flex items-center gap-1">
+                    <Hash className="size-3" />
+                    {dossier.id}
+                  </span>
                   <span className="text-gray-300">·</span>
-                  <Calendar className="size-3.5" />
-                  Soumis le {dossier.dateSoumission}
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="size-3" />
+                    {dossier.dateSoumission}
+                  </span>
+                  <span className="text-gray-300">·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <GraduationCap className="size-3" />
+                    {dossier.filiere} — {dossier.niveau}
+                  </span>
                 </p>
               </div>
             </div>
 
-            {/* Actions rapides */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="outline"
-                className="gap-2 border-orange-200 text-orange-600 hover:bg-orange-50 hover:text-orange-700"
-                onClick={() => handleAction("incomplet")}
-              >
-                <AlertCircle className="size-4" />
-                Marquer incomplet
-              </Button>
-              <Button
-                variant="outline"
-                className="gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                onClick={() => handleAction("rejeter")}
-              >
-                <XCircle className="size-4" />
-                Rejeter
-              </Button>
-              <Button
-                className="gap-2 bg-blue-500 text-white hover:bg-blue-700"
-                onClick={() => handleAction("valider")}
-              >
-                <CheckCircle2 className="size-4" />
-                Valider
-              </Button>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:max-w-xl xl:flex-1">
+              <StatPill
+                icon={GraduationCap}
+                label="Filière"
+                value={dossier.filiere}
+                color="bg-blue-50 text-blue-500"
+              />
+              <StatPill
+                icon={FileText}
+                label="Niveau"
+                value={dossier.niveau}
+                color="bg-yellow-50 text-yellow-600"
+              />
+              <StatPill
+                icon={CheckCircle2}
+                label="Pièces"
+                value={`${piecesPresentes}/${dossier.pieces.length}`}
+                color="bg-blue-50 text-blue-500"
+              />
+              <StatPill
+                icon={BrainCircuit}
+                label="Complétude"
+                value={`${dossier.completude}%`}
+                color={
+                  dossier.completude === 100
+                    ? "bg-emerald-50 text-emerald-600"
+                    : "bg-yellow-50 text-yellow-600"
+                }
+              />
             </div>
-          </div>
-
-          {/* Stats pills */}
-          <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-            <StatPill
-              icon={GraduationCap}
-              label="Filière visée"
-              value={dossier.filiere}
-              color="bg-blue-50 text-blue-500"
-            />
-            <StatPill
-              icon={FileText}
-              label="Niveau"
-              value={dossier.niveau}
-              color="bg-yellow-50 text-yellow-600"
-            />
-            <StatPill
-              icon={CheckCircle2}
-              label="Pièces fournies"
-              value={`${piecesPresentes}/${dossier.pieces.length}`}
-              color="bg-blue-50 text-blue-500"
-            />
-            <StatPill
-              icon={BrainCircuit}
-              label="Complétude IA"
-              value={`${dossier.completude}%`}
-              color={
-                dossier.completude === 100
-                  ? "bg-blue-50 text-blue-500"
-                  : "bg-yellow-50 text-yellow-600"
-              }
-            />
           </div>
         </div>
       </div>
 
-      {/* ─── Grille principale 2 colonnes ─── */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Colonne gauche : infos + formation (2/3) */}
-        <div className="space-y-6 lg:col-span-2">
+      {/* Contenu principal — grille pleine largeur */}
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 p-3 sm:p-4 lg:grid-cols-12 lg:gap-4 lg:p-5">
+        {/* Colonne gauche */}
+        <div className="flex flex-col gap-3 lg:col-span-8 lg:gap-4">
           {/* Informations personnelles */}
-          <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-blue-50">
-                <User className="size-4 text-blue-500" />
-              </div>
-              <h2 className="text-base font-semibold text-gray-900">
-                Informations personnelles
-              </h2>
+          <section className="rounded-xl border border-gray-200 bg-white">
+            <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2.5 sm:px-4">
+              <User className="size-4 text-blue-500" />
+              <h2 className="text-sm font-semibold text-gray-900">Informations personnelles</h2>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <InfoCard
-                icon={User}
-                label="Prénom"
-                value={dossier.prenom}
-                iconColor="text-gray-400"
-              />
-              <InfoCard
-                icon={User}
-                label="Nom"
-                value={dossier.nom}
-                iconColor="text-gray-400"
-              />
-              <InfoCard
-                icon={Calendar}
-                label="Date de naissance"
-                value={dossier.dateNaissance}
-                iconColor="text-gray-400"
-              />
-              <InfoCard
-                icon={Phone}
-                label="Téléphone"
-                value={dossier.telephone}
-                iconColor="text-gray-400"
-              />
-              <InfoCard
-                icon={Mail}
-                label="Email"
-                value={dossier.email}
-                iconColor="text-gray-400"
-              />
-              <InfoCard
-                icon={MapPin}
-                label="Adresse"
-                value={dossier.adresse}
-                iconColor="text-gray-400"
-              />
+            <div className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-2 sm:p-4 lg:grid-cols-3">
+              <InfoCard icon={User} label="Prénom" value={dossier.prenom} iconColor="text-gray-400" />
+              <InfoCard icon={User} label="Nom" value={dossier.nom} iconColor="text-gray-400" />
+              <InfoCard icon={Calendar} label="Naissance" value={dossier.dateNaissance} iconColor="text-gray-400" />
+              <InfoCard icon={Phone} label="Téléphone" value={dossier.telephone} iconColor="text-gray-400" />
+              <InfoCard icon={Mail} label="Email" value={dossier.email} iconColor="text-gray-400" />
+              <InfoCard icon={MapPin} label="Adresse" value={dossier.adresse} iconColor="text-gray-400" />
             </div>
           </section>
 
           {/* Pièces justificatives */}
-          <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
+          <section className="flex-1 rounded-xl border border-gray-200 bg-white">
+            <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2.5 sm:px-4">
               <div className="flex items-center gap-2">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-blue-50">
-                  <FileText className="size-4 text-blue-500" />
-                </div>
-                <h2 className="text-base font-semibold text-gray-900">
-                  Pièces justificatives
-                </h2>
+                <FileText className="size-4 text-blue-500" />
+                <h2 className="text-sm font-semibold text-gray-900">Pièces justificatives</h2>
               </div>
-              <span className="text-xs text-gray-400">
-                {piecesPresentes} présente{piecesPresentes > 1 ? "s" : ""}
+              <span className="text-[11px] text-gray-400">
+                {piecesPresentes}/{dossier.pieces.length}
                 {piecesManquantes > 0 && (
-                  <span className="text-red-500">
-                    {" "}
-                    · {piecesManquantes} manquante
-                    {piecesManquantes > 1 ? "s" : ""}
-                  </span>
+                  <span className="text-red-500"> · {piecesManquantes} manquante{piecesManquantes > 1 ? "s" : ""}</span>
                 )}
               </span>
             </div>
-            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <ul className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-2 sm:p-4 xl:grid-cols-2">
               {dossier.pieces.map((piece, idx) => (
                 <li
                   key={idx}
-                  className={`flex items-center gap-3 rounded-lg border p-3 transition ${
+                  className={cn(
+                    "flex items-center gap-2.5 rounded-lg border px-3 py-2.5 transition",
                     piece.present
-                      ? "border-gray-100 hover:border-blue-200 hover:bg-blue-50/30"
-                      : "border-red-100 bg-red-50/30"
-                  }`}
+                      ? "border-gray-100 hover:border-blue-200 hover:bg-blue-50/40"
+                      : "border-red-100 bg-red-50/40"
+                  )}
                 >
                   <div
-                    className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
-                      piece.present
-                        ? "bg-blue-50 text-blue-500"
-                        : "bg-red-50 text-red-500"
-                    }`}
+                    className={cn(
+                      "flex size-8 shrink-0 items-center justify-center rounded-md",
+                      piece.present ? "bg-blue-50 text-blue-500" : "bg-red-50 text-red-500"
+                    )}
                   >
                     {piece.present ? (
-                      <FileText className="size-4" />
+                      <FileText className="size-3.5" />
                     ) : (
-                      <AlertCircle className="size-4" />
+                      <AlertCircle className="size-3.5" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900">
-                      {piece.nom}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {piece.present
-                        ? `${piece.type} · ${piece.taille}`
-                        : "Pièce manquante"}
+                    <p className="truncate text-sm font-medium text-gray-900">{piece.nom}</p>
+                    <p className="text-[11px] text-gray-400">
+                      {piece.present ? `${piece.type} · ${piece.taille}` : "Pièce manquante"}
                     </p>
                   </div>
                   {piece.present ? (
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-8 text-gray-400 hover:bg-blue-50 hover:text-blue-700"
+                      className="size-7 shrink-0 text-gray-400 hover:bg-blue-50 hover:text-blue-700"
                       onClick={() => handleDownload(piece.nom)}
                       aria-label={`Télécharger ${piece.nom}`}
                     >
-                      <Download className="size-4" />
+                      <Download className="size-3.5" />
                     </Button>
                   ) : (
-                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-600">
+                    <span className="shrink-0 rounded bg-red-100 px-1.5 py-0.5 text-[9px] font-bold text-red-600">
                       MANQUANT
                     </span>
                   )}
@@ -389,81 +335,65 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
           </section>
         </div>
 
-        {/* Colonne droite : synthèse IA + historique (1/3) */}
-        <div className="space-y-6">
+        {/* Colonne droite */}
+        <div className="flex flex-col gap-3 lg:col-span-4 lg:gap-4">
           {/* Synthèse IA */}
-          <section className="overflow-hidden rounded-2xl border border-yellow-100 bg-white shadow-sm">
-            <div className="flex items-center gap-2 border-b border-yellow-100 bg-yellow-50/60 px-5 py-3.5">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-yellow-100">
-                <BrainCircuit className="size-4 text-yellow-700" />
-              </div>
-              <div>
-                <h2 className="text-sm font-semibold text-gray-900">
-                  Synthèse d&apos;analyse IA
-                </h2>
-                <p className="text-[11px] text-gray-400">
-                  Généré automatiquement par Claude
-                </p>
+          <section className="overflow-hidden rounded-xl border border-yellow-200 bg-white">
+            <div className="flex items-center gap-2 border-b border-yellow-100 bg-yellow-50/80 px-3 py-2.5 sm:px-4">
+              <BrainCircuit className="size-4 text-yellow-700" />
+              <div className="min-w-0">
+                <h2 className="text-sm font-semibold text-gray-900">Synthèse IA</h2>
+                <p className="text-[10px] text-gray-400">Analyse automatique · Claude</p>
               </div>
             </div>
-            <div className="p-5">
-              <div className="mb-4">
-                <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-500">
-                    Complétude du dossier
-                  </span>
+            <div className="p-3 sm:p-4">
+              <div className="mb-3">
+                <div className="mb-1 flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-gray-500">Complétude</span>
                   <span
-                    className={`text-sm font-bold ${
-                      dossier.completude === 100
-                        ? "text-blue-700"
-                        : "text-yellow-700"
-                    }`}
+                    className={cn(
+                      "text-sm font-bold",
+                      dossier.completude === 100 ? "text-blue-700" : "text-yellow-700"
+                    )}
                   >
                     {dossier.completude}%
                   </span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
                   <div
-                    className={`h-full rounded-full transition-all ${
-                      dossier.completude === 100
-                        ? "bg-blue-500"
-                        : "bg-yellow-500"
-                    }`}
+                    className={cn(
+                      "h-full rounded-full",
+                      dossier.completude === 100 ? "bg-blue-500" : "bg-yellow-500"
+                    )}
                     style={{ width: `${dossier.completude}%` }}
                   />
                 </div>
               </div>
-              <p className="text-sm leading-relaxed text-gray-700">
-                {dossier.syntheseIA}
-              </p>
+              <p className="text-sm leading-relaxed text-gray-700">{dossier.syntheseIA}</p>
             </div>
           </section>
 
-          {/* Historique / Timeline */}
-          <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-gray-100">
-                <Clock className="size-4 text-gray-500" />
-              </div>
-              <h2 className="text-sm font-semibold text-gray-900">
-                Historique des actions
-              </h2>
+          {/* Historique */}
+          <section className="flex-1 rounded-xl border border-gray-200 bg-white">
+            <div className="flex items-center gap-2 border-b border-gray-100 px-3 py-2.5 sm:px-4">
+              <Clock className="size-4 text-gray-500" />
+              <h2 className="text-sm font-semibold text-gray-900">Historique</h2>
             </div>
-            <ol className="relative space-y-4 border-l border-gray-200 pl-4">
+            <ol className="space-y-3 p-3 sm:p-4">
               {dossier.historique.map((h, idx) => (
-                <li key={idx} className="relative">
-                  {/* Point timeline */}
+                <li key={idx} className="relative flex gap-3">
                   <span
-                    className={`absolute -left-[21px] top-1 size-2.5 rounded-full ring-4 ring-white ${
-                      idx === dossier.historique.length - 1
-                        ? "bg-blue-500"
-                        : "bg-gray-300"
-                    }`}
+                    className={cn(
+                      "mt-1.5 size-2 shrink-0 rounded-full",
+                      idx === dossier.historique.length - 1 ? "bg-blue-500 ring-4 ring-blue-100" : "bg-gray-300"
+                    )}
                   />
-                  <p className="text-sm font-medium text-gray-900">{h.action}</p>
-                  <p className="mt-0.5 text-xs text-gray-400">
-                    {h.date} · {h.auteur}
-                  </p>
+                  <div className="min-w-0 flex-1 border-b border-gray-50 pb-3 last:border-0 last:pb-0">
+                    <p className="text-sm font-medium text-gray-900">{h.action}</p>
+                    <p className="mt-0.5 text-[11px] text-gray-400">
+                      {h.date} · {h.auteur}
+                    </p>
+                  </div>
                 </li>
               ))}
             </ol>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useAppStore } from "@/lib/view-store";
 import { useAuthStore } from "@/lib/auth-store";
 import { Sidebar } from "@/components/dashboard/sidebar";
@@ -20,6 +21,19 @@ import { AuditView } from "@/components/dashboard/views/audit-view";
 import { ParametresView } from "@/components/dashboard/views/parametres-view";
 import { useDataStore } from "@/lib/data-store";
 import { roleViews, type ViewKey } from "@/components/dashboard/data";
+import { useAuthHydrated } from "@/hooks/use-auth-hydrated";
+
+const FULL_WIDTH_VIEWS: ViewKey[] = [
+  "candidatures",
+  "etudiants",
+  "enseignants",
+  "suivi",
+  "alertes",
+  "rapports",
+  "filieres",
+  "utilisateurs",
+  "audit",
+];
 
 const views: Record<ViewKey, React.ComponentType> = {
   dashboard: DashboardView,
@@ -36,10 +50,19 @@ const views: Record<ViewKey, React.ComponentType> = {
 };
 
 export default function Home() {
+  const hasHydrated = useAuthHydrated();
   const session = useAuthStore((s) => s.session);
+  const initializeData = useDataStore((s) => s.initialize);
+  const isDataLoading = useDataStore((s) => s.isLoading);
   const view = useAppStore((s) => s.view);
   const selectedDossierId = useAppStore((s) => s.selectedDossierId);
   const candidatures = useDataStore((s) => s.candidatures);
+
+  useEffect(() => {
+    if (session) {
+      void initializeData();
+    }
+  }, [session, initializeData]);
 
   // RBAC côté rendu : si la vue courante n'est pas autorisée pour le rôle,
   // on affiche la première vue autorisée (sans écrire dans le store pendant le rendu).
@@ -47,12 +70,28 @@ export default function Home() {
   const safeView: ViewKey =
     !session || allowed.includes(view) ? view : allowed[0] ?? "dashboard";
 
+  if (!hasHydrated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">
+        Chargement…
+      </div>
+    );
+  }
+
+  if (session && isDataLoading && candidatures.length === 0) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">
+        Chargement des données…
+      </div>
+    );
+  }
+
   // Non authentifié → écran de connexion
   if (!session) {
     return <LoginView />;
   }
 
-  // Sous-vue détail de dossier (page pleine largeur au lieu de modale)
+  // Sous-vue détail de dossier — pleine largeur, padding réduit
   if (safeView === "candidatures" && selectedDossierId) {
     const dossier = candidatures.find((c) => c.id === selectedDossierId);
     if (dossier) {
@@ -61,10 +100,8 @@ export default function Home() {
           <Sidebar />
           <div className="flex min-w-0 flex-1 flex-col">
             <Header />
-            <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8">
-              <div className="mx-auto w-full max-w-[1200px]">
-                <DossierDetailView dossier={dossier} />
-              </div>
+            <main className="flex-1 overflow-y-auto">
+              <DossierDetailView dossier={dossier} />
             </main>
           </div>
           <ModalHost />
@@ -74,6 +111,7 @@ export default function Home() {
   }
 
   const ActiveView = views[safeView] ?? DashboardView;
+  const isFullWidthView = FULL_WIDTH_VIEWS.includes(safeView);
 
   return (
     <div className="flex h-screen bg-gray-50 text-gray-900 overflow-hidden">
@@ -82,7 +120,13 @@ export default function Home() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Header />
 
-        <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8">
+        <main
+          className={
+            isFullWidthView
+              ? "flex-1 overflow-y-auto"
+              : "flex-1 overflow-y-auto px-4 py-6 lg:px-8"
+          }
+        >
           <ActiveView />
         </main>
       </div>

@@ -18,9 +18,12 @@ export type ModalState =
       type: "filiere";
       sub: "filiere" | "classe" | "matiere";
       filiereId?: string;
+      editId?: string;
     }
   | { type: "alerte"; alerteId: string }
-  | { type: "note"; etudiant?: string };
+  | { type: "note"; etudiant?: string }
+  | { type: "absence"; etudiant?: string }
+  | { type: "candidature" };
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 

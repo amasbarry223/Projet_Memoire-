@@ -5,6 +5,8 @@ import { TraitementDossierModal } from "./traitement-dossier-modal";
 import { FiliereModal } from "./filiere-modal";
 import { AlerteModal } from "./alerte-modal";
 import { NoteModal } from "./note-modal";
+import { AbsenceModal } from "./absence-modal";
+import { CandidatureModal } from "./candidature-modal";
 
 // Hôte central qui rend la modale active selon l'état du store
 export function ModalHost() {
@@ -19,6 +21,10 @@ export function ModalHost() {
       return <AlerteModal />;
     case "note":
       return <NoteModal />;
+    case "absence":
+      return <AbsenceModal />;
+    case "candidature":
+      return <CandidatureModal />;
     default:
       return null;
   }

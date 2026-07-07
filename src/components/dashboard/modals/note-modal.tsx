@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useAppStore } from "@/lib/view-store";
 import { useDataStore } from "@/lib/data-store";
+import { useAuthStore } from "@/lib/auth-store";
 import { useToast } from "@/hooks/use-toast";
 
 export function NoteModal() {
@@ -30,28 +31,62 @@ export function NoteModal() {
   const addNote = useDataStore((s) => s.addNote);
   const etudiants = useDataStore((s) => s.etudiants);
   const filieres = useDataStore((s) => s.filieres);
+  const enseignants = useDataStore((s) => s.enseignants);
+  const session = useAuthStore((s) => s.session);
   const { toast } = useToast();
 
   const open = modal.type === "note";
   const presetEtudiantId =
     modal.type === "note" ? modal.etudiant : undefined;
 
+  // Un enseignant ne doit pouvoir saisir des notes que pour ses propres
+  // classes et matières (F4.1) — on restreint les listes en conséquence.
+  const monEnseignant =
+    session?.role === "enseignant"
+      ? enseignants.find(
+          (e) => e.nom === session.nom && e.prenom === session.prenom
+        )
+      : undefined;
+
+  const etudiantsScope = monEnseignant
+    ? etudiants.filter((e) => monEnseignant.classes.includes(e.classe))
+    : etudiants;
+
+  const filieresScope = monEnseignant
+    ? filieres
+        .map((f) => ({
+          ...f,
+          matieres: f.matieres.filter((m) =>
+            monEnseignant.matieres.includes(m.nom)
+          ),
+        }))
+        .filter(
+          (f) =>
+            f.matieres.length > 0 &&
+            f.classes.some((c) => monEnseignant.classes.includes(c.nom))
+        )
+    : filieres;
+
+  const presetInScope =
+    presetEtudiantId !== undefined &&
+    etudiantsScope.some((e) => e.id === presetEtudiantId);
+
   const [etudiantId, setEtudiantId] = useState(
-    presetEtudiantId ??
-      etudiants[0]?.id ??
+    (presetInScope ? presetEtudiantId : undefined) ??
+      etudiantsScope[0]?.id ??
       ""
   );
-  const [filiereId, setFiliereId] = useState(filieres[0]?.id ?? "");
-  const [matiere, setMatiere] = useState(filieres[0]?.matieres[0]?.nom ?? "");
+  const [filiereId, setFiliereId] = useState(filieresScope[0]?.id ?? "");
+  const [matiere, setMatiere] = useState(filieresScope[0]?.matieres[0]?.nom ?? "");
   const [note, setNote] = useState("");
   const [sur, setSur] = useState("20");
   const [periode, setPeriode] = useState("Semestre 1");
 
   const filiereCourante =
-    filieres.find((f) => f.id === filiereId) ?? filieres[0];
-  const etudiantCourant = etudiants.find((e) => e.id === etudiantId);
+    filieresScope.find((f) => f.id === filiereId) ?? filieresScope[0];
+  const etudiantCourant = etudiantsScope.find((e) => e.id === etudiantId);
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const noteNum = parseFloat(note);
     const surNum = parseFloat(sur);
     if (isNaN(noteNum) || isNaN(surNum) || noteNum < 0 || noteNum > surNum) {
@@ -71,23 +106,26 @@ export function NoteModal() {
       return;
     }
 
-    addNote({
-      etudiant: `${etudiantCourant.prenom} ${etudiantCourant.nom}`,
-      matiere,
-      classe: etudiantCourant.classe,
-      note: noteNum,
-      sur: surNum,
-      coefficient:
-        filiereCourante.matieres.find((m) => m.nom === matiere)?.coefficient ?? 1,
-      periode,
-    });
-
-    toast({
-      title: "Note enregistrée",
-      description: `${etudiantCourant.prenom} ${etudiantCourant.nom} — ${matiere} : ${noteNum}/${surNum}. Visible par l'étudiant et le responsable.`,
-    });
-    setNote("");
-    closeModal();
+    try {
+      await addNote({
+        etudiant: `${etudiantCourant.prenom} ${etudiantCourant.nom}`,
+        matiere,
+        classe: etudiantCourant.classe,
+        note: noteNum,
+        sur: surNum,
+        coefficient:
+          filiereCourante.matieres.find((m) => m.nom === matiere)?.coefficient ?? 1,
+        periode,
+      });
+      toast({
+        title: "Note enregistrée",
+        description: `${etudiantCourant.prenom} ${etudiantCourant.nom} — ${matiere} : ${noteNum}/${surNum}.`,
+      });
+      setNote("");
+      closeModal();
+    } catch (e) {
+      toast({ title: "Erreur", description: e instanceof Error ? e.message : "Échec", variant: "destructive" });
+    }
   }
 
   return (
@@ -112,7 +150,7 @@ export function NoteModal() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {etudiants.map((e) => (
+                {etudiantsScope.map((e) => (
                   <SelectItem key={e.id} value={e.id}>
                     {e.prenom} {e.nom} — {e.classe}
                   </SelectItem>
@@ -128,7 +166,7 @@ export function NoteModal() {
                 value={filiereId}
                 onValueChange={(v) => {
                   setFiliereId(v);
-                  const f = filieres.find((x) => x.id === v);
+                  const f = filieresScope.find((x) => x.id === v);
                   if (f) setMatiere(f.matieres[0]?.nom ?? "");
                 }}
               >
@@ -136,7 +174,7 @@ export function NoteModal() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {filieres.map((f) => (
+                  {filieresScope.map((f) => (
                     <SelectItem key={f.id} value={f.id}>
                       {f.nom}
                     </SelectItem>

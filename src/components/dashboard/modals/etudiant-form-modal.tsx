@@ -20,9 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  filieres,
   type Etudiant,
 } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
 import { useToast } from "@/hooks/use-toast";
 
 export function EtudiantFormModal({
@@ -37,6 +37,7 @@ export function EtudiantFormModal({
   onSave: (data: Omit<Etudiant, "id"> & { id?: string }) => void;
 }) {
   const { toast } = useToast();
+  const filieres = useDataStore((s) => s.filieres);
   const isEditing = !!etudiant;
   const formKey = etudiant?.id ?? "new";
 
@@ -141,7 +142,7 @@ export function EtudiantFormModal({
             <Label>Filière</Label>
             <Select
               name="filiere"
-              defaultValue={etudiant?.filiere ?? filieres[0].nom}
+              defaultValue={etudiant?.filiere ?? filieres[0]?.nom ?? ""}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />

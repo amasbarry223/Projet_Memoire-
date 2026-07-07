@@ -16,12 +16,12 @@ import { navItems } from "./data";
 import { Logo } from "./logo";
 import { useAppStore } from "@/lib/view-store";
 import { useAuthStore } from "@/lib/auth-store";
+import { logoutSession } from "@/lib/session-actions";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const view = useAppStore((s) => s.view);
   const setView = useAppStore((s) => s.setView);
-  const logout = useAuthStore((s) => s.logout);
   const allowedViews = useAuthStore((s) => s.allowedViews());
 
   const visibleItems = navItems.filter((item) =>
@@ -35,7 +35,7 @@ export function MobileNav() {
 
   function handleLogout() {
     setOpen(false);
-    logout();
+    logoutSession();
   }
 
   return (
@@ -50,13 +50,13 @@ export function MobileNav() {
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] p-0 flex flex-col">
-        <SheetHeader className="flex h-24 items-center justify-center border-b border-gray-100 px-6 py-0">
+      <SheetContent side="left" className="w-[280px] border-sidebar-border bg-sidebar p-0 text-sidebar-foreground flex flex-col">
+        <SheetHeader className="flex h-24 items-center justify-center border-b border-white/10 px-6 py-0">
           <SheetTitle>
             <Logo size={52} showText={false} />
           </SheetTitle>
         </SheetHeader>
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin">
           <ul className="space-y-1">
             {visibleItems.map((item) => {
               const isActive = view === item.key;
@@ -67,11 +67,12 @@ export function MobileNav() {
                     <button
                       type="button"
                       onClick={() => handleSelect(item.key)}
+                      aria-current={isActive ? "page" : undefined}
                       className={cn(
                         "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                         isActive
-                          ? "bg-blue-500 text-white"
-                          : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
+                          ? "bg-blue-500 text-white shadow-md shadow-blue-500/30"
+                          : "text-slate-300 hover:bg-white/10 hover:text-white"
                       )}
                     >
                       <Icon
@@ -79,7 +80,7 @@ export function MobileNav() {
                           "size-[18px] shrink-0",
                           isActive
                             ? "text-white"
-                            : "text-gray-400 group-hover:text-blue-500"
+                            : "text-slate-400 group-hover:text-blue-300"
                         )}
                       />
                       <span className="flex-1 text-left">{item.label}</span>
@@ -93,13 +94,13 @@ export function MobileNav() {
             })}
           </ul>
         </nav>
-        <div className="border-t border-gray-100 p-3">
+        <div className="border-t border-white/10 p-3">
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-red-50 hover:text-red-600"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-red-500/15 hover:text-red-300"
           >
-            <LogOut className="size-[18px] text-gray-400" />
+            <LogOut className="size-[18px] text-slate-400" />
             <span className="flex-1 text-left">Déconnexion</span>
           </button>
         </div>

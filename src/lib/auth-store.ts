@@ -1,20 +1,9 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type {
-  Role,
-  ViewKey,
-  DemoAccount,
-} from "@/components/dashboard/data";
-import {
-  demoAccounts,
-  defaultView,
-  roleViews,
-} from "@/components/dashboard/data";
-import { useAppStore } from "@/lib/view-store";
-
-// ─── Session utilisateur ─────────────────────────────────────────────────────
+import type { Role, ViewKey } from "@/components/dashboard/data";
+import { roleViews } from "@/components/dashboard/data";
+import { getSupabase } from "@/lib/supabase/client";
 
 export type Session = {
   email: string;
@@ -25,66 +14,87 @@ export type Session = {
 
 interface AuthState {
   session: Session | null;
-  login: (email: string, password: string) => { ok: boolean; error?: string };
-  loginAs: (account: DemoAccount) => void;
-  logout: () => void;
-  /** Vues accessibles au rôle courant */
+  isLoading: boolean;
+  isInitialized: boolean;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  resetPassword: (email: string) => Promise<{ ok: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  initialize: () => Promise<void>;
   allowedViews: () => ViewKey[];
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set, get) => ({
-      session: null,
-      login: (email, password) => {
-        const account = demoAccounts.find(
-          (a) => a.email.toLowerCase() === email.toLowerCase()
-        );
-        if (!account) {
-          return { ok: false, error: "Aucun compte trouvé pour cet email." };
-        }
-        if (account.password !== password) {
-          return { ok: false, error: "Mot de passe incorrect." };
-        }
-        set({
-          session: {
-            email: account.email,
-            nom: account.nom,
-            prenom: account.prenom,
-            role: account.role,
-          },
-        });
-        // À la connexion, bascule vers la vue par défaut du rôle
-        useAppStore.getState().setView(defaultView[account.role]);
-        return { ok: true };
-      },
-      loginAs: (account) => {
-        set({
-          session: {
-            email: account.email,
-            nom: account.nom,
-            prenom: account.prenom,
-            role: account.role,
-          },
-        });
-        useAppStore.getState().setView(defaultView[account.role]);
-      },
-      logout: () => {
-        set({ session: null });
-        // Réinitialise la navigation et ferme tout dossier ouvert
-        useAppStore.getState().setView("dashboard");
-        useAppStore.getState().closeDossier();
-        useAppStore.getState().closeModal();
-      },
-      allowedViews: () => {
-        const role = get().session?.role;
-        if (!role) return [];
-        return roleViews[role];
-      },
-    }),
-    {
-      name: "esgic-session",
-      partialize: (state) => ({ session: state.session }),
+async function loadSession(): Promise<Session | null> {
+  const sb = getSupabase();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return null;
+  const { data: profile } = await sb.from("profiles").select("*").eq("id", user.id).single();
+  if (!profile) return null;
+  return {
+    email: profile.email,
+    nom: profile.nom,
+    prenom: profile.prenom,
+    role: profile.role as Role,
+  };
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
+  session: null,
+  isLoading: false,
+  isInitialized: false,
+
+  initialize: async () => {
+    if (get().isInitialized) return;
+    set({ isLoading: true });
+    const sb = getSupabase();
+    sb.auth.onAuthStateChange(async () => {
+      const session = await loadSession();
+      set({ session });
+    });
+    const session = await loadSession();
+    set({ session, isInitialized: true, isLoading: false });
+  },
+
+  login: async (email, password) => {
+    set({ isLoading: true });
+    const sb = getSupabase();
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      set({ isLoading: false });
+      return { ok: false, error: error.message === "Invalid login credentials" ? "Mot de passe incorrect." : error.message };
     }
-  )
-);
+    const session = await loadSession();
+    if (!session) {
+      set({ isLoading: false });
+      return { ok: false, error: "Profil utilisateur introuvable." };
+    }
+    await sb.from("profiles").update({ derniere_connexion: new Date().toISOString() }).eq("id", (await sb.auth.getUser()).data.user!.id);
+    set({ session, isLoading: false });
+    return { ok: true };
+  },
+
+  resetPassword: async (email) => {
+    if (!email.trim()) {
+      return { ok: false, error: "Veuillez saisir votre adresse email." };
+    }
+    const sb = getSupabase();
+    const redirectTo =
+      typeof window !== "undefined" ? `${window.location.origin}/` : undefined;
+    const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo,
+    });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  },
+
+  logout: async () => {
+    const sb = getSupabase();
+    await sb.auth.signOut();
+    set({ session: null });
+  },
+
+  allowedViews: () => {
+    const role = get().session?.role;
+    if (!role) return [];
+    return roleViews[role];
+  },
+}));

@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { absentéismeParMois } from "./data";
+import { useDataStore } from "@/lib/data-store";
 
 type TooltipPayload = {
   payload: { mois: string; taux: number };
@@ -36,6 +36,23 @@ function AbsenteismeTooltip({
 }
 
 export function AbsenteismeChart() {
+  const chartData = useDataStore((s) => s.absentéismeParMois);
+
+  if (chartData.length === 0) {
+    return (
+      <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+        <h3 className="text-base font-semibold text-gray-900">
+          Taux d&apos;absentéisme
+        </h3>
+        <p className="mt-8 text-center text-sm text-gray-400">
+          Aucune donnée disponible pour le moment.
+        </p>
+      </div>
+    );
+  }
+
+  const maxTaux = Math.max(...chartData.map((d) => d.taux), 1);
+
   return (
     <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
@@ -53,7 +70,7 @@ export function AbsenteismeChart() {
       <div className="h-[220px] sm:h-[260px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
-            data={absentéismeParMois}
+            data={chartData}
             margin={{ top: 10, right: 12, left: -8, bottom: 0 }}
           >
             <defs>
@@ -78,8 +95,7 @@ export function AbsenteismeChart() {
               axisLine={false}
               tick={{ fill: "#9ca3af", fontSize: 12 }}
               tickFormatter={(value) => `${value}%`}
-              domain={[0, 12]}
-              ticks={[0, 3, 6, 9, 12]}
+              domain={[0, Math.ceil(maxTaux * 1.2)]}
             />
             <Tooltip content={<AbsenteismeTooltip />} />
             <Area

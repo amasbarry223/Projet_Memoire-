@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { BookOpen, School, BookMarked } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BookOpen, School, BookMarked, Pencil } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -30,14 +30,18 @@ export function FiliereModal() {
   const closeModal = useAppStore((s) => s.closeModal);
   const filieres = useDataStore((s) => s.filieres);
   const addFiliere = useDataStore((s) => s.addFiliere);
+  const updateFiliere = useDataStore((s) => s.updateFiliere);
   const addClasse = useDataStore((s) => s.addClasse);
+  const updateClasse = useDataStore((s) => s.updateClasse);
   const addMatiere = useDataStore((s) => s.addMatiere);
+  const updateMatiere = useDataStore((s) => s.updateMatiere);
   const { toast } = useToast();
 
   const sub = modal.type === "filiere" ? modal.sub : "filiere";
-  const presetFiliereId =
-    modal.type === "filiere" ? modal.filiereId : undefined;
+  const presetFiliereId = modal.type === "filiere" ? modal.filiereId : undefined;
+  const editId = modal.type === "filiere" ? modal.editId : undefined;
   const open = modal.type === "filiere";
+  const isEdit = Boolean(editId);
 
   const [filiereNom, setFiliereNom] = useState("");
   const [filiereCode, setFiliereCode] = useState("");
@@ -51,88 +55,129 @@ export function FiliereModal() {
   const [matiereNom, setMatiereNom] = useState("");
   const [matiereCoef, setMatiereCoef] = useState("1");
 
+  useEffect(() => {
+    if (!open || !editId) return;
+    if (sub === "filiere") {
+      const f = filieres.find((x) => x.id === editId);
+      if (f) {
+        setFiliereNom(f.nom);
+        setFiliereCode(f.code);
+        setFiliereDesc(f.description);
+      }
+    } else if (sub === "classe") {
+      const f = filieres.find((x) => x.id === presetFiliereId);
+      const c = f?.classes.find((x) => x.id === editId);
+      if (c) {
+        setClasseNom(c.nom);
+        setClasseNiveau(c.niveau);
+        setClasseEffectif(String(c.effectif));
+      }
+    } else if (sub === "matiere") {
+      const f = filieres.find((x) => x.id === presetFiliereId);
+      const m = f?.matieres.find((x) => x.id === editId);
+      if (m) {
+        setMatiereNom(m.nom);
+        setMatiereCoef(String(m.coefficient));
+      }
+    }
+  }, [open, editId, sub, presetFiliereId, filieres]);
+
   const config = {
     filiere: {
-      title: "Nouvelle filière",
-      icon: BookOpen,
-      desc: "Ajoutez une filière de formation.",
+      title: isEdit ? "Modifier la filière" : "Nouvelle filière",
+      icon: isEdit ? Pencil : BookOpen,
+      desc: isEdit
+        ? "Mettez à jour les informations de la filière."
+        : "Ajoutez une filière de formation.",
     },
     classe: {
-      title: "Nouvelle classe",
-      icon: School,
-      desc: "Ajoutez une classe rattachée à une filière.",
+      title: isEdit ? "Modifier la classe" : "Nouvelle classe",
+      icon: isEdit ? Pencil : School,
+      desc: isEdit
+        ? "Mettez à jour les informations de la classe."
+        : "Ajoutez une classe rattachée à une filière.",
     },
     matiere: {
-      title: "Nouvelle matière",
-      icon: BookMarked,
-      desc: "Ajoutez une matière et son coefficient.",
+      title: isEdit ? "Modifier la matière" : "Nouvelle matière",
+      icon: isEdit ? Pencil : BookMarked,
+      desc: isEdit
+        ? "Mettez à jour la matière et son coefficient."
+        : "Ajoutez une matière et son coefficient.",
     },
   }[sub];
 
   const Icon = config.icon;
 
-  function handleSubmit() {
-    if (sub === "filiere") {
-      if (!filiereNom.trim() || !filiereCode.trim()) {
-        toast({
-          title: "Champs requis",
-          description: "Le nom et le code de la filière sont obligatoires.",
-          variant: "destructive",
-        });
-        return;
+  async function handleSubmit() {
+    try {
+      if (sub === "filiere") {
+        if (!filiereNom.trim() || !filiereCode.trim()) {
+          toast({
+            title: "Champs requis",
+            description: "Le nom et le code de la filière sont obligatoires.",
+            variant: "destructive",
+          });
+          return;
+        }
+        if (isEdit && editId) {
+          await updateFiliere(editId, {
+            nom: filiereNom.trim(),
+            code: filiereCode.trim(),
+            description: filiereDesc.trim(),
+          });
+          toast({ title: "Filière modifiée", description: `« ${filiereNom.trim()} » mise à jour.` });
+        } else {
+          await addFiliere({
+            nom: filiereNom.trim(),
+            code: filiereCode.trim(),
+            description: filiereDesc.trim(),
+          });
+          toast({ title: "Filière créée", description: `« ${filiereNom.trim()} » ajoutée.` });
+        }
+      } else if (sub === "classe") {
+        if (!classeNom.trim()) {
+          toast({ title: "Champ requis", description: "Le nom de la classe est obligatoire.", variant: "destructive" });
+          return;
+        }
+        const payload = {
+          nom: classeNom.trim(),
+          niveau: classeNiveau,
+          effectif: parseInt(classeEffectif || "0", 10) || 0,
+        };
+        if (isEdit && editId) {
+          await updateClasse(selectedFiliere, editId, payload);
+          toast({ title: "Classe modifiée", description: `« ${classeNom.trim()} » mise à jour.` });
+        } else {
+          await addClasse(selectedFiliere, payload);
+          toast({ title: "Classe créée", description: `« ${classeNom.trim()} » ajoutée.` });
+        }
+      } else {
+        if (!matiereNom.trim()) {
+          toast({ title: "Champ requis", description: "Le nom de la matière est obligatoire.", variant: "destructive" });
+          return;
+        }
+        const payload = {
+          nom: matiereNom.trim(),
+          coefficient: parseInt(matiereCoef || "1", 10) || 1,
+        };
+        if (isEdit && editId) {
+          await updateMatiere(selectedFiliere, editId, payload);
+          toast({ title: "Matière modifiée", description: `« ${matiereNom.trim()} » mise à jour.` });
+        } else {
+          await addMatiere(selectedFiliere, payload);
+          toast({ title: "Matière créée", description: `« ${matiereNom.trim()} » ajoutée.` });
+        }
       }
-      addFiliere({
-        nom: filiereNom.trim(),
-        code: filiereCode.trim(),
-        description: filiereDesc.trim(),
-      });
-      toast({
-        title: "Filière créée",
-        description: `La filière « ${filiereNom.trim()} » a été ajoutée au référentiel.`,
-      });
-    } else if (sub === "classe") {
-      if (!classeNom.trim()) {
-        toast({
-          title: "Champ requis",
-          description: "Le nom de la classe est obligatoire.",
-          variant: "destructive",
-        });
-        return;
-      }
-      addClasse(selectedFiliere, {
-        nom: classeNom.trim(),
-        niveau: classeNiveau,
-        effectif: parseInt(classeEffectif || "0", 10) || 0,
-      });
-      toast({
-        title: "Classe créée",
-        description: `La classe « ${classeNom.trim()} » a été ajoutée.`,
-      });
-    } else {
-      if (!matiereNom.trim()) {
-        toast({
-          title: "Champ requis",
-          description: "Le nom de la matière est obligatoire.",
-          variant: "destructive",
-        });
-        return;
-      }
-      addMatiere(selectedFiliere, {
-        nom: matiereNom.trim(),
-        coefficient: parseInt(matiereCoef || "1", 10) || 1,
-      });
-      toast({
-        title: "Matière créée",
-        description: `La matière « ${matiereNom.trim()} » a été ajoutée.`,
-      });
+      setFiliereNom("");
+      setFiliereCode("");
+      setFiliereDesc("");
+      setClasseNom("");
+      setClasseEffectif("");
+      setMatiereNom("");
+      closeModal();
+    } catch (e) {
+      toast({ title: "Erreur", description: e instanceof Error ? e.message : "Échec", variant: "destructive" });
     }
-    setFiliereNom("");
-    setFiliereCode("");
-    setFiliereDesc("");
-    setClasseNom("");
-    setClasseEffectif("");
-    setMatiereNom("");
-    closeModal();
   }
 
   return (
@@ -150,74 +195,43 @@ export function FiliereModal() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="fnom">Nom de la filière</Label>
-              <Input
-                id="fnom"
-                value={filiereNom}
-                onChange={(e) => setFiliereNom(e.target.value)}
-                placeholder="Ex : BTS CG"
-              />
+              <Input id="fnom" value={filiereNom} onChange={(e) => setFiliereNom(e.target.value)} placeholder="Ex : BTS CG" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="fcode">Code</Label>
-              <Input
-                id="fcode"
-                value={filiereCode}
-                onChange={(e) => setFiliereCode(e.target.value)}
-                placeholder="Ex : CG"
-              />
+              <Input id="fcode" value={filiereCode} onChange={(e) => setFiliereCode(e.target.value)} placeholder="Ex : CG" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="fdesc">Description</Label>
-              <Textarea
-                id="fdesc"
-                value={filiereDesc}
-                onChange={(e) => setFiliereDesc(e.target.value)}
-                placeholder="Description courte de la filière…"
-                rows={2}
-              />
+              <Textarea id="fdesc" value={filiereDesc} onChange={(e) => setFiliereDesc(e.target.value)} rows={2} />
             </div>
           </div>
         )}
 
         {sub === "classe" && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Filière</Label>
-              <Select
-                value={selectedFiliere}
-                onValueChange={setSelectedFiliere}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {filieres.map((f) => (
-                    <SelectItem key={f.id} value={f.id}>
-                      {f.nom}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {!isEdit && (
+              <div className="space-y-2">
+                <Label>Filière</Label>
+                <Select value={selectedFiliere} onValueChange={setSelectedFiliere}>
+                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {filieres.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>{f.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="cnom">Nom de la classe</Label>
-              <Input
-                id="cnom"
-                value={classeNom}
-                onChange={(e) => setClasseNom(e.target.value)}
-                placeholder="Ex : BTS CG 1"
-              />
+              <Input id="cnom" value={classeNom} onChange={(e) => setClasseNom(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Niveau</Label>
-                <Select
-                  value={classeNiveau}
-                  onValueChange={setClasseNiveau}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
+                <Select value={classeNiveau} onValueChange={setClasseNiveau}>
+                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="1ère année">1ère année</SelectItem>
                     <SelectItem value="2ème année">2ème année</SelectItem>
@@ -227,13 +241,7 @@ export function FiliereModal() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ceff">Effectif</Label>
-                <Input
-                  id="ceff"
-                  type="number"
-                  value={classeEffectif}
-                  onChange={(e) => setClasseEffectif(e.target.value)}
-                  placeholder="30"
-                />
+                <Input id="ceff" type="number" value={classeEffectif} onChange={(e) => setClasseEffectif(e.target.value)} />
               </div>
             </div>
           </div>
@@ -241,56 +249,34 @@ export function FiliereModal() {
 
         {sub === "matiere" && (
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Filière</Label>
-              <Select
-                value={selectedFiliere}
-                onValueChange={setSelectedFiliere}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {filieres.map((f) => (
-                    <SelectItem key={f.id} value={f.id}>
-                      {f.nom}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {!isEdit && (
+              <div className="space-y-2">
+                <Label>Filière</Label>
+                <Select value={selectedFiliere} onValueChange={setSelectedFiliere}>
+                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {filieres.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>{f.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="mnom">Nom de la matière</Label>
-              <Input
-                id="mnom"
-                value={matiereNom}
-                onChange={(e) => setMatiereNom(e.target.value)}
-                placeholder="Ex : Comptabilité"
-              />
+              <Input id="mnom" value={matiereNom} onChange={(e) => setMatiereNom(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="mcoef">Coefficient</Label>
-              <Input
-                id="mcoef"
-                type="number"
-                min={1}
-                max={10}
-                value={matiereCoef}
-                onChange={(e) => setMatiereCoef(e.target.value)}
-              />
+              <Input id="mcoef" type="number" min={1} max={10} value={matiereCoef} onChange={(e) => setMatiereCoef(e.target.value)} />
             </div>
           </div>
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={closeModal}>
-            Annuler
-          </Button>
-          <Button
-            className="bg-blue-500 text-white hover:bg-blue-700"
-            onClick={handleSubmit}
-          >
-            Créer
+          <Button variant="outline" onClick={closeModal}>Annuler</Button>
+          <Button className="bg-blue-500 text-white hover:bg-blue-700" onClick={handleSubmit}>
+            {isEdit ? "Enregistrer" : "Créer"}
           </Button>
         </DialogFooter>
       </DialogContent>

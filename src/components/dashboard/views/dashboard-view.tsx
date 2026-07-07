@@ -14,7 +14,7 @@ import { DossiersRecents } from "../dossiers-recents";
 import { ClassesARisque } from "../classes-risque";
 import { CalendarWidget } from "../calendar-widget";
 import { AlertesIA } from "../alertes-ia";
-import { StatusBadge, Panel, PageHeader, statutBadge } from "./shared";
+import { StatusBadge, Panel, PageHeader, statutBadge, noteSur20 } from "./shared";
 import {
   FileText,
   GraduationCap,
@@ -27,7 +27,6 @@ import {
   AlertCircle,
   Clock,
 } from "lucide-react";
-import type { Role } from "../data";
 
 function StatPill({
   icon: Icon,
@@ -239,7 +238,7 @@ function EtudiantDashboard() {
   const moyenneCalculee =
     mesNotes.length > 0
       ? (
-          mesNotes.reduce((s, n) => s + (n.note ?? 0) * n.coefficient, 0) /
+          mesNotes.reduce((s, n) => s + noteSur20(n.note, n.sur) * n.coefficient, 0) /
           mesNotes.reduce((s, n) => s + n.coefficient, 0)
         ).toFixed(2)
       : "—";
@@ -325,9 +324,9 @@ function EtudiantDashboard() {
                 </div>
                 <span
                   className={`text-sm font-bold ${
-                    (n.note ?? 0) >= 14
+                    noteSur20(n.note, n.sur) >= 14
                       ? "text-blue-700"
-                      : (n.note ?? 0) >= 10
+                      : noteSur20(n.note, n.sur) >= 10
                         ? "text-gray-700"
                         : "text-red-500"
                   }`}

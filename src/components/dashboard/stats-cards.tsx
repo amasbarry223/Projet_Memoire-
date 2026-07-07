@@ -7,9 +7,6 @@ import {
   AlertCircle,
   BrainCircuit,
   TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
-  Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDataStore } from "@/lib/data-store";
@@ -19,7 +16,6 @@ export function StatsCards() {
   const candidatures = useDataStore((s) => s.candidatures);
   const alertes = useDataStore((s) => s.alertes);
 
-  // Calculs dynamiques depuis le store
   const totalEtudiants = etudiants.length;
   const candidaturesEnAttente = candidatures.filter(
     (c) => c.statut === "En attente"
@@ -33,7 +29,6 @@ export function StatsCards() {
   const alertesActives = alertes.filter(
     (a) => a.statut !== "Clôturée"
   ).length;
-  // Taux d'assiduité moyen
   const tauxAssiduite =
     totalEtudiants === 0
       ? 0
@@ -49,8 +44,7 @@ export function StatsCards() {
       iconBg: "bg-blue-50",
       iconColor: "text-blue-500",
       statusColor: "bg-blue-500",
-      hint: "Inscrits actifs",
-      trend: { dir: "up" as const, pct: "+12%" },
+      hint: `${etudiants.filter((e) => e.statut === "Actif").length} actifs`,
     },
     {
       label: "Nouvelles Candidatures",
@@ -59,8 +53,7 @@ export function StatsCards() {
       iconBg: "bg-yellow-50",
       iconColor: "text-yellow-600",
       statusColor: "bg-blue-500",
-      hint: "En attente",
-      trend: { dir: "up" as const, pct: "+8%" },
+      hint: `${candidatures.length} dossiers au total`,
     },
     {
       label: "Dossiers Validés",
@@ -69,8 +62,9 @@ export function StatsCards() {
       iconBg: "bg-blue-50",
       iconColor: "text-blue-500",
       statusColor: "bg-blue-500",
-      hint: "Traités",
-      trend: { dir: "up" as const, pct: "+5%" },
+      hint: candidatures.length
+        ? `${Math.round((dossiersValides / candidatures.length) * 100)}% du total`
+        : "Aucun dossier",
     },
     {
       label: "Dossiers Incomplets",
@@ -80,10 +74,6 @@ export function StatsCards() {
       iconColor: "text-red-500",
       statusColor: dossiersIncomplets > 0 ? "bg-yellow-500" : "bg-blue-500",
       hint: dossiersIncomplets > 0 ? "Action requise" : "Aucun",
-      trend: {
-        dir: (dossiersIncomplets > 0 ? "down" : "flat") as "up" | "down" | "flat",
-        pct: dossiersIncomplets > 0 ? "-3%" : "0%",
-      },
     },
     {
       label: "Alertes IA Actives",
@@ -93,10 +83,6 @@ export function StatsCards() {
       iconColor: "text-yellow-600",
       statusColor: alertesActives > 0 ? "bg-yellow-500" : "bg-blue-500",
       hint: alertesActives > 0 ? "Risque pédagogique" : "Aucune alerte",
-      trend: {
-        dir: (alertesActives > 0 ? "down" : "flat") as "up" | "down" | "flat",
-        pct: alertesActives > 0 ? "+2" : "0%",
-      },
     },
     {
       label: "Taux d'Assiduité",
@@ -105,8 +91,7 @@ export function StatsCards() {
       iconBg: "bg-blue-50",
       iconColor: "text-blue-500",
       statusColor: tauxAssiduite >= 85 ? "bg-blue-500" : "bg-yellow-500",
-      hint: "Établissement",
-      trend: { dir: "up" as const, pct: "+2%" },
+      hint: "Moyenne établissement",
     },
   ];
 
@@ -137,29 +122,7 @@ export function StatsCards() {
               />
             </div>
             <p className="mt-4 text-2xl font-bold text-gray-900">{stat.value}</p>
-            <div className="mt-1 flex items-center gap-1.5">
-              <p className="text-xs font-medium text-gray-700">
-                {stat.label}
-              </p>
-              {stat.trend.dir === "up" && (
-                <span className="flex items-center gap-0.5 rounded-full bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600">
-                  <ArrowUpRight className="size-3" />
-                  {stat.trend.pct}
-                </span>
-              )}
-              {stat.trend.dir === "down" && (
-                <span className="flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">
-                  <ArrowDownRight className="size-3" />
-                  {stat.trend.pct}
-                </span>
-              )}
-              {stat.trend.dir === "flat" && (
-                <span className="flex items-center gap-0.5 rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-500">
-                  <Minus className="size-3" />
-                  stable
-                </span>
-              )}
-            </div>
+            <p className="mt-1 text-xs font-medium text-gray-700">{stat.label}</p>
             <p className="text-[11px] text-gray-400">{stat.hint}</p>
           </div>
         );

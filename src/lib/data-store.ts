@@ -1,36 +1,42 @@
 "use client";
 
 import { create } from "zustand";
+import { getSupabase } from "@/lib/supabase/client";
+import type { Json } from "@/lib/supabase/types";
 import {
-  etudiants as seedEtudiants,
-  enseignants as seedEnseignants,
-  candidatures as seedCandidatures,
-  utilisateurs as seedUtilisateurs,
-  filieres as seedFilieres,
-  alertesIAComplete as seedAlertes,
-  auditLog as seedAudit,
-  notesGrille as seedNotes,
-  absences as seedAbsences,
-  type Etudiant,
-  type Enseignant,
-  type Candidature,
-  type Utilisateur,
-  type Filiere,
-  type AlerteIA,
-  type Note,
-  type Absence,
-  type EntreeAudit,
-  type StatutDossier,
+  mapAbsence,
+  mapAlerte,
+  mapAudit,
+  mapCandidature,
+  mapEnseignant,
+  mapEtudiant,
+  mapFiliere,
+  mapNote,
+  mapRapport,
+  mapUtilisateur,
+} from "@/lib/mappers";
+import type {
+  Absence,
+  AlerteIA,
+  AppParametres,
+  Candidature,
+  EntreeAudit,
+  Enseignant,
+  Etudiant,
+  Filiere,
+  Note,
+  Rapport,
+  Utilisateur,
+  StatutDossier,
+  ActionHistorique,
 } from "@/components/dashboard/data";
+import { defaultParametres as DEFAULT_PARAMETRES } from "@/components/dashboard/data";
 import { useAuthStore } from "@/lib/auth-store";
 
-// ─── Store central de données ─────────────────────────────────────────────────
-// Toutes les collections vivent ici. Les vues CRUD agissent dessus ; les vues
-// de lecture (dashboard, compteurs) en dérivent leur affichage → tout est
-// dynamique et cohérent (ajouter un étudiant met à jour le KPI du dashboard).
-
 interface DataState {
-  // Collections
+  isLoading: boolean;
+  isInitialized: boolean;
+  error: string | null;
   etudiants: Etudiant[];
   enseignants: Enseignant[];
   candidatures: Candidature[];
@@ -40,559 +46,611 @@ interface DataState {
   audit: EntreeAudit[];
   notes: Note[];
   absences: Absence[];
+  rapports: Rapport[];
+  inscriptionsParMois: { mois: string; inscriptions: number }[];
+  absentéismeParMois: { mois: string; taux: number }[];
+  parametres: AppParametres;
 
-  // Étudiants
-  addEtudiant: (e: Omit<Etudiant, "id">) => void;
-  updateEtudiant: (id: string, e: Partial<Etudiant>) => void;
-  deleteEtudiant: (id: string) => void;
+  initialize: () => Promise<void>;
+  refresh: () => Promise<void>;
+  saveParametres: (p: AppParametres) => Promise<void>;
 
-  // Enseignants
-  addEnseignant: (e: Omit<Enseignant, "id">) => void;
-  updateEnseignant: (id: string, e: Partial<Enseignant>) => void;
-  deleteEnseignant: (id: string) => void;
+  addEtudiant: (e: Omit<Etudiant, "id">) => Promise<void>;
+  updateEtudiant: (id: string, e: Partial<Etudiant>) => Promise<void>;
+  deleteEtudiant: (id: string) => Promise<void>;
 
-  // Utilisateurs
-  addUtilisateur: (u: Omit<Utilisateur, "id" | "derniereConnexion">) => void;
-  updateUtilisateur: (id: string, u: Partial<Utilisateur>) => void;
-  deleteUtilisateur: (id: string) => { ok: boolean; error?: string };
+  addEnseignant: (e: Omit<Enseignant, "id">) => Promise<void>;
+  updateEnseignant: (id: string, e: Partial<Enseignant>) => Promise<void>;
+  deleteEnseignant: (id: string) => Promise<void>;
 
-  // Filières / classes / matières
-  addFiliere: (f: { nom: string; code: string; description: string }) => void;
-  addClasse: (
-    filiereId: string,
-    c: { nom: string; niveau: string; effectif: number }
-  ) => void;
-  addMatiere: (
-    filiereId: string,
-    m: { nom: string; coefficient: number }
-  ) => void;
-  deleteFiliere: (id: string) => void;
-  deleteClasse: (filiereId: string, classeId: string) => void;
-  deleteMatiere: (filiereId: string, matiereId: string) => void;
+  addUtilisateur: (u: Omit<Utilisateur, "id" | "derniereConnexion">) => Promise<void>;
+  updateUtilisateur: (id: string, u: Partial<Utilisateur>) => Promise<void>;
+  deleteUtilisateur: (id: string) => Promise<{ ok: boolean; error?: string }>;
 
-  // Candidatures
+  addFiliere: (f: { nom: string; code: string; description: string }) => Promise<void>;
+  updateFiliere: (id: string, f: { nom: string; code: string; description: string }) => Promise<void>;
+  addClasse: (filiereId: string, c: { nom: string; niveau: string; effectif: number }) => Promise<void>;
+  updateClasse: (filiereId: string, classeId: string, c: { nom: string; niveau: string; effectif: number }) => Promise<void>;
+  addMatiere: (filiereId: string, m: { nom: string; coefficient: number }) => Promise<void>;
+  updateMatiere: (filiereId: string, matiereId: string, m: { nom: string; coefficient: number }) => Promise<void>;
+  deleteFiliere: (id: string) => Promise<void>;
+  deleteClasse: (filiereId: string, classeId: string) => Promise<void>;
+  deleteMatiere: (filiereId: string, matiereId: string) => Promise<void>;
+
   traiterDossier: (
     id: string,
     action: "valider" | "rejeter" | "incomplet",
     options?: { motif?: string; piecesManquantes?: string[] }
-  ) => void;
+  ) => Promise<void>;
 
-  // Alertes IA
   traiterAlerte: (
     id: string,
     nouveauStatut: "Prise en charge" | "Clôturée",
     commentaire?: string
-  ) => void;
+  ) => Promise<void>;
 
-  // Notes & absences
-  addNote: (n: Omit<Note, never>) => void;
-
-  // Journal d'audit
-  logAction: (e: Omit<EntreeAudit, "id" | "date">) => void;
+  addNote: (n: Note) => Promise<void>;
+  addAbsence: (a: Omit<Absence, "date"> & { date: string }) => Promise<void>;
+  addCandidature: (c: {
+    nom: string;
+    prenom: string;
+    email: string;
+    telephone: string;
+    dateNaissance: string;
+    adresse: string;
+    filiereId: string;
+    niveau: string;
+  }) => Promise<void>;
+  genererRapport: (options: {
+    type: Rapport["type"];
+    periode: string;
+  }) => Promise<{ ok: boolean; error?: string }>;
+  logAction: (e: Omit<EntreeAudit, "id" | "date">) => Promise<void>;
 }
 
 function now() {
   const d = new Date();
-  return `${d.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  })} ${d.toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })}`;
+  return `${d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })} ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
-// Auteur courant = utilisateur connecté (R5 : auteur réel)
 function currentAuthor(): string {
   const s = useAuthStore.getState().session;
   return s ? `${s.prenom} ${s.nom}` : "Système";
 }
 
-// Calcule le prochain ID d'audit depuis le max des IDs existants (robuste au
-// refresh : pas de compteur module-level qui se réinitialiserait).
-function makeAuditId(existing: EntreeAudit[]): string {
-  let max = 0;
-  for (const e of existing) {
-    const match = e.id.match(/^AUD-(\d+)$/);
-    if (match) {
-      const n = parseInt(match[1], 10);
-      if (n > max) max = n;
-    }
-  }
-  return `AUD-${(max + 1).toString().padStart(3, "0")}`;
+async function logAudit(action: string, cible: string, details: string) {
+  const sb = getSupabase();
+  await sb.rpc("log_audit", { p_action: action, p_cible: cible, p_details: details });
 }
 
-export const useDataStore = create<DataState>((set) => ({
-  etudiants: seedEtudiants,
-  enseignants: seedEnseignants,
-  candidatures: seedCandidatures,
-  utilisateurs: seedUtilisateurs,
-  filieres: seedFilieres,
-  alertes: seedAlertes,
-  audit: seedAudit,
-  notes: seedNotes,
-  absences: seedAbsences,
+async function resolveFiliereUuid(legacyOrUuid: string) {
+  const sb = getSupabase();
+  const { data } = await sb.from("filieres").select("id").or(`legacy_id.eq.${legacyOrUuid},id.eq.${legacyOrUuid}`).maybeSingle();
+  return data?.id ?? null;
+}
 
-  // ─── Étudiants ──────────────────────────────────────────────────────────
-  addEtudiant: (e) =>
-    set((s) => {
-      const id = `ETU-${Date.now()}`;
-      return {
-        etudiants: [{ ...e, id }, ...s.etudiants],
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Création étudiant",
-            cible: `${e.prenom} ${e.nom}`,
-            details: `Étudiant ajouté — filière ${e.filiere}, classe ${e.classe}.`,
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+async function resolveClasseUuid(legacyOrUuid: string) {
+  const sb = getSupabase();
+  const { data } = await sb.from("classes").select("id, nom, filiere_id, filieres(nom)").or(`legacy_id.eq.${legacyOrUuid},id.eq.${legacyOrUuid}`).maybeSingle();
+  return data;
+}
 
-  updateEtudiant: (id, e) =>
-    set((s) => {
-      const etu = s.etudiants.find((x) => x.id === id);
-      return {
-        etudiants: s.etudiants.map((x) => (x.id === id ? { ...x, ...e } : x)),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Modification étudiant",
-            cible: etu ? `${etu.prenom} ${etu.nom}` : id,
-            details: "Fiche étudiant mise à jour.",
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+async function resolveEtudiantUuid(legacyOrUuid: string) {
+  const sb = getSupabase();
+  const { data } = await sb.from("etudiants").select("id").or(`legacy_id.eq.${legacyOrUuid},id.eq.${legacyOrUuid}`).maybeSingle();
+  return data?.id ?? null;
+}
 
-  deleteEtudiant: (id) =>
-    set((s) => {
-      const etu = s.etudiants.find((x) => x.id === id);
-      return {
-        etudiants: s.etudiants.filter((x) => x.id !== id),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Suppression étudiant",
-            cible: etu ? `${etu.prenom} ${etu.nom} (${etu.matricule})` : id,
-            details: "Étudiant supprimé de l'établissement.",
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+async function findEtudiantByName(name: string) {
+  const sb = getSupabase();
+  const parts = name.trim().split(/\s+/);
+  if (parts.length < 2) return null;
+  const prenom = parts[0];
+  const nom = parts.slice(1).join(" ");
+  const { data } = await sb.from("etudiants").select("id").eq("prenom", prenom).eq("nom", nom).maybeSingle();
+  return data?.id ?? null;
+}
 
-  // ─── Enseignants ────────────────────────────────────────────────────────
-  addEnseignant: (e) =>
-    set((s) => {
-      const id = `ENS-${Date.now()}`;
-      return {
-        enseignants: [{ ...e, id }, ...s.enseignants],
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Création enseignant",
-            cible: `${e.prenom} ${e.nom}`,
-            details: `Enseignant ajouté — ${e.matieres.length} matière(s), ${e.classes.length} classe(s).`,
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+function parseParametresRows(rows: { key: string; value: unknown }[]): AppParametres {
+  const map = new Map(rows.map((r) => [r.key, r.value]));
+  const pick = <K extends keyof AppParametres>(key: K): AppParametres[K] => {
+    const val = map.get(key);
+    return (val && typeof val === "object" ? val : DEFAULT_PARAMETRES[key]) as AppParametres[K];
+  };
+  return {
+    etablissement: pick("etablissement"),
+    securite: pick("securite"),
+    notifications: pick("notifications"),
+    integrations: pick("integrations"),
+  };
+}
 
-  updateEnseignant: (id, e) =>
-    set((s) => {
-      const ens = s.enseignants.find((x) => x.id === id);
-      return {
-        enseignants: s.enseignants.map((x) =>
-          x.id === id ? { ...x, ...e } : x
-        ),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Modification enseignant",
-            cible: ens ? `${ens.prenom} ${ens.nom}` : id,
-            details: "Fiche enseignant mise à jour.",
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+async function ensureParametresDefaults(sb: ReturnType<typeof getSupabase>) {
+  const { data } = await sb.from("parametres").select("key");
+  if ((data?.length ?? 0) > 0) return;
+  const rows = [
+    { key: "etablissement", value: DEFAULT_PARAMETRES.etablissement },
+    { key: "securite", value: DEFAULT_PARAMETRES.securite },
+    { key: "notifications", value: DEFAULT_PARAMETRES.notifications },
+    { key: "integrations", value: DEFAULT_PARAMETRES.integrations },
+  ];
+  await sb.from("parametres").insert(
+    rows.map((r) => ({ key: r.key, value: r.value as Json }))
+  );
+}
 
-  deleteEnseignant: (id) =>
-    set((s) => {
-      const ens = s.enseignants.find((x) => x.id === id);
-      return {
-        enseignants: s.enseignants.filter((x) => x.id !== id),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Suppression enseignant",
-            cible: ens ? `${ens.prenom} ${ens.nom}` : id,
-            details: "Enseignant supprimé, affectations retirées.",
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+export const useDataStore = create<DataState>((set, get) => ({
+  isLoading: false,
+  isInitialized: false,
+  error: null,
+  etudiants: [],
+  enseignants: [],
+  candidatures: [],
+  utilisateurs: [],
+  filieres: [],
+  alertes: [],
+  audit: [],
+  notes: [],
+  absences: [],
+  rapports: [],
+  inscriptionsParMois: [],
+  absentéismeParMois: [],
+  parametres: DEFAULT_PARAMETRES,
 
-  // ─── Utilisateurs ───────────────────────────────────────────────────────
-  addUtilisateur: (u) =>
-    set((s) => {
-      const id = `U-${Date.now()}`;
-      return {
-        utilisateurs: [
-          { ...u, id, derniereConnexion: "Jamais" },
-          ...s.utilisateurs,
-        ],
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Création compte",
-            cible: `${u.prenom} ${u.nom}`,
-            details: `Compte créé — rôle ${u.role}.`,
-          },
-          ...s.audit,
-        ],
-      };
-    }),
-
-  updateUtilisateur: (id, u) =>
-    set((s) => {
-      const usr = s.utilisateurs.find((x) => x.id === id);
-      return {
-        utilisateurs: s.utilisateurs.map((x) =>
-          x.id === id ? { ...x, ...u } : x
-        ),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Modification compte",
-            cible: usr ? `${usr.prenom} ${usr.nom}` : id,
-            details: u.role ? `Rôle mis à jour → ${u.role}.` : "Compte modifié.",
-          },
-          ...s.audit,
-        ],
-      };
-    }),
-
-  deleteUtilisateur: (id) => {
-    // R2 étendu : interdiction de supprimer son propre compte
-    const session = useAuthStore.getState().session;
-    const usr = useDataStore.getState().utilisateurs.find((x) => x.id === id);
-    if (session && usr && usr.email === session.email) {
-      return {
-        ok: false,
-        error: "Vous ne pouvez pas supprimer votre propre compte (R2).",
-      };
+  initialize: async () => {
+    if (get().isInitialized || get().isLoading) return;
+    set({ isLoading: true, error: null });
+    try {
+      await get().refresh();
+      set({ isInitialized: true });
+    } catch (e) {
+      set({ error: e instanceof Error ? e.message : "Erreur de chargement" });
+    } finally {
+      set({ isLoading: false });
     }
-    set((s) => {
-      return {
-        utilisateurs: s.utilisateurs.filter((x) => x.id !== id),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Suppression compte",
-            cible: usr ? `${usr.prenom} ${usr.nom}` : id,
-            details: "Compte utilisateur supprimé.",
-          },
-          ...s.audit,
-        ],
-      };
+  },
+
+  refresh: async () => {
+    const sb = getSupabase();
+    await ensureParametresDefaults(sb);
+    const [filieresRes, etudiantsRes, enseignantsRes, candidaturesRes, utilisateursRes, alertesRes, auditRes, notesRes, absencesRes, rapportsRes, chartsRes, parametresRes] = await Promise.all([
+      sb.from("filieres").select("*, classes(*), matieres(*)").order("nom"),
+      sb.from("etudiants").select("*, classes(nom, filieres(nom))").order("nom"),
+      sb.from("enseignants").select("*, enseignant_matieres(matiere_id, matieres(nom)), enseignant_classes(classe_id, classes(nom))").order("nom"),
+      sb.from("candidatures").select("*").order("date_soumission", { ascending: false }),
+      sb.from("profiles").select("*").order("nom"),
+      sb.from("alertes").select("*, etudiants(prenom, nom)").order("date_alerte", { ascending: false }),
+      sb.from("audit_log").select("*").order("created_at", { ascending: false }),
+      sb.from("notes").select("*, etudiants(prenom, nom)").order("created_at", { ascending: false }),
+      sb.from("absences").select("*, etudiants(prenom, nom)").order("date_absence", { ascending: false }),
+      sb.from("rapports").select("*").order("date_generation", { ascending: false }),
+      sb.from("dashboard_charts").select("*"),
+      sb.from("parametres").select("key, value"),
+    ]);
+
+    const charts = chartsRes.data ?? [];
+    const insc = charts.find((c) => c.key === "inscriptions");
+    const abs = charts.find((c) => c.key === "absenteisme");
+
+    set({
+      filieres: (filieresRes.data ?? []).map((f) => mapFiliere(f as never)),
+      etudiants: (etudiantsRes.data ?? []).map((e) => mapEtudiant(e as never)),
+      enseignants: (enseignantsRes.data ?? []).map((e) => mapEnseignant(e as never)),
+      candidatures: (candidaturesRes.data ?? []).map(mapCandidature),
+      utilisateurs: (utilisateursRes.data ?? []).map(mapUtilisateur),
+      alertes: (alertesRes.data ?? []).map((a) => mapAlerte(a as never)),
+      audit: (auditRes.data ?? []).map(mapAudit),
+      notes: (notesRes.data ?? []).map((n) => mapNote(n as never)),
+      absences: (absencesRes.data ?? []).map((a) => mapAbsence(a as never)),
+      rapports: (rapportsRes.data ?? []).map(mapRapport),
+      inscriptionsParMois: (insc?.data as { mois: string; inscriptions: number }[]) ?? [],
+      absentéismeParMois: (abs?.data as { mois: string; taux: number }[]) ?? [],
+      parametres: parseParametresRows((parametresRes.data ?? []) as { key: string; value: unknown }[]),
     });
+  },
+
+  saveParametres: async (p) => {
+    const sb = getSupabase();
+    const rows = [
+      { key: "etablissement", value: p.etablissement },
+      { key: "securite", value: p.securite },
+      { key: "notifications", value: p.notifications },
+      { key: "integrations", value: p.integrations },
+    ];
+    for (const row of rows) {
+      const { error } = await sb.from("parametres").upsert(
+        { key: row.key, value: row.value as Json },
+        { onConflict: "key" }
+      );
+      if (error) throw error;
+    }
+    await logAudit("Mise à jour paramètres", "Configuration globale", "Paramètres établissement enregistrés.");
+    set({ parametres: p });
+  },
+
+  addEtudiant: async (e) => {
+    const sb = getSupabase();
+    const classe = await resolveClasseUuid(e.classe);
+    const legacy_id = `ETU-${Date.now()}`;
+    const { error } = await sb.from("etudiants").insert({
+      legacy_id,
+      matricule: e.matricule,
+      nom: e.nom,
+      prenom: e.prenom,
+      email: e.email,
+      classe_id: classe?.id ?? null,
+      moyenne: e.moyenne,
+      assiduite: e.assiduite,
+      statut: e.statut,
+    });
+    if (error) throw error;
+    await logAudit("Création étudiant", `${e.prenom} ${e.nom}`, `Étudiant ajouté — filière ${e.filiere}, classe ${e.classe}.`);
+    await get().refresh();
+  },
+
+  updateEtudiant: async (id, e) => {
+    const sb = getSupabase();
+    const classe = e.classe ? await resolveClasseUuid(e.classe) : null;
+    const { error } = await sb.from("etudiants").update({
+      matricule: e.matricule,
+      nom: e.nom,
+      prenom: e.prenom,
+      email: e.email,
+      classe_id: classe?.id,
+      moyenne: e.moyenne,
+      assiduite: e.assiduite,
+      statut: e.statut,
+    }).or(`legacy_id.eq.${id},id.eq.${id}`);
+    if (error) throw error;
+    await logAudit("Modification étudiant", id, "Fiche étudiant mise à jour.");
+    await get().refresh();
+  },
+
+  deleteEtudiant: async (id) => {
+    const sb = getSupabase();
+    const etu = get().etudiants.find((x) => x.id === id);
+    const { error } = await sb.from("etudiants").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    if (error) throw error;
+    await logAudit("Suppression étudiant", etu ? `${etu.prenom} ${etu.nom} (${etu.matricule})` : id, "Étudiant supprimé de l'établissement.");
+    await get().refresh();
+  },
+
+  addEnseignant: async (e) => {
+    const sb = getSupabase();
+    const legacy_id = `ENS-${Date.now()}`;
+    const { data, error } = await sb.from("enseignants").insert({
+      legacy_id,
+      nom: e.nom,
+      prenom: e.prenom,
+      email: e.email,
+      statut: e.statut,
+    }).select("id").single();
+    if (error || !data) throw error;
+    for (const filiere of get().filieres) {
+      for (const m of filiere.matieres.filter((x) => e.matieres.includes(x.nom))) {
+        const { data: mat } = await sb.from("matieres").select("id").or(`legacy_id.eq.${m.id},id.eq.${m.id}`).maybeSingle();
+        if (mat) await sb.from("enseignant_matieres").insert({ enseignant_id: data.id, matiere_id: mat.id });
+      }
+      for (const c of filiere.classes.filter((x) => e.classes.includes(x.nom))) {
+        const { data: cl } = await sb.from("classes").select("id").or(`legacy_id.eq.${c.id},id.eq.${c.id}`).maybeSingle();
+        if (cl) await sb.from("enseignant_classes").insert({ enseignant_id: data.id, classe_id: cl.id });
+      }
+    }
+    await logAudit("Création enseignant", `${e.prenom} ${e.nom}`, `Enseignant ajouté — ${e.matieres.length} matière(s), ${e.classes.length} classe(s).`);
+    await get().refresh();
+  },
+
+  updateEnseignant: async (id, e) => {
+    const sb = getSupabase();
+    const { data: ens } = await sb.from("enseignants").select("id").or(`legacy_id.eq.${id},id.eq.${id}`).single();
+    if (!ens) return;
+    await sb.from("enseignants").update({
+      nom: e.nom,
+      prenom: e.prenom,
+      email: e.email,
+      statut: e.statut,
+    }).eq("id", ens.id);
+    if (e.matieres || e.classes) {
+      await sb.from("enseignant_matieres").delete().eq("enseignant_id", ens.id);
+      await sb.from("enseignant_classes").delete().eq("enseignant_id", ens.id);
+      const matieres = e.matieres ?? get().enseignants.find((x) => x.id === id)?.matieres ?? [];
+      const classes = e.classes ?? get().enseignants.find((x) => x.id === id)?.classes ?? [];
+      for (const filiere of get().filieres) {
+        for (const m of filiere.matieres.filter((x) => matieres.includes(x.nom))) {
+          const { data: mat } = await sb.from("matieres").select("id").or(`legacy_id.eq.${m.id},id.eq.${m.id}`).maybeSingle();
+          if (mat) await sb.from("enseignant_matieres").insert({ enseignant_id: ens.id, matiere_id: mat.id });
+        }
+        for (const c of filiere.classes.filter((x) => classes.includes(x.nom))) {
+          const { data: cl } = await sb.from("classes").select("id").or(`legacy_id.eq.${c.id},id.eq.${c.id}`).maybeSingle();
+          if (cl) await sb.from("enseignant_classes").insert({ enseignant_id: ens.id, classe_id: cl.id });
+        }
+      }
+    }
+    await logAudit("Modification enseignant", id, "Fiche enseignant mise à jour.");
+    await get().refresh();
+  },
+
+  deleteEnseignant: async (id) => {
+    const sb = getSupabase();
+    const ens = get().enseignants.find((x) => x.id === id);
+    const { error } = await sb.from("enseignants").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    if (error) throw error;
+    await logAudit("Suppression enseignant", ens ? `${ens.prenom} ${ens.nom}` : id, "Enseignant supprimé, affectations retirées.");
+    await get().refresh();
+  },
+
+  addUtilisateur: async (u) => {
+    const res = await fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...u, password: "demo123" }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error ?? "Échec création utilisateur");
+    }
+    await logAudit("Création compte", `${u.prenom} ${u.nom}`, `Compte créé — rôle ${u.role}.`);
+    await get().refresh();
+  },
+
+  updateUtilisateur: async (id, u) => {
+    const sb = getSupabase();
+    const { error } = await sb.from("profiles").update({
+      email: u.email,
+      nom: u.nom,
+      prenom: u.prenom,
+      role: u.role,
+      statut: u.statut,
+    }).or(`legacy_id.eq.${id},id.eq.${id}`);
+    if (error) throw error;
+    await logAudit("Modification compte", id, u.role ? `Rôle mis à jour → ${u.role}.` : "Compte modifié.");
+    await get().refresh();
+  },
+
+  deleteUtilisateur: async (id) => {
+    const session = useAuthStore.getState().session;
+    const usr = get().utilisateurs.find((x) => x.id === id);
+    if (session && usr && usr.email === session.email) {
+      return { ok: false, error: "Vous ne pouvez pas supprimer votre propre compte (R2)." };
+    }
+    const res = await fetch(`/api/users?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return { ok: false, error: (err as { error?: string }).error ?? "Échec suppression" };
+    }
+    await logAudit("Suppression compte", usr ? `${usr.prenom} ${usr.nom}` : id, "Compte utilisateur supprimé (Auth + profil).");
+    await get().refresh();
     return { ok: true };
   },
 
-  // ─── Filières / classes / matières ──────────────────────────────────────
-  addFiliere: (f) =>
-    set((s) => {
-      const id = `FIL-${Date.now()}`;
-      return {
-        filieres: [
-          ...s.filieres,
-          {
-            id,
-            nom: f.nom,
-            code: f.code,
-            description: f.description,
-            classes: [],
-            matieres: [],
-          },
-        ],
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Création filière",
-            cible: f.nom,
-            details: `Filière créée (code ${f.code}).`,
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+  addFiliere: async (f) => {
+    const sb = getSupabase();
+    const legacy_id = `FIL-${Date.now()}`;
+    const { error } = await sb.from("filieres").insert({ legacy_id, nom: f.nom, code: f.code, description: f.description });
+    if (error) throw error;
+    await logAudit("Création filière", f.nom, `Filière créée (code ${f.code}).`);
+    await get().refresh();
+  },
 
-  addClasse: (filiereId, c) =>
-    set((s) => {
-      const id = `CL-${Date.now()}`;
-      const f = s.filieres.find((x) => x.id === filiereId);
-      return {
-        filieres: s.filieres.map((f) =>
-          f.id === filiereId
-            ? {
-                ...f,
-                classes: [
-                  ...f.classes,
-                  { id, nom: c.nom, niveau: c.niveau, effectif: c.effectif },
-                ],
-              }
-            : f
-        ),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Création classe",
-            cible: c.nom,
-            details: `Classe ajoutée à la filière ${f?.nom ?? ""}.`,
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+  updateFiliere: async (id, f) => {
+    const sb = getSupabase();
+    const { error } = await sb.from("filieres").update({ nom: f.nom, code: f.code, description: f.description }).or(`legacy_id.eq.${id},id.eq.${id}`);
+    if (error) throw error;
+    await logAudit("Modification filière", f.nom, `Filière mise à jour (code ${f.code}).`);
+    await get().refresh();
+  },
 
-  addMatiere: (filiereId, m) =>
-    set((s) => {
-      const id = `MA-${Date.now()}`;
-      const f = s.filieres.find((x) => x.id === filiereId);
-      return {
-        filieres: s.filieres.map((f) =>
-          f.id === filiereId
-            ? {
-                ...f,
-                matieres: [
-                  ...f.matieres,
-                  { id, nom: m.nom, coefficient: m.coefficient },
-                ],
-              }
-            : f
-        ),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Création matière",
-            cible: m.nom,
-            details: `Matière ajoutée à la filière ${f?.nom ?? ""} (coef. ${m.coefficient}).`,
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+  addClasse: async (filiereId, c) => {
+    const sb = getSupabase();
+    const filiereUuid = await resolveFiliereUuid(filiereId);
+    if (!filiereUuid) return;
+    const legacy_id = `CL-${Date.now()}`;
+    const { error } = await sb.from("classes").insert({ legacy_id, filiere_id: filiereUuid, nom: c.nom, niveau: c.niveau, effectif: c.effectif });
+    if (error) throw error;
+    await logAudit("Création classe", c.nom, `Classe ajoutée à la filière.`);
+    await get().refresh();
+  },
 
-  deleteFiliere: (id) =>
-    set((s) => {
-      const f = s.filieres.find((x) => x.id === id);
-      return {
-        filieres: s.filieres.filter((x) => x.id !== id),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Suppression filière",
-            cible: f?.nom ?? id,
-            details: "Filière et ses classes/matières supprimées.",
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+  updateClasse: async (filiereId, classeId, c) => {
+    const sb = getSupabase();
+    const { error } = await sb.from("classes").update({ nom: c.nom, niveau: c.niveau, effectif: c.effectif }).or(`legacy_id.eq.${classeId},id.eq.${classeId}`);
+    if (error) throw error;
+    await logAudit("Modification classe", c.nom, `Classe mise à jour dans la filière.`);
+    await get().refresh();
+  },
 
-  deleteClasse: (filiereId, classeId) =>
-    set((s) => {
-      const f = s.filieres.find((x) => x.id === filiereId);
-      const c = f?.classes.find((x) => x.id === classeId);
-      return {
-        filieres: s.filieres.map((f) =>
-          f.id === filiereId
-            ? { ...f, classes: f.classes.filter((c) => c.id !== classeId) }
-            : f
-        ),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Suppression classe",
-            cible: c?.nom ?? classeId,
-            details: `Classe retirée de la filière ${f?.nom ?? ""}.`,
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+  addMatiere: async (filiereId, m) => {
+    const sb = getSupabase();
+    const filiereUuid = await resolveFiliereUuid(filiereId);
+    if (!filiereUuid) return;
+    const legacy_id = `MA-${Date.now()}`;
+    const { error } = await sb.from("matieres").insert({ legacy_id, filiere_id: filiereUuid, nom: m.nom, coefficient: m.coefficient });
+    if (error) throw error;
+    await logAudit("Création matière", m.nom, `Matière ajoutée (coef. ${m.coefficient}).`);
+    await get().refresh();
+  },
 
-  deleteMatiere: (filiereId, matiereId) =>
-    set((s) => {
-      const f = s.filieres.find((x) => x.id === filiereId);
-      const m = f?.matieres.find((x) => x.id === matiereId);
-      return {
-        filieres: s.filieres.map((f) =>
-          f.id === filiereId
-            ? { ...f, matieres: f.matieres.filter((m) => m.id !== matiereId) }
-            : f
-        ),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Suppression matière",
-            cible: m?.nom ?? matiereId,
-            details: `Matière retirée de la filière ${f?.nom ?? ""}.`,
-          },
-          ...s.audit,
-        ],
-      };
-    }),
+  updateMatiere: async (filiereId, matiereId, m) => {
+    const sb = getSupabase();
+    const { error } = await sb.from("matieres").update({ nom: m.nom, coefficient: m.coefficient }).or(`legacy_id.eq.${matiereId},id.eq.${matiereId}`);
+    if (error) throw error;
+    await logAudit("Modification matière", m.nom, `Matière mise à jour (coef. ${m.coefficient}).`);
+    await get().refresh();
+  },
 
-  // ─── Candidatures (traitement de dossier) ───────────────────────────────
-  traiterDossier: (id, action, options) =>
-    set((s) => {
-      const dossier = s.candidatures.find((c) => c.id === id);
-      if (!dossier) return s;
+  deleteFiliere: async (id) => {
+    const sb = getSupabase();
+    const f = get().filieres.find((x) => x.id === id);
+    const { error } = await sb.from("filieres").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    if (error) throw error;
+    await logAudit("Suppression filière", f?.nom ?? id, "Filière et ses classes/matières supprimées.");
+    await get().refresh();
+  },
 
-      const statutMap: Record<typeof action, StatutDossier> = {
-        valider: "Validé",
-        rejeter: "Rejeté",
-        incomplet: "Incomplet",
-      };
-      const statut = statutMap[action];
+  deleteClasse: async (filiereId, classeId) => {
+    const sb = getSupabase();
+    const f = get().filieres.find((x) => x.id === filiereId);
+    const c = f?.classes.find((x) => x.id === classeId);
+    const { error } = await sb.from("classes").delete().or(`legacy_id.eq.${classeId},id.eq.${classeId}`);
+    if (error) throw error;
+    await logAudit("Suppression classe", c?.nom ?? classeId, `Classe retirée de la filière ${f?.nom ?? ""}.`);
+    await get().refresh();
+  },
 
-      const actionLabel: Record<typeof action, string> = {
-        valider: "Validation dossier",
-        rejeter: "Rejet dossier",
-        incomplet: "Marquage incomplet",
-      };
+  deleteMatiere: async (filiereId, matiereId) => {
+    const sb = getSupabase();
+    const f = get().filieres.find((x) => x.id === filiereId);
+    const m = f?.matieres.find((x) => x.id === matiereId);
+    const { error } = await sb.from("matieres").delete().or(`legacy_id.eq.${matiereId},id.eq.${matiereId}`);
+    if (error) throw error;
+    await logAudit("Suppression matière", m?.nom ?? matiereId, `Matière retirée de la filière ${f?.nom ?? ""}.`);
+    await get().refresh();
+  },
 
-      let details = `Dossier ${statut.toLowerCase()}.`;
-      if (action === "rejeter" && options?.motif) {
-        details = `Motif : ${options.motif}`;
-      } else if (action === "incomplet" && options?.piecesManquantes?.length) {
-        details = `Pièces manquantes : ${options.piecesManquantes.join(", ")}`;
+  traiterDossier: async (id, action, options) => {
+    const sb = getSupabase();
+    const dossier = get().candidatures.find((c) => c.id === id);
+    if (!dossier) return;
+    const statutMap = { valider: "Validé", rejeter: "Rejeté", incomplet: "Incomplet" } as const;
+    const actionLabel = { valider: "Validation dossier", rejeter: "Rejet dossier", incomplet: "Marquage incomplet" } as const;
+    const statut = statutMap[action] as StatutDossier;
+    let details = `Dossier ${statut.toLowerCase()}.`;
+    if (action === "rejeter" && options?.motif) details = `Motif : ${options.motif}`;
+    if (action === "incomplet" && options?.piecesManquantes?.length) details = `Pièces manquantes : ${options.piecesManquantes.join(", ")}`;
+    const historique: ActionHistorique[] = [...dossier.historique, { action: actionLabel[action], date: now(), auteur: currentAuthor() }];
+    const { error } = await sb.from("candidatures").update({ statut, historique }).eq("legacy_id", id);
+    if (error) throw error;
+    await logAudit(actionLabel[action], id, details);
+    await get().refresh();
+  },
+
+  traiterAlerte: async (id, nouveauStatut, commentaire) => {
+    const sb = getSupabase();
+    const alerte = get().alertes.find((a) => a.id === id);
+    if (!alerte) return;
+    const { error } = await sb.from("alertes").update({ statut: nouveauStatut }).or(`legacy_id.eq.${id},id.eq.${id}`);
+    if (error) throw error;
+    await logAudit(
+      nouveauStatut === "Clôturée" ? "Clôture alerte" : "Prise en charge alerte",
+      id,
+      `Alerte ${id} (${alerte.etudiant}) → ${nouveauStatut}${commentaire ? `. Commentaire : ${commentaire}` : ""}.`
+    );
+    await get().refresh();
+  },
+
+  addNote: async (n) => {
+    const sb = getSupabase();
+    const etudiantId = await findEtudiantByName(n.etudiant);
+    if (!etudiantId) throw new Error("Étudiant introuvable");
+    const classe = await resolveClasseUuid(n.classe);
+    const { data: mat } = await sb.from("matieres").select("id").eq("nom", n.matiere).maybeSingle();
+    const { error } = await sb.from("notes").insert({
+      etudiant_id: etudiantId,
+      matiere_id: mat?.id ?? null,
+      matiere_nom: n.matiere,
+      classe_id: classe?.id ?? null,
+      classe_nom: n.classe,
+      note: n.note,
+      sur: n.sur,
+      coefficient: n.coefficient,
+      periode: n.periode,
+    });
+    if (error) throw error;
+    await logAudit("Saisie de notes", `${n.classe} — ${n.matiere}`, `Note ${n.note}/${n.sur} saisie pour ${n.etudiant} (${n.periode}).`);
+    await get().refresh();
+  },
+
+  addAbsence: async (a) => {
+    const sb = getSupabase();
+    const etudiantId = await findEtudiantByName(a.etudiant);
+    if (!etudiantId) throw new Error("Étudiant introuvable");
+    const classe = await resolveClasseUuid(a.classe);
+    const isoDate = a.date.includes("-") && a.date.length === 10
+      ? a.date
+      : new Date(a.date.split("/").reverse().join("-")).toISOString().slice(0, 10);
+    const { error } = await sb.from("absences").insert({
+      etudiant_id: etudiantId,
+      classe_id: classe?.id ?? null,
+      classe_nom: a.classe,
+      matiere: a.matiere,
+      date_absence: isoDate,
+      justifiee: a.justifiee,
+    });
+    if (error) throw error;
+    await logAudit("Saisie absence", `${a.classe} — ${a.matiere}`, `Absence enregistrée pour ${a.etudiant} le ${a.date}.`);
+    await get().refresh();
+  },
+
+  addCandidature: async (c) => {
+    const sb = getSupabase();
+    const session = useAuthStore.getState().session;
+    if (!session) throw new Error("Non authentifié");
+
+    const filiereUuid = await resolveFiliereUuid(c.filiereId);
+    const filiere = get().filieres.find((f) => f.id === c.filiereId);
+    const filiereNom = filiere?.nom ?? "";
+    const year = new Date().getFullYear();
+    const legacyId = `CAND-${year}-${String(Date.now()).slice(-6)}`;
+    const auteur = `${c.prenom} ${c.nom}`;
+    const historique: ActionHistorique[] = [
+      { action: "Dossier soumis", date: now(), auteur },
+    ];
+    const pieces = [
+      { nom: "Pièce d'identité", type: "PDF", taille: "—", present: false },
+      { nom: "Baccalauréat", type: "PDF", taille: "—", present: false },
+      { nom: "Relevé de notes", type: "PDF", taille: "—", present: false },
+      { nom: "Lettre de motivation", type: "PDF", taille: "—", present: false },
+    ];
+
+    const { error } = await sb.from("candidatures").insert({
+      legacy_id: legacyId,
+      nom: c.nom,
+      prenom: c.prenom,
+      email: c.email || session.email,
+      telephone: c.telephone,
+      date_naissance: c.dateNaissance,
+      adresse: c.adresse,
+      filiere_id: filiereUuid,
+      filiere_nom: filiereNom,
+      niveau: c.niveau,
+      statut: "En attente",
+      pieces,
+      synthese_ia: "Dossier en attente d'analyse IA.",
+      completude: 0,
+      historique,
+    });
+    if (error) throw error;
+    await logAudit(
+      "Soumission candidature",
+      legacyId,
+      `Nouveau dossier soumis par ${auteur} (${filiereNom}).`
+    );
+    await get().refresh();
+  },
+
+  genererRapport: async (options) => {
+    try {
+      const res = await fetch("/api/rapports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(options),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        return { ok: false, error: data.error ?? "Échec de la génération" };
       }
-
+      await get().refresh();
+      return { ok: true };
+    } catch (e) {
       return {
-        candidatures: s.candidatures.map((c) =>
-          c.id === id
-            ? {
-                ...c,
-                statut,
-                historique: [
-                  ...c.historique,
-                  {
-                    action: actionLabel[action],
-                    date: now(),
-                    auteur: currentAuthor(),
-                  },
-                ],
-              }
-            : c
-        ),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: actionLabel[action],
-            cible: id,
-            details,
-          },
-          ...s.audit,
-        ],
+        ok: false,
+        error: e instanceof Error ? e.message : "Erreur réseau",
       };
-    }),
+    }
+  },
 
-  // ─── Alertes IA ─────────────────────────────────────────────────────────
-  traiterAlerte: (id, nouveauStatut, commentaire) =>
-    set((s) => {
-      const alerte = s.alertes.find((a) => a.id === id);
-      if (!alerte) return s;
-      return {
-        alertes: s.alertes.map((a) =>
-          a.id === id ? { ...a, statut: nouveauStatut } : a
-        ),
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action:
-              nouveauStatut === "Clôturée"
-                ? "Clôture alerte"
-                : "Prise en charge alerte",
-            cible: id,
-            details: `Alerte ${id} (${alerte.etudiant}) → ${nouveauStatut}${
-              commentaire ? `. Commentaire : ${commentaire}` : ""
-            }.`,
-          },
-          ...s.audit,
-        ],
-      };
-    }),
-
-  // ─── Notes ──────────────────────────────────────────────────────────────
-  addNote: (n) =>
-    set((s) => {
-      auditCounter += 1;
-      return {
-        notes: [n, ...s.notes],
-        audit: [
-          {
-            id: makeAuditId(s.audit),
-            date: now(),
-            utilisateur: currentAuthor(),
-            action: "Saisie de notes",
-            cible: `${n.classe} — ${n.matiere}`,
-            details: `Note ${n.note}/${n.sur} saisie pour ${n.etudiant} (${n.periode}).`,
-          },
-          ...s.audit,
-        ],
-      };
-    }),
-
-  // ─── Journal d'audit ────────────────────────────────────────────────────
-  logAction: (e) =>
-    set((s) => ({
-      audit: [
-        { ...e, id: makeAuditId(s.audit), date: now() },
-        ...s.audit,
-      ],
-    })),
+  logAction: async (e) => {
+    await logAudit(e.action, e.cible, e.details);
+    await get().refresh();
+  },
 }));

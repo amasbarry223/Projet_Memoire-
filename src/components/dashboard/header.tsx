@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MobileNav } from "./mobile-nav";
 import { useAuthStore } from "@/lib/auth-store";
+import { logoutSession } from "@/lib/session-actions";
 import { roleLabels, roleBadgeBg } from "./data";
 
 function initials(prenom: string, nom: string) {
@@ -38,11 +39,9 @@ function avatarBg(role: string) {
 
 function ProfileButton({
   session,
-  logout,
   compact = false,
 }: {
   session: { prenom: string; nom: string; role: keyof typeof roleLabels; email: string };
-  logout: () => void;
   compact?: boolean;
 }) {
   return (
@@ -92,7 +91,7 @@ function ProfileButton({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-red-600 focus:text-red-700"
-          onClick={logout}
+          onClick={() => void logoutSession()}
         >
           <LogOut className="size-4" />
           Déconnexion
@@ -104,10 +103,9 @@ function ProfileButton({
 
 export function Header() {
   const session = useAuthStore((s) => s.session);
-  const logout = useAuthStore((s) => s.logout);
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-gray-100 bg-white px-3 sm:gap-4 sm:px-4 lg:px-6">
+    <header className="relative z-10 flex h-16 shrink-0 items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 shadow-sm sm:gap-4 sm:px-4 lg:px-6">
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <MobileNav />
         {/* Search — réduit sur mobile, max-w sur desktop */}
@@ -116,6 +114,7 @@ export function Header() {
           <input
             type="text"
             placeholder="Rechercher…"
+            aria-label="Rechercher"
             className="h-10 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/10"
           />
         </div>
@@ -132,9 +131,7 @@ export function Header() {
           <span className="absolute right-2 top-2 size-2 rounded-full bg-red-500 ring-2 ring-white" />
         </button>
 
-        {session && (
-          <ProfileButton session={session} logout={logout} />
-        )}
+        {session && <ProfileButton session={session} />}
       </div>
     </header>
   );

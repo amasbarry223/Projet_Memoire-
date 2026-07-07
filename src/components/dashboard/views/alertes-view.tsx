@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { BrainCircuit, ShieldCheck } from "lucide-react";
+import { useMemo, useState } from "react";
+import { BrainCircuit, ShieldCheck, Clock, AlertCircle, CheckCircle2, Filter } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,11 +23,27 @@ import { useDataStore } from "@/lib/data-store";
 import {
   PageHeader,
   Toolbar,
-  Panel,
   StatusBadge,
   niveauBadge,
+  FullWidthPage,
+  FullWidthHeader,
+  FullWidthKpiGrid,
+  FullWidthSection,
+  KpiCard,
+  EmptyState,
+  ActiveFilterChips,
+  ResetFiltersButton,
+  PersonAvatar,
+  MobileCard,
+  MobileOnly,
+  DesktopOnly,
+  filteredSubtitle,
+  tableHeadClass,
+  tableRowClass,
 } from "./shared";
 import { usePagination, DataTablePagination } from "./data-table-pagination";
+
+type AlerteStatut = "Nouvelle" | "Prise en charge" | "Clôturée";
 
 function statutBadgeClass(statut: string) {
   switch (statut) {
@@ -42,6 +58,19 @@ function statutBadgeClass(statut: string) {
   }
 }
 
+function avatarGradient(statut: string) {
+  switch (statut) {
+    case "Nouvelle":
+      return "from-amber-400 to-orange-500";
+    case "Prise en charge":
+      return "from-orange-400 to-red-500";
+    case "Clôturée":
+      return "from-blue-500 to-blue-700";
+    default:
+      return "from-gray-400 to-gray-600";
+  }
+}
+
 export function AlertesView() {
   const openModal = useAppStore((s) => s.openModal);
   const alertesIAComplete = useDataStore((s) => s.alertes);
@@ -52,131 +81,265 @@ export function AlertesView() {
     const matchSearch = `${a.etudiant} ${a.classe} ${a.motif}`
       .toLowerCase()
       .includes(search.toLowerCase());
-    const matchFiltre =
-      filtre === "Toutes" || a.statut === filtre;
+    const matchFiltre = filtre === "Toutes" || a.statut === filtre;
     return matchSearch && matchFiltre;
   });
 
   const pagination = usePagination(filtered);
 
-  const compteurs = {
-    "Nouvelle": alertesIAComplete.filter((a) => a.statut === "Nouvelle").length,
-    "Prise en charge": alertesIAComplete.filter((a) => a.statut === "Prise en charge").length,
-    "Clôturée": alertesIAComplete.filter((a) => a.statut === "Clôturée").length,
-  };
+  const compteurs = useMemo(
+    () => ({
+      total: alertesIAComplete.length,
+      Nouvelle: alertesIAComplete.filter((a) => a.statut === "Nouvelle").length,
+      "Prise en charge": alertesIAComplete.filter((a) => a.statut === "Prise en charge").length,
+      Clôturée: alertesIAComplete.filter((a) => a.statut === "Clôturée").length,
+    }),
+    [alertesIAComplete]
+  );
+
+  const hasActiveFilters = search.length > 0 || filtre !== "Toutes";
+
+  function handleStatutFilter(statut: AlerteStatut) {
+    setFiltre((current) => (current === statut ? "Toutes" : statut));
+    pagination.setPage(1);
+  }
+
+  function resetFilters() {
+    setSearch("");
+    setFiltre("Toutes");
+    pagination.setPage(1);
+  }
+
+  const filterChips = [
+    ...(search
+      ? [{ id: "search", label: `« ${search} »`, tone: "gray" as const, onRemove: () => setSearch("") }]
+      : []),
+    ...(filtre !== "Toutes"
+      ? [{ id: "statut", label: filtre, tone: "blue" as const, onRemove: () => setFiltre("Toutes") }]
+      : []),
+  ];
+
+  const indicateurs = [
+    {
+      key: "Nouvelle" as const,
+      label: "Nouvelles",
+      value: compteurs.Nouvelle,
+      icon: Clock,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+      ring: "ring-amber-200",
+      activeBg: "bg-amber-500",
+    },
+    {
+      key: "Prise en charge" as const,
+      label: "Prises en charge",
+      value: compteurs["Prise en charge"],
+      icon: AlertCircle,
+      color: "text-orange-600",
+      bg: "bg-orange-50",
+      ring: "ring-orange-200",
+      activeBg: "bg-orange-500",
+    },
+    {
+      key: "Clôturée" as const,
+      label: "Clôturées",
+      value: compteurs.Clôturée,
+      icon: CheckCircle2,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+      ring: "ring-blue-200",
+      activeBg: "bg-blue-500",
+    },
+  ];
 
   return (
-    <div>
-      <PageHeader
-        title="Alertes IA"
-        description="Détection de risque pédagogique générée par l'IA (F4.4)"
-        icon={BrainCircuit}
-      />
+    <FullWidthPage>
+      <FullWidthHeader>
+        <PageHeader
+          className="mb-0"
+          title="Alertes IA"
+          badge="Module F4.4"
+          description="Détection de risque pédagogique générée par l'IA (F4.4)"
+          icon={BrainCircuit}
+        />
+      </FullWidthHeader>
 
-      <div className="mb-6 grid grid-cols-3 gap-4">
-        <Panel className="p-4">
-          <p className="text-2xl font-bold text-yellow-700">
-            {compteurs["Nouvelle"]}
-          </p>
-          <p className="text-xs text-gray-500">Nouvelles</p>
-        </Panel>
-        <Panel className="p-4">
-          <p className="text-2xl font-bold text-orange-600">
-            {compteurs["Prise en charge"]}
-          </p>
-          <p className="text-xs text-gray-500">Prises en charge</p>
-        </Panel>
-        <Panel className="p-4">
-          <p className="text-2xl font-bold text-blue-700">
-            {compteurs["Clôturée"]}
-          </p>
-          <p className="text-xs text-gray-500">Clôturées</p>
-        </Panel>
-      </div>
+      <FullWidthKpiGrid cols={3}>
+        {indicateurs.map((ind) => (
+          <KpiCard
+            key={ind.key}
+            label={ind.label}
+            value={ind.value}
+            icon={ind.icon}
+            color={ind.color}
+            bg={ind.bg}
+            ring={ind.ring}
+            activeBg={ind.activeBg}
+            isActive={filtre === ind.key}
+            pct={compteurs.total ? Math.round((ind.value / compteurs.total) * 100) : 0}
+            onClick={() => handleStatutFilter(ind.key)}
+          />
+        ))}
+      </FullWidthKpiGrid>
 
-      <Panel className="p-4 sm:p-5">
-        <Toolbar search={search} onSearch={setSearch}>
-          <Select value={filtre} onValueChange={setFiltre}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Statut" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Toutes">Toutes</SelectItem>
-              <SelectItem value="Nouvelle">Nouvelle</SelectItem>
-              <SelectItem value="Prise en charge">Prise en charge</SelectItem>
-              <SelectItem value="Clôturée">Clôturée</SelectItem>
-            </SelectContent>
-          </Select>
-        </Toolbar>
+      <FullWidthSection
+        title="Liste des alertes"
+        subtitle={filteredSubtitle(filtered.length, hasActiveFilters)}
+        headerAction={hasActiveFilters ? <ResetFiltersButton onClick={resetFilters} /> : undefined}
+        toolbar={
+          <Toolbar
+            search={search}
+            onSearch={(v) => {
+              setSearch(v);
+              pagination.setPage(1);
+            }}
+          >
+            <Select
+              value={filtre}
+              onValueChange={(v) => {
+                setFiltre(v);
+                pagination.setPage(1);
+              }}
+            >
+              <SelectTrigger className="h-9 w-full sm:w-[180px]">
+                <Filter className="mr-1.5 size-3.5 text-gray-400" />
+                <SelectValue placeholder="Statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Toutes">Toutes</SelectItem>
+                <SelectItem value="Nouvelle">Nouvelle</SelectItem>
+                <SelectItem value="Prise en charge">Prise en charge</SelectItem>
+                <SelectItem value="Clôturée">Clôturée</SelectItem>
+              </SelectContent>
+            </Select>
+          </Toolbar>
+        }
+        footer={
+          pagination.paged.length > 0 ? (
+            <DataTablePagination
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              totalPages={pagination.totalPages}
+              total={pagination.total}
+              start={pagination.start}
+              end={pagination.end}
+              onPageChange={pagination.setPage}
+              onPageSizeChange={pagination.setPageSize}
+            />
+          ) : undefined
+        }
+      >
+        <ActiveFilterChips chips={filterChips} />
 
-        <Table>
-          <TableHeader>
-            <TableRow className="border-gray-100">
-              <TableHead className="text-gray-500">Réf.</TableHead>
-              <TableHead className="text-gray-500">Étudiant</TableHead>
-              <TableHead className="text-gray-500">Classe</TableHead>
-              <TableHead className="text-gray-500">Motif</TableHead>
-              <TableHead className="text-gray-500">Niveau</TableHead>
-              <TableHead className="text-gray-500">Statut</TableHead>
-              <TableHead className="text-right text-gray-500">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pagination.paged.map((a) => (
-              <TableRow key={a.id} className="border-gray-50">
-                <TableCell className="font-mono text-xs text-gray-400">
-                  {a.id}
-                </TableCell>
-                <TableCell className="font-medium text-gray-900">
-                  {a.etudiant}
-                </TableCell>
-                <TableCell className="text-sm text-gray-600">
-                  {a.classe}
-                </TableCell>
-                <TableCell className="max-w-xs text-sm text-gray-600">
-                  {a.motif}
-                </TableCell>
-                <TableCell>
-                  <StatusBadge
-                    label={a.niveau}
-                    className={niveauBadge(a.niveau)}
-                  />
-                </TableCell>
-                <TableCell>
-                  <StatusBadge
-                    label={a.statut}
-                    className={statutBadgeClass(a.statut)}
-                  />
-                </TableCell>
-                <TableCell className="text-right">
+        <MobileOnly>
+          {pagination.paged.map((a) => {
+            const initials = a.etudiant
+              .split(" ")
+              .map((p) => p.charAt(0))
+              .join("")
+              .slice(0, 2);
+            return (
+              <MobileCard
+                key={a.id}
+                onActivate={() => openModal({ type: "alerte", alerteId: a.id })}
+                body={
+                  <>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <PersonAvatar initials={initials} gradient={avatarGradient(a.statut)} />
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900">{a.etudiant}</p>
+                          <p className="text-xs text-gray-400">{a.classe}</p>
+                        </div>
+                      </div>
+                      <StatusBadge label={a.statut} className={statutBadgeClass(a.statut)} />
+                    </div>
+                    <p className="mt-2 line-clamp-2 text-sm text-gray-600">{a.motif}</p>
+                    <div className="mt-2">
+                      <StatusBadge label={a.niveau} className={niveauBadge(a.niveau)} />
+                    </div>
+                  </>
+                }
+                footer={
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-blue-200 text-blue-700 hover:bg-blue-50"
-                    onClick={() =>
-                      openModal({ type: "alerte", alerteId: a.id })
-                    }
+                    className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
+                    onClick={() => openModal({ type: "alerte", alerteId: a.id })}
                   >
                     <ShieldCheck className="size-4" />
                     Traiter
                   </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                }
+              />
+            );
+          })}
+        </MobileOnly>
 
-        <DataTablePagination
-          page={pagination.page}
-          pageSize={pagination.pageSize}
-          totalPages={pagination.totalPages}
-          total={pagination.total}
-          start={pagination.start}
-          end={pagination.end}
-          onPageChange={pagination.setPage}
-          onPageSizeChange={pagination.setPageSize}
-        />
-      </Panel>
-    </div>
+        <DesktopOnly>
+        <div className="overflow-x-auto">
+          <Table className="w-full">
+            <TableHeader>
+              <TableRow className="border-gray-100 hover:bg-transparent">
+                <TableHead className={tableHeadClass}>Réf.</TableHead>
+                <TableHead className={tableHeadClass}>Étudiant</TableHead>
+                <TableHead className={tableHeadClass}>Classe</TableHead>
+                <TableHead className={tableHeadClass}>Motif</TableHead>
+                <TableHead className={tableHeadClass}>Niveau</TableHead>
+                <TableHead className={tableHeadClass}>Statut</TableHead>
+                <TableHead className={`text-right ${tableHeadClass}`}>Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {pagination.paged.map((a) => (
+                <TableRow key={a.id} className={tableRowClass}>
+                  <TableCell className="font-mono text-xs text-gray-400">{a.id}</TableCell>
+                  <TableCell className="font-medium text-gray-900">{a.etudiant}</TableCell>
+                  <TableCell className="text-sm text-gray-600">{a.classe}</TableCell>
+                  <TableCell className="max-w-xs text-sm text-gray-600">{a.motif}</TableCell>
+                  <TableCell>
+                    <StatusBadge label={a.niveau} className={niveauBadge(a.niveau)} />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge label={a.statut} className={statutBadgeClass(a.statut)} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                      onClick={() => openModal({ type: "alerte", alerteId: a.id })}
+                    >
+                      <ShieldCheck className="size-4" />
+                      Traiter
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        </DesktopOnly>
+
+        {pagination.paged.length === 0 && (
+          <EmptyState
+            icon={BrainCircuit}
+            title="Aucune alerte trouvée"
+            description={
+              hasActiveFilters
+                ? "Aucune alerte ne correspond à vos critères."
+                : "Aucune alerte IA pour le moment."
+            }
+            action={
+              hasActiveFilters ? (
+                <Button variant="outline" size="sm" onClick={resetFilters}>
+                  Effacer les filtres
+                </Button>
+              ) : undefined
+            }
+          />
+        )}
+      </FullWidthSection>
+    </FullWidthPage>
   );
 }
