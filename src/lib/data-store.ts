@@ -32,6 +32,12 @@ import type {
 } from "@/components/dashboard/data";
 import { defaultParametres as DEFAULT_PARAMETRES } from "@/components/dashboard/data";
 import { useAuthStore } from "@/lib/auth-store";
+import {
+  uploadCandidaturePiece,
+  deleteStorageFiles,
+  CANDIDATURES_BUCKET,
+  RAPPORTS_BUCKET,
+} from "@/lib/supabase/storage";
 
 interface DataState {
   isLoading: boolean;
@@ -63,7 +69,7 @@ interface DataState {
   updateEnseignant: (id: string, e: Partial<Enseignant>) => Promise<void>;
   deleteEnseignant: (id: string) => Promise<void>;
 
-  addUtilisateur: (u: Omit<Utilisateur, "id" | "derniereConnexion">) => Promise<void>;
+  addUtilisateur: (u: Omit<Utilisateur, "id" | "derniereConnexion"> & { password?: string; inviteByEmail?: boolean }) => Promise<void>;
   updateUtilisateur: (id: string, u: Partial<Utilisateur>) => Promise<void>;
   deleteUtilisateur: (id: string) => Promise<{ ok: boolean; error?: string }>;
 
@@ -90,17 +96,31 @@ interface DataState {
   ) => Promise<void>;
 
   addNote: (n: Note) => Promise<void>;
+  updateNote: (id: string, n: Partial<Note>) => Promise<void>;
+  deleteNote: (id: string) => Promise<void>;
   addAbsence: (a: Omit<Absence, "date"> & { date: string }) => Promise<void>;
-  addCandidature: (c: {
-    nom: string;
-    prenom: string;
-    email: string;
-    telephone: string;
-    dateNaissance: string;
-    adresse: string;
-    filiereId: string;
-    niveau: string;
-  }) => Promise<void>;
+  updateAbsence: (id: string, a: Partial<Absence>) => Promise<void>;
+  deleteAbsence: (id: string) => Promise<void>;
+  addCandidature: (
+    c: {
+      nom: string;
+      prenom: string;
+      email: string;
+      telephone: string;
+      dateNaissance: string;
+      adresse: string;
+      filiereId: string;
+      niveau: string;
+    },
+    files?: Record<string, File>
+  ) => Promise<string>;
+  deleteCandidature: (id: string) => Promise<void>;
+  analyseCandidature: (id: string) => Promise<void>;
+  addAlerte: (a: Omit<AlerteIA, "id" | "date" | "indicatorColor">) => Promise<void>;
+  deleteAlerte: (id: string) => Promise<void>;
+  genererAlertesIA: () => Promise<{ ok: boolean; created?: number; error?: string }>;
+  deleteRapport: (id: string) => Promise<void>;
+  downloadSignedUrl: (bucket: string, path: string) => Promise<string>;
   genererRapport: (options: {
     type: Rapport["type"];
     periode: string;
@@ -212,8 +232,10 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   refresh: async () => {
     const sb = getSupabase();
+    const session = useAuthStore.getState().session;
+    const isAdmin = session?.role === "admin";
     await ensureParametresDefaults(sb);
-    const [filieresRes, etudiantsRes, enseignantsRes, candidaturesRes, utilisateursRes, alertesRes, auditRes, notesRes, absencesRes, rapportsRes, chartsRes, parametresRes] = await Promise.all([
+    const queries = [
       sb.from("filieres").select("*, classes(*), matieres(*)").order("nom"),
       sb.from("etudiants").select("*, classes(nom, filieres(nom))").order("nom"),
       sb.from("enseignants").select("*, enseignant_matieres(matiere_id, matieres(nom)), enseignant_classes(classe_id, classes(nom))").order("nom"),
@@ -225,8 +247,11 @@ export const useDataStore = create<DataState>((set, get) => ({
       sb.from("absences").select("*, etudiants(prenom, nom)").order("date_absence", { ascending: false }),
       sb.from("rapports").select("*").order("date_generation", { ascending: false }),
       sb.from("dashboard_charts").select("*"),
-      sb.from("parametres").select("key, value"),
-    ]);
+      isAdmin
+        ? sb.from("parametres").select("key, value")
+        : Promise.resolve({ data: null, error: null }),
+    ] as const;
+    const [filieresRes, etudiantsRes, enseignantsRes, candidaturesRes, utilisateursRes, alertesRes, auditRes, notesRes, absencesRes, rapportsRes, chartsRes, parametresRes] = await Promise.all(queries);
 
     const charts = chartsRes.data ?? [];
     const insc = charts.find((c) => c.key === "inscriptions");
@@ -245,7 +270,9 @@ export const useDataStore = create<DataState>((set, get) => ({
       rapports: (rapportsRes.data ?? []).map(mapRapport),
       inscriptionsParMois: (insc?.data as { mois: string; inscriptions: number }[]) ?? [],
       absentéismeParMois: (abs?.data as { mois: string; taux: number }[]) ?? [],
-      parametres: parseParametresRows((parametresRes.data ?? []) as { key: string; value: unknown }[]),
+      parametres: isAdmin && parametresRes.data
+        ? parseParametresRows((parametresRes.data ?? []) as { key: string; value: unknown }[])
+        : get().parametres ?? DEFAULT_PARAMETRES,
     });
   },
 
@@ -383,7 +410,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     const res = await fetch("/api/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...u, password: "demo123" }),
+      body: JSON.stringify(u),
     });
     if (!res.ok) {
       const err = await res.json();
@@ -518,7 +545,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     if (action === "rejeter" && options?.motif) details = `Motif : ${options.motif}`;
     if (action === "incomplet" && options?.piecesManquantes?.length) details = `Pièces manquantes : ${options.piecesManquantes.join(", ")}`;
     const historique: ActionHistorique[] = [...dossier.historique, { action: actionLabel[action], date: now(), auteur: currentAuthor() }];
-    const { error } = await sb.from("candidatures").update({ statut, historique }).eq("legacy_id", id);
+    const { error } = await sb.from("candidatures").update({ statut, historique }).or(`legacy_id.eq.${id},id.eq.${id}`);
     if (error) throw error;
     await logAudit(actionLabel[action], id, details);
     await get().refresh();
@@ -581,10 +608,62 @@ export const useDataStore = create<DataState>((set, get) => ({
     await get().refresh();
   },
 
-  addCandidature: async (c) => {
+  updateNote: async (id, n) => {
+    const sb = getSupabase();
+    const { error } = await sb.from("notes").update({
+      ...(n.note !== undefined ? { note: n.note } : {}),
+      ...(n.sur !== undefined ? { sur: n.sur } : {}),
+      ...(n.coefficient !== undefined ? { coefficient: n.coefficient } : {}),
+      ...(n.periode !== undefined ? { periode: n.periode } : {}),
+      ...(n.matiere !== undefined ? { matiere_nom: n.matiere } : {}),
+      ...(n.classe !== undefined ? { classe_nom: n.classe } : {}),
+    }).eq("id", id);
+    if (error) throw error;
+    await logAudit("Modification note", id, "Note mise à jour.");
+    await get().refresh();
+  },
+
+  deleteNote: async (id) => {
+    const sb = getSupabase();
+    const { error } = await sb.from("notes").delete().eq("id", id);
+    if (error) throw error;
+    await logAudit("Suppression note", id, "Note supprimée.");
+    await get().refresh();
+  },
+
+  updateAbsence: async (id, a) => {
+    const sb = getSupabase();
+    const dateAbsence =
+      a.date !== undefined
+        ? a.date.includes("-") && a.date.length === 10
+          ? a.date
+          : new Date(a.date.split("/").reverse().join("-")).toISOString().slice(0, 10)
+        : undefined;
+    const { error } = await sb.from("absences").update({
+      ...(a.matiere !== undefined ? { matiere: a.matiere } : {}),
+      ...(a.classe !== undefined ? { classe_nom: a.classe } : {}),
+      ...(a.justifiee !== undefined ? { justifiee: a.justifiee } : {}),
+      ...(dateAbsence !== undefined ? { date_absence: dateAbsence } : {}),
+    }).eq("id", id);
+    if (error) throw error;
+    await logAudit("Modification absence", id, "Absence mise à jour.");
+    await get().refresh();
+  },
+
+  deleteAbsence: async (id) => {
+    const sb = getSupabase();
+    const { error } = await sb.from("absences").delete().eq("id", id);
+    if (error) throw error;
+    await logAudit("Suppression absence", id, "Absence supprimée.");
+    await get().refresh();
+  },
+
+  addCandidature: async (c, files) => {
     const sb = getSupabase();
     const session = useAuthStore.getState().session;
     if (!session) throw new Error("Non authentifié");
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) throw new Error("Non authentifié");
 
     const filiereUuid = await resolveFiliereUuid(c.filiereId);
     const filiere = get().filieres.find((f) => f.id === c.filiereId);
@@ -592,14 +671,27 @@ export const useDataStore = create<DataState>((set, get) => ({
     const year = new Date().getFullYear();
     const legacyId = `CAND-${year}-${String(Date.now()).slice(-6)}`;
     const auteur = `${c.prenom} ${c.nom}`;
+
+    const PIECE_DEFS = [
+      { key: "identite", nom: "Pièce d'identité" },
+      { key: "bac", nom: "Baccalauréat" },
+      { key: "releve", nom: "Relevé de notes" },
+      { key: "lettre", nom: "Lettre de motivation" },
+    ] as const;
+
+    const pieces = PIECE_DEFS.map(({ key, nom }) => {
+      const file = files?.[key];
+      return {
+        nom,
+        type: file?.type?.includes("pdf") ? "PDF" : file ? "Image" : "PDF",
+        taille: "—",
+        present: false,
+        storage_path: undefined as string | undefined,
+      };
+    });
+
     const historique: ActionHistorique[] = [
       { action: "Dossier soumis", date: now(), auteur },
-    ];
-    const pieces = [
-      { nom: "Pièce d'identité", type: "PDF", taille: "—", present: false },
-      { nom: "Baccalauréat", type: "PDF", taille: "—", present: false },
-      { nom: "Relevé de notes", type: "PDF", taille: "—", present: false },
-      { nom: "Lettre de motivation", type: "PDF", taille: "—", present: false },
     ];
 
     const { error } = await sb.from("candidatures").insert({
@@ -615,17 +707,137 @@ export const useDataStore = create<DataState>((set, get) => ({
       niveau: c.niveau,
       statut: "En attente",
       pieces,
-      synthese_ia: "Dossier en attente d'analyse IA.",
+      synthese_ia: "",
       completude: 0,
       historique,
     });
     if (error) throw error;
+
+    if (files && Object.keys(files).length > 0) {
+      for (const { key, nom } of PIECE_DEFS) {
+        const file = files[key];
+        if (!file) continue;
+        const uploaded = await uploadCandidaturePiece(user.id, legacyId, key, file);
+        const idx = pieces.findIndex((p) => p.nom === nom);
+        if (idx >= 0) {
+          pieces[idx] = {
+            ...pieces[idx],
+            present: true,
+            taille: uploaded.taille,
+            storage_path: uploaded.path,
+            type: file.type?.includes("pdf") ? "PDF" : "Image",
+          };
+        }
+      }
+      const completude = Math.round(
+        (pieces.filter((p) => p.present).length / pieces.length) * 100
+      );
+      await sb.from("candidatures").update({ pieces, completude }).eq("legacy_id", legacyId);
+    }
+
     await logAudit(
       "Soumission candidature",
       legacyId,
       `Nouveau dossier soumis par ${auteur} (${filiereNom}).`
     );
     await get().refresh();
+
+    void fetch("/api/ia/analyse-dossier", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ candidatureId: legacyId }),
+    }).then(() => get().refresh());
+
+    return legacyId;
+  },
+
+  deleteCandidature: async (id) => {
+    const sb = getSupabase();
+    const dossier = get().candidatures.find((c) => c.id === id);
+    const paths = (dossier?.pieces ?? [])
+      .map((p) => p.storage_path)
+      .filter((p): p is string => Boolean(p));
+    if (paths.length > 0) {
+      await deleteStorageFiles(CANDIDATURES_BUCKET, paths);
+    }
+    const { error } = await sb.from("candidatures").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    if (error) throw error;
+    await logAudit("Suppression candidature", id, "Dossier candidature supprimé.");
+    await get().refresh();
+  },
+
+  analyseCandidature: async (id) => {
+    const res = await fetch("/api/ia/analyse-dossier", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ candidatureId: id }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error((err as { error?: string }).error ?? "Analyse échouée");
+    }
+    await get().refresh();
+  },
+
+  addAlerte: async (a) => {
+    const sb = getSupabase();
+    const etudiantId = await findEtudiantByName(a.etudiant);
+    if (!etudiantId) throw new Error("Étudiant introuvable");
+    const colorMap = { Faible: "bg-yellow-500", Moyen: "bg-orange-500", Élevé: "bg-red-500" };
+    const legacyId = `ALT-${Date.now()}`;
+    const { error } = await sb.from("alertes").insert({
+      legacy_id: legacyId,
+      etudiant_id: etudiantId,
+      classe_nom: a.classe,
+      niveau: a.niveau,
+      motif: a.motif,
+      statut: "Nouvelle",
+      indicator_color: colorMap[a.niveau] ?? "bg-orange-500",
+    });
+    if (error) throw error;
+    await logAudit("Création alerte", legacyId, `Alerte créée pour ${a.etudiant}.`);
+    await get().refresh();
+  },
+
+  deleteAlerte: async (id) => {
+    const sb = getSupabase();
+    const { error } = await sb.from("alertes").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    if (error) throw error;
+    await logAudit("Suppression alerte", id, "Alerte supprimée.");
+    await get().refresh();
+  },
+
+  genererAlertesIA: async () => {
+    try {
+      const res = await fetch("/api/ia/generer-alertes", { method: "POST" });
+      const data = (await res.json()) as { error?: string; created?: number };
+      if (!res.ok) return { ok: false, error: data.error ?? "Échec génération" };
+      await get().refresh();
+      return { ok: true, created: data.created };
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : "Erreur" };
+    }
+  },
+
+  deleteRapport: async (id) => {
+    const sb = getSupabase();
+    const rapport = get().rapports.find((r) => r.id === id);
+    if (rapport?.fichierPath) {
+      await deleteStorageFiles(RAPPORTS_BUCKET, [rapport.fichierPath]);
+    }
+    const { error } = await sb.from("rapports").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    if (error) throw error;
+    await logAudit("Suppression rapport", id, "Rapport supprimé.");
+    await get().refresh();
+  },
+
+  downloadSignedUrl: async (bucket, path) => {
+    const res = await fetch(
+      `/api/storage/download?bucket=${encodeURIComponent(bucket)}&path=${encodeURIComponent(path)}`
+    );
+    const data = (await res.json()) as { url?: string; error?: string };
+    if (!res.ok || !data.url) throw new Error(data.error ?? "Téléchargement impossible");
+    return data.url;
   },
 
   genererRapport: async (options) => {

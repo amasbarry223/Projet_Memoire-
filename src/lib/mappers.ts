@@ -119,6 +119,7 @@ export function mapCandidature(row: DbCandidature): Candidature {
 export function mapNote(row: Tables<"notes"> & { etudiants?: { prenom: string; nom: string } | null }): Note {
   const etu = row.etudiants;
   return {
+    id: row.id,
     etudiant: etu ? `${etu.prenom} ${etu.nom}` : "",
     matiere: row.matiere_nom,
     classe: row.classe_nom,
@@ -132,6 +133,7 @@ export function mapNote(row: Tables<"notes"> & { etudiants?: { prenom: string; n
 export function mapAbsence(row: Tables<"absences"> & { etudiants?: { prenom: string; nom: string } | null }): Absence {
   const etu = row.etudiants;
   return {
+    id: row.id,
     etudiant: etu ? `${etu.prenom} ${etu.nom}` : "",
     classe: row.classe_nom,
     matiere: row.matiere,
@@ -165,7 +167,7 @@ export function mapAudit(row: Tables<"audit_log">): EntreeAudit {
   };
 }
 
-export function mapRapport(row: Tables<"rapports">): Rapport {
+export function mapRapport(row: Tables<"rapports"> & { fichier_path?: string | null; taille_octets?: number | null }): Rapport {
   return {
     id: row.legacy_id ?? row.id,
     titre: row.titre,
@@ -174,6 +176,8 @@ export function mapRapport(row: Tables<"rapports">): Rapport {
     type: row.type,
     taille: row.taille,
     generePar: row.genere_par,
+    fichierPath: row.fichier_path ?? undefined,
+    tailleOctets: row.taille_octets ?? undefined,
   };
 }
 

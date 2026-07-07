@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BrainCircuit, ShieldCheck, Clock, AlertCircle, CheckCircle2, Filter } from "lucide-react";
+import { BrainCircuit, ShieldCheck, Clock, AlertCircle, CheckCircle2, Filter, Trash2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/select";
 import { useAppStore } from "@/lib/view-store";
 import { useDataStore } from "@/lib/data-store";
+import { useAuthStore } from "@/lib/auth-store";
+import { useToast } from "@/hooks/use-toast";
 import {
   PageHeader,
   Toolbar,
@@ -74,6 +76,13 @@ function avatarGradient(statut: string) {
 export function AlertesView() {
   const openModal = useAppStore((s) => s.openModal);
   const alertesIAComplete = useDataStore((s) => s.alertes);
+  const genererAlertesIA = useDataStore((s) => s.genererAlertesIA);
+  const deleteAlerte = useDataStore((s) => s.deleteAlerte);
+  const session = useAuthStore((s) => s.session);
+  const { toast } = useToast();
+  const canManage = session?.role === "admin" || session?.role === "responsable";
+  const isAdmin = session?.role === "admin";
+  const [generating, setGenerating] = useState(false);
   const [search, setSearch] = useState("");
   const [filtre, setFiltre] = useState("Toutes");
 
@@ -162,6 +171,37 @@ export function AlertesView() {
           description="Détection de risque pédagogique générée par l'IA (F4.4)"
           icon={BrainCircuit}
         />
+        {canManage && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={generating}
+              onClick={async () => {
+                setGenerating(true);
+                const r = await genererAlertesIA();
+                setGenerating(false);
+                if (r.ok) {
+                  toast({
+                    title: "Alertes générées",
+                    description: `${r.created ?? 0} nouvelle(s) alerte(s) créée(s).`,
+                  });
+                } else {
+                  toast({ title: "Erreur", description: r.error, variant: "destructive" });
+                }
+              }}
+            >
+              {generating ? "Analyse…" : "Générer alertes IA"}
+            </Button>
+            <Button
+              size="sm"
+              className="bg-blue-500 text-white hover:bg-blue-700"
+              onClick={() => openModal({ type: "alerte-form" })}
+            >
+              Nouvelle alerte
+            </Button>
+          </div>
+        )}
       </FullWidthHeader>
 
       <FullWidthKpiGrid cols={3}>
@@ -304,15 +344,31 @@ export function AlertesView() {
                     <StatusBadge label={a.statut} className={statutBadgeClass(a.statut)} />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-blue-200 text-blue-700 hover:bg-blue-50"
-                      onClick={() => openModal({ type: "alerte", alerteId: a.id })}
-                    >
-                      <ShieldCheck className="size-4" />
-                      Traiter
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                        onClick={() => openModal({ type: "alerte", alerteId: a.id })}
+                      >
+                        <ShieldCheck className="size-4" />
+                        Traiter
+                      </Button>
+                      {isAdmin && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600"
+                          onClick={async () => {
+                            if (!confirm(`Supprimer l'alerte ${a.id} ?`)) return;
+                            await deleteAlerte(a.id);
+                            toast({ title: "Alerte supprimée", description: a.etudiant });
+                          }}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

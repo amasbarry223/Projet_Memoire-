@@ -23,6 +23,10 @@ import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/view-store";
 import { type Candidature } from "@/components/dashboard/data";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/lib/auth-store";
+import { canTraiterDossier } from "@/components/dashboard/data";
+import { useDataStore } from "@/lib/data-store";
+import { CANDIDATURES_BUCKET } from "@/lib/supabase/storage";
 
 function StatPill({
   icon: Icon,
@@ -104,6 +108,11 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
   const closeDossier = useAppStore((s) => s.closeDossier);
   const setView = useAppStore((s) => s.setView);
   const openModal = useAppStore((s) => s.openModal);
+  const session = useAuthStore((s) => s.session);
+  const peutTraiter = session ? canTraiterDossier(session.role) : false;
+  const isAdmin = session?.role === "admin";
+  const deleteCandidature = useDataStore((s) => s.deleteCandidature);
+  const downloadSignedUrl = useDataStore((s) => s.downloadSignedUrl);
   const { toast } = useToast();
 
   function handleAction(action: "valider" | "rejeter" | "incomplet") {
@@ -115,11 +124,44 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
     setView("candidatures");
   }
 
-  function handleDownload(piece: string) {
-    toast({
-      title: "Téléchargement",
-      description: `${piece} — URL signée générée (durée 15 min).`,
-    });
+  async function handleDownload(piece: { nom: string; storage_path?: string }) {
+    if (!piece.storage_path) {
+      toast({
+        title: "Pièce indisponible",
+        description: `${piece.nom} n'a pas encore été téléversée.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      const url = await downloadSignedUrl(CANDIDATURES_BUCKET, piece.storage_path);
+      window.open(url, "_blank");
+      toast({
+        title: "Téléchargement",
+        description: `${piece.nom} — lien valide 15 minutes.`,
+      });
+    } catch (e) {
+      toast({
+        title: "Erreur",
+        description: e instanceof Error ? e.message : "Téléchargement impossible",
+        variant: "destructive",
+      });
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm("Supprimer définitivement ce dossier ?")) return;
+    try {
+      await deleteCandidature(dossier.id);
+      toast({ title: "Dossier supprimé", description: dossier.id });
+      handleBack();
+    } catch (e) {
+      toast({
+        title: "Erreur",
+        description: e instanceof Error ? e.message : "Suppression impossible",
+        variant: "destructive",
+      });
+    }
   }
 
   const piecesPresentes = dossier.pieces.filter((p) => p.present).length;
@@ -143,6 +185,17 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
             {dossier.id}
           </span>
         </div>
+        {isAdmin && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs text-red-600"
+            onClick={() => void handleDelete()}
+          >
+            Supprimer
+          </Button>
+        )}
+        {peutTraiter && (
         <div className="flex flex-wrap items-center gap-1.5">
           <Button
             variant="outline"
@@ -171,6 +224,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
             Valider
           </Button>
         </div>
+        )}
       </div>
 
       {/* En-tête identité — pleine largeur */}
@@ -319,7 +373,7 @@ export function DossierDetailView({ dossier }: { dossier: Candidature }) {
                       variant="ghost"
                       size="icon"
                       className="size-7 shrink-0 text-gray-400 hover:bg-blue-50 hover:text-blue-700"
-                      onClick={() => handleDownload(piece.nom)}
+                      onClick={() => handleDownload(piece)}
                       aria-label={`Télécharger ${piece.nom}`}
                     >
                       <Download className="size-3.5" />

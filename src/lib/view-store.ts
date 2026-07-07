@@ -21,8 +21,9 @@ export type ModalState =
       editId?: string;
     }
   | { type: "alerte"; alerteId: string }
-  | { type: "note"; etudiant?: string }
-  | { type: "absence"; etudiant?: string }
+  | { type: "alerte-form" }
+  | { type: "note"; etudiant?: string; editId?: string }
+  | { type: "absence"; etudiant?: string; editId?: string }
   | { type: "candidature" };
 
 // ─── Store ────────────────────────────────────────────────────────────────────

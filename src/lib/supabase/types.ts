@@ -653,11 +653,13 @@ export type Database = {
         Row: {
           created_at: string
           date_generation: string
+          fichier_path: string | null
           genere_par: string
           id: string
           legacy_id: string | null
           periode: string
           taille: string
+          taille_octets: number | null
           titre: string
           type: Database["public"]["Enums"]["type_rapport"]
           updated_at: string
@@ -665,11 +667,13 @@ export type Database = {
         Insert: {
           created_at?: string
           date_generation?: string
+          fichier_path?: string | null
           genere_par?: string
           id?: string
           legacy_id?: string | null
           periode?: string
           taille?: string
+          taille_octets?: number | null
           titre: string
           type?: Database["public"]["Enums"]["type_rapport"]
           updated_at?: string
@@ -677,14 +681,40 @@ export type Database = {
         Update: {
           created_at?: string
           date_generation?: string
+          fichier_path?: string | null
           genere_par?: string
           id?: string
           legacy_id?: string | null
           periode?: string
           taille?: string
+          taille_octets?: number | null
           titre?: string
           type?: Database["public"]["Enums"]["type_rapport"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      n8n_events: {
+        Row: {
+          id: string
+          workflow_name: string
+          event_type: string
+          payload: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          workflow_name?: string
+          event_type?: string
+          payload?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          workflow_name?: string
+          event_type?: string
+          payload?: Json
+          created_at?: string
         }
         Relationships: []
       }

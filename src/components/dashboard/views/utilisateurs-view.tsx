@@ -55,7 +55,7 @@ import {
   tableRowClass,
 } from "./shared";
 import { usePagination, DataTablePagination } from "./data-table-pagination";
-import { UtilisateurFormModal } from "../modals/utilisateur-form-modal";
+import { UtilisateurFormModal, type UtilisateurFormData } from "../modals/utilisateur-form-modal";
 import { UtilisateurDeleteDialog } from "../modals/utilisateur-delete-dialog";
 import { useToast } from "@/hooks/use-toast";
 
@@ -194,9 +194,7 @@ export function UtilisateursView() {
     );
   }
 
-  async function handleSave(
-    data: Omit<Utilisateur, "id" | "derniereConnexion"> & { id?: string }
-  ) {
+  async function handleSave(data: UtilisateurFormData) {
     try {
       if (data.id) {
         await updateUtilisateur(data.id, data);

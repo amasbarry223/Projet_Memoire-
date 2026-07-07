@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ClipboardEdit } from "lucide-react";
 import {
   Dialog,
@@ -29,6 +29,8 @@ export function NoteModal() {
   const modal = useAppStore((s) => s.modal);
   const closeModal = useAppStore((s) => s.closeModal);
   const addNote = useDataStore((s) => s.addNote);
+  const updateNote = useDataStore((s) => s.updateNote);
+  const notes = useDataStore((s) => s.notes);
   const etudiants = useDataStore((s) => s.etudiants);
   const filieres = useDataStore((s) => s.filieres);
   const enseignants = useDataStore((s) => s.enseignants);
@@ -36,6 +38,9 @@ export function NoteModal() {
   const { toast } = useToast();
 
   const open = modal.type === "note";
+  const editId = modal.type === "note" ? modal.editId : undefined;
+  const editingNote = editId ? notes.find((n) => n.id === editId) : undefined;
+  const isEdit = Boolean(editId && editingNote);
   const presetEtudiantId =
     modal.type === "note" ? modal.etudiant : undefined;
 
@@ -82,6 +87,18 @@ export function NoteModal() {
   const [sur, setSur] = useState("20");
   const [periode, setPeriode] = useState("Semestre 1");
 
+  useEffect(() => {
+    if (!isEdit || !editingNote) return;
+    const etu = etudiants.find((e) => `${e.prenom} ${e.nom}` === editingNote.etudiant);
+    if (etu) setEtudiantId(etu.id);
+    const fil = filieres.find((f) => f.classes.some((c) => c.nom === editingNote.classe));
+    if (fil) setFiliereId(fil.id);
+    setMatiere(editingNote.matiere);
+    setNote(editingNote.note !== null ? String(editingNote.note) : "");
+    setSur(String(editingNote.sur));
+    setPeriode(editingNote.periode);
+  }, [isEdit, editingNote, etudiants, filieres]);
+
   const filiereCourante =
     filieresScope.find((f) => f.id === filiereId) ?? filieresScope[0];
   const etudiantCourant = etudiantsScope.find((e) => e.id === etudiantId);
@@ -107,20 +124,33 @@ export function NoteModal() {
     }
 
     try {
-      await addNote({
-        etudiant: `${etudiantCourant.prenom} ${etudiantCourant.nom}`,
-        matiere,
-        classe: etudiantCourant.classe,
-        note: noteNum,
-        sur: surNum,
-        coefficient:
-          filiereCourante.matieres.find((m) => m.nom === matiere)?.coefficient ?? 1,
-        periode,
-      });
-      toast({
-        title: "Note enregistrée",
-        description: `${etudiantCourant.prenom} ${etudiantCourant.nom} — ${matiere} : ${noteNum}/${surNum}.`,
-      });
+      if (isEdit && editId) {
+        await updateNote(editId, {
+          note: noteNum,
+          sur: surNum,
+          coefficient:
+            filiereCourante.matieres.find((m) => m.nom === matiere)?.coefficient ?? 1,
+          periode,
+          matiere,
+          classe: etudiantCourant.classe,
+        });
+        toast({ title: "Note modifiée", description: `${matiere} — ${noteNum}/${surNum}.` });
+      } else {
+        await addNote({
+          etudiant: `${etudiantCourant.prenom} ${etudiantCourant.nom}`,
+          matiere,
+          classe: etudiantCourant.classe,
+          note: noteNum,
+          sur: surNum,
+          coefficient:
+            filiereCourante.matieres.find((m) => m.nom === matiere)?.coefficient ?? 1,
+          periode,
+        });
+        toast({
+          title: "Note enregistrée",
+          description: `${etudiantCourant.prenom} ${etudiantCourant.nom} — ${matiere} : ${noteNum}/${surNum}.`,
+        });
+      }
       setNote("");
       closeModal();
     } catch (e) {
@@ -134,7 +164,7 @@ export function NoteModal() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ClipboardEdit className="size-5 text-blue-500" />
-            Saisir une note
+            {isEdit ? "Modifier la note" : "Saisir une note"}
           </DialogTitle>
           <DialogDescription>
             Saisie pour une matière affectée. Visible immédiatement par

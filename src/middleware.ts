@@ -3,8 +3,16 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/supabase/types";
 import { getSupabasePublishableKey, getSupabaseUrl } from "@/lib/supabase/env";
 
+const PUBLIC_API_PREFIXES = ["/api/n8n/webhook", "/api/health"];
+
+function isPublicApi(pathname: string) {
+  if (pathname === "/api") return true;
+  return PUBLIC_API_PREFIXES.some((p) => pathname.startsWith(p));
+}
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
+  const { pathname } = request.nextUrl;
 
   const url = getSupabaseUrl();
   const key = getSupabasePublishableKey();
@@ -27,7 +35,16 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (pathname.startsWith("/api") && !isPublicApi(pathname)) {
+    if (!user) {
+      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+    }
+  }
+
   return response;
 }
 

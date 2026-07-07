@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { UserCog } from "lucide-react";
 import {
   Dialog,
@@ -12,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -26,6 +28,12 @@ import {
 } from "@/components/dashboard/data";
 import { useToast } from "@/hooks/use-toast";
 
+export type UtilisateurFormData = Omit<Utilisateur, "id" | "derniereConnexion"> & {
+  id?: string;
+  password?: string;
+  inviteByEmail?: boolean;
+};
+
 export function UtilisateurFormModal({
   open,
   utilisateur,
@@ -35,11 +43,12 @@ export function UtilisateurFormModal({
   open: boolean;
   utilisateur: Utilisateur | null;
   onClose: () => void;
-  onSave: (data: Omit<Utilisateur, "id" | "derniereConnexion"> & { id?: string }) => void;
+  onSave: (data: UtilisateurFormData) => void;
 }) {
   const { toast } = useToast();
   const isEditing = !!utilisateur;
   const formKey = utilisateur?.id ?? "new";
+  const [inviteByEmail, setInviteByEmail] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -49,6 +58,7 @@ export function UtilisateurFormModal({
     const email = String(data.get("email") ?? "").trim();
     const role = String(data.get("role") ?? "enseignant") as Role;
     const statut = String(data.get("statut") ?? "Actif") as "Actif" | "Désactivé";
+    const password = String(data.get("password") ?? "");
 
     if (!prenom || !nom || !email) {
       toast({
@@ -58,7 +68,37 @@ export function UtilisateurFormModal({
       });
       return;
     }
-    onSave({ id: utilisateur?.id, prenom, nom, email, role, statut });
+
+    if (!isEditing && !inviteByEmail) {
+      if (password.length < 8) {
+        toast({
+          title: "Mot de passe invalide",
+          description: "Le mot de passe doit contenir au moins 8 caractères.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const confirm = String(data.get("passwordConfirm") ?? "");
+      if (password !== confirm) {
+        toast({
+          title: "Mots de passe différents",
+          description: "La confirmation ne correspond pas.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    onSave({
+      id: utilisateur?.id,
+      prenom,
+      nom,
+      email,
+      role,
+      statut,
+      ...(!isEditing && !inviteByEmail ? { password } : {}),
+      ...(!isEditing ? { inviteByEmail } : {}),
+    });
   }
 
   return (
@@ -72,7 +112,7 @@ export function UtilisateurFormModal({
           <DialogDescription>
             {isEditing
               ? "Modifiez les informations et le rôle. R2 : un utilisateur ne peut pas modifier son propre rôle."
-              : "Créez un compte enseignant ou responsable."}
+              : "Créez un compte avec mot de passe ou envoyez une invitation par email."}
           </DialogDescription>
         </DialogHeader>
 
@@ -105,6 +145,44 @@ export function UtilisateurFormModal({
               placeholder="d.coulibaly@esgic.ml"
             />
           </div>
+          {!isEditing && (
+            <>
+              <div className="col-span-2 flex items-center gap-2">
+                <Checkbox
+                  id="u-invite"
+                  checked={inviteByEmail}
+                  onCheckedChange={(v) => setInviteByEmail(v === true)}
+                />
+                <Label htmlFor="u-invite" className="cursor-pointer font-normal">
+                  Envoyer une invitation par email (sans mot de passe)
+                </Label>
+              </div>
+              {!inviteByEmail && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="u-password">Mot de passe</Label>
+                    <Input
+                      id="u-password"
+                      name="password"
+                      type="password"
+                      minLength={8}
+                      placeholder="8 caractères min."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="u-password-confirm">Confirmation</Label>
+                    <Input
+                      id="u-password-confirm"
+                      name="passwordConfirm"
+                      type="password"
+                      minLength={8}
+                      placeholder="Répéter le mot de passe"
+                    />
+                  </div>
+                </>
+              )}
+            </>
+          )}
           <div className="space-y-2">
             <Label>Rôle</Label>
             <Select
@@ -115,11 +193,11 @@ export function UtilisateurFormModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="enseignant">Enseignant</SelectItem>
-                <SelectItem value="responsable">Responsable pédagogique</SelectItem>
-                <SelectItem value="admin">Administrateur</SelectItem>
-                <SelectItem value="etudiant">Étudiant</SelectItem>
-                <SelectItem value="candidat">Candidat</SelectItem>
+                {(Object.keys(roleLabels) as Role[]).map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {roleLabels[r]}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -147,7 +225,7 @@ export function UtilisateurFormModal({
               type="submit"
               className="bg-blue-500 text-white hover:bg-blue-700"
             >
-              {isEditing ? "Enregistrer" : "Créer le compte"}
+              {isEditing ? "Enregistrer" : inviteByEmail ? "Envoyer l'invitation" : "Créer le compte"}
             </Button>
           </DialogFooter>
         </form>

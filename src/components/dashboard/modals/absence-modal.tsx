@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CalendarX2 } from "lucide-react";
 import {
   Dialog,
@@ -30,6 +30,8 @@ export function AbsenceModal() {
   const modal = useAppStore((s) => s.modal);
   const closeModal = useAppStore((s) => s.closeModal);
   const addAbsence = useDataStore((s) => s.addAbsence);
+  const updateAbsence = useDataStore((s) => s.updateAbsence);
+  const absences = useDataStore((s) => s.absences);
   const etudiants = useDataStore((s) => s.etudiants);
   const filieres = useDataStore((s) => s.filieres);
   const enseignants = useDataStore((s) => s.enseignants);
@@ -37,6 +39,9 @@ export function AbsenceModal() {
   const { toast } = useToast();
 
   const open = modal.type === "absence";
+  const editId = modal.type === "absence" ? modal.editId : undefined;
+  const editingAbsence = editId ? absences.find((a) => a.id === editId) : undefined;
+  const isEdit = Boolean(editId && editingAbsence);
   const presetEtudiantId = modal.type === "absence" ? modal.etudiant : undefined;
 
   const monEnseignant =
@@ -63,6 +68,18 @@ export function AbsenceModal() {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [justifiee, setJustifiee] = useState(false);
 
+  useEffect(() => {
+    if (!isEdit || !editingAbsence) return;
+    const etu = etudiants.find((e) => `${e.prenom} ${e.nom}` === editingAbsence.etudiant);
+    if (etu) setEtudiantId(etu.id);
+    setMatiere(editingAbsence.matiere);
+    const iso = editingAbsence.date.includes("/")
+      ? editingAbsence.date.split("/").reverse().join("-")
+      : editingAbsence.date;
+    setDate(iso.length === 10 ? iso : new Date().toISOString().slice(0, 10));
+    setJustifiee(editingAbsence.justifiee);
+  }, [isEdit, editingAbsence, etudiants]);
+
   const etudiantCourant = etudiantsScope.find((e) => e.id === etudiantId);
 
   async function handleSubmit() {
@@ -84,17 +101,27 @@ export function AbsenceModal() {
     }
 
     try {
-      await addAbsence({
-        etudiant: `${etudiantCourant.prenom} ${etudiantCourant.nom}`,
-        classe: etudiantCourant.classe,
-        matiere: matiere.trim(),
-        date,
-        justifiee,
-      });
-      toast({
-        title: "Absence enregistrée",
-        description: `${etudiantCourant.prenom} ${etudiantCourant.nom} — ${matiere} le ${date}.`,
-      });
+      if (isEdit && editId) {
+        await updateAbsence(editId, {
+          matiere: matiere.trim(),
+          date,
+          justifiee,
+          classe: etudiantCourant.classe,
+        });
+        toast({ title: "Absence modifiée", description: `${matiere} le ${date}.` });
+      } else {
+        await addAbsence({
+          etudiant: `${etudiantCourant.prenom} ${etudiantCourant.nom}`,
+          classe: etudiantCourant.classe,
+          matiere: matiere.trim(),
+          date,
+          justifiee,
+        });
+        toast({
+          title: "Absence enregistrée",
+          description: `${etudiantCourant.prenom} ${etudiantCourant.nom} — ${matiere} le ${date}.`,
+        });
+      }
       closeModal();
     } catch (e) {
       toast({

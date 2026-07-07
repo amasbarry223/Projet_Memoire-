@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Search, Bell, ChevronDown, LogOut } from "lucide-react";
 import {
   Avatar,
@@ -17,6 +18,8 @@ import { MobileNav } from "./mobile-nav";
 import { useAuthStore } from "@/lib/auth-store";
 import { logoutSession } from "@/lib/session-actions";
 import { roleLabels, roleBadgeBg } from "./data";
+import { useGlobalSearch, useNotifications } from "@/hooks/use-global-search";
+import { useAppStore } from "@/lib/view-store";
 
 function initials(prenom: string, nom: string) {
   return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
@@ -103,33 +106,106 @@ function ProfileButton({
 
 export function Header() {
   const session = useAuthStore((s) => s.session);
+  const setView = useAppStore((s) => s.setView);
+  const openDossier = useAppStore((s) => s.openDossier);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const results = useGlobalSearch(searchQuery);
+  const { items: notifications, unread, markAllRead, markRead } = useNotifications();
+
+  function navigateTo(result: (typeof results)[0]) {
+    setView(result.view);
+    if (result.dossierId) openDossier(result.dossierId);
+    setSearchQuery("");
+    setSearchOpen(false);
+  }
 
   return (
     <header className="relative z-10 flex h-16 shrink-0 items-center justify-between gap-2 border-b border-gray-200 bg-white px-3 shadow-sm sm:gap-4 sm:px-4 lg:px-6">
-      <div className="flex items-center gap-2 min-w-0 flex-1">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <MobileNav />
-        {/* Search — réduit sur mobile, max-w sur desktop */}
-        <div className="relative min-w-0 flex-1 max-w-md">
+        <div className="relative min-w-0 max-w-md flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Rechercher…"
             aria-label="Rechercher"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setSearchOpen(true);
+            }}
+            onFocus={() => setSearchOpen(true)}
+            onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
             className="h-10 w-full min-w-0 rounded-lg border border-gray-200 bg-gray-50 pl-10 pr-3 text-sm text-gray-700 placeholder:text-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/10"
           />
+          {searchOpen && results.length > 0 && (
+            <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-72 overflow-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
+              {results.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  className="flex w-full flex-col px-3 py-2 text-left hover:bg-gray-50"
+                  onMouseDown={() => navigateTo(r)}
+                >
+                  <span className="text-sm font-medium text-gray-900">{r.label}</span>
+                  <span className="truncate text-xs text-gray-500">{r.sublabel}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Right actions */}
       <div className="flex items-center gap-1 sm:gap-3">
-        <button
-          type="button"
-          className="relative flex size-10 shrink-0 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
-          aria-label="Notifications"
-        >
-          <Bell className="size-5" />
-          <span className="absolute right-2 top-2 size-2 rounded-full bg-red-500 ring-2 ring-white" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="relative flex size-10 shrink-0 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+              aria-label="Notifications"
+            >
+              <Bell className="size-5" />
+              {unread.length > 0 && (
+                <span className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                  {unread.length > 9 ? "9+" : unread.length}
+                </span>
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-80">
+            <DropdownMenuLabel className="flex items-center justify-between">
+              <span>Notifications</span>
+              {unread.length > 0 && (
+                <button
+                  type="button"
+                  className="text-xs font-normal text-blue-600 hover:underline"
+                  onClick={markAllRead}
+                >
+                  Tout marquer lu
+                </button>
+              )}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {notifications.length === 0 ? (
+              <DropdownMenuItem disabled>Aucune notification</DropdownMenuItem>
+            ) : (
+              notifications.map((n) => (
+                <DropdownMenuItem
+                  key={n.id}
+                  className="flex flex-col items-start gap-0.5"
+                  onClick={() => {
+                    markRead(n.id);
+                    setView(n.view);
+                  }}
+                >
+                  <span className="text-sm font-medium">{n.title}</span>
+                  <span className="line-clamp-2 text-xs text-gray-500">{n.body}</span>
+                </DropdownMenuItem>
+              ))
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {session && <ProfileButton session={session} />}
       </div>

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 import { getSupabaseSecretKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { defaultParametres } from "@/components/dashboard/data";
+import { generateRapportPdf, formatTaille } from "@/lib/reports/pdf-generator";
 
 type RapportType = "Mensuel" | "Hebdomadaire" | "Trimestriel" | "Ponctuel";
 
@@ -60,6 +61,19 @@ export async function POST(req: Request) {
     const iaModel = integrations.iaModel ?? "claude";
     const generePar = `IA (${iaModel})`;
 
+    const [etudiantsRes, alertesRes] = await Promise.all([
+      admin.from("etudiants").select("nom, prenom, moyenne, assiduite, classes(nom, filieres(nom))"),
+      admin.from("alertes").select("id").eq("statut", "Nouvelle"),
+    ]);
+
+    const etudiants = etudiantsRes.data ?? [];
+    const tauxAssiduite =
+      etudiants.length > 0
+        ? Math.round(
+            etudiants.reduce((s, e) => s + Number(e.assiduite), 0) / etudiants.length
+          )
+        : 0;
+
     if (n8nUrl) {
       try {
         await fetch(n8nUrl, {
@@ -74,7 +88,7 @@ export async function POST(req: Request) {
           signal: AbortSignal.timeout(8000),
         });
       } catch {
-        // n8n optionnel — le rapport est quand même enregistré localement
+        // n8n optionnel
       }
     }
 
@@ -86,14 +100,54 @@ export async function POST(req: Request) {
       year: "numeric",
     });
 
+    const pdfBytes = generateRapportPdf({
+      titre,
+      periode,
+      type,
+      generePar,
+      dateGeneration: today,
+      kpis: [
+        { label: "Effectif étudiants", value: String(etudiants.length) },
+        { label: "Assiduité moyenne", value: `${tauxAssiduite} %` },
+        { label: "Alertes actives", value: String(alertesRes.data?.length ?? 0) },
+        { label: "Période", value: periode },
+      ],
+      etudiants: etudiants.map((e) => {
+        const cls = e.classes as { nom: string; filieres: { nom: string } | null } | null;
+        return {
+          nom: `${e.prenom} ${e.nom}`,
+          filiere: cls?.filieres?.nom ?? "",
+          moyenne: Number(e.moyenne),
+          assiduite: Number(e.assiduite),
+        };
+      }),
+    });
+
+    const fichierPath = `rapports/${legacyId}.pdf`;
+    const { error: uploadError } = await admin.storage
+      .from("rapports")
+      .upload(fichierPath, pdfBytes, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      return NextResponse.json({ error: uploadError.message }, { status: 400 });
+    }
+
+    const tailleOctets = pdfBytes.byteLength;
+    const taille = formatTaille(tailleOctets);
+
     const { error } = await admin.from("rapports").insert({
       legacy_id: legacyId,
       titre,
       periode,
       date_generation: new Date().toISOString(),
       type,
-      taille: "1.0 Mo",
+      taille,
       genere_par: generePar,
+      fichier_path: fichierPath,
+      taille_octets: tailleOctets,
     });
 
     if (error) {
@@ -103,10 +157,10 @@ export async function POST(req: Request) {
     await admin.rpc("log_audit", {
       p_action: "Génération rapport",
       p_cible: legacyId,
-      p_details: `${titre} — généré le ${today} via n8n/IA.`,
+      p_details: `${titre} — PDF ${taille} généré le ${today}.`,
     });
 
-    return NextResponse.json({ ok: true, id: legacyId });
+    return NextResponse.json({ ok: true, id: legacyId, taille });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Erreur serveur" },

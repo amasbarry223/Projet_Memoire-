@@ -5,6 +5,8 @@ import { BarChart3, FileText, Download, Sparkles, Calendar, BrainCircuit, Users,
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useDataStore } from "@/lib/data-store";
+import { useAuthStore } from "@/lib/auth-store";
+import { RAPPORTS_BUCKET } from "@/lib/supabase/storage";
 import { type Rapport } from "@/components/dashboard/data";
 import {
   PageHeader,
@@ -33,6 +35,10 @@ export function RapportsView() {
   const { toast } = useToast();
   const rapports = useDataStore((s) => s.rapports);
   const genererRapport = useDataStore((s) => s.genererRapport);
+  const deleteRapport = useDataStore((s) => s.deleteRapport);
+  const downloadSignedUrl = useDataStore((s) => s.downloadSignedUrl);
+  const session = useAuthStore((s) => s.session);
+  const canDelete = session?.role === "admin" || session?.role === "responsable";
   const etudiants = useDataStore((s) => s.etudiants);
   const [generating, setGenerating] = useState(false);
   const tauxAssiduite =
@@ -46,29 +52,48 @@ export function RapportsView() {
     ? Math.round((rapportsIa / rapports.length) * 100)
     : 0;
 
-  function handleExport(rapport: Rapport) {
-    const contenu = [
-      rapport.titre,
-      `Période : ${rapport.periode}`,
-      `Type : ${rapport.type}`,
-      `Généré le : ${rapport.dateGeneration}`,
-      `Généré par : ${rapport.generePar}`,
-    ].join("\n");
+  async function handleExport(rapport: Rapport) {
+    try {
+      if (rapport.fichierPath) {
+        const url = await downloadSignedUrl(RAPPORTS_BUCKET, rapport.fichierPath);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${rapport.id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        toast({
+          title: "Rapport téléchargé",
+          description: `${rapport.titre} — PDF (${rapport.taille}).`,
+        });
+        return;
+      }
+      toast({
+        title: "PDF indisponible",
+        description: "Régénérez le rapport pour obtenir un fichier PDF.",
+        variant: "destructive",
+      });
+    } catch (e) {
+      toast({
+        title: "Erreur",
+        description: e instanceof Error ? e.message : "Téléchargement impossible",
+        variant: "destructive",
+      });
+    }
+  }
 
-    const blob = new Blob([contenu], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${rapport.id}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-
-    toast({
-      title: "Rapport téléchargé",
-      description: `${rapport.titre} — fichier texte enregistré.`,
-    });
+  async function handleDelete(rapport: Rapport) {
+    if (!confirm(`Supprimer le rapport « ${rapport.titre} » ?`)) return;
+    try {
+      await deleteRapport(rapport.id);
+      toast({ title: "Rapport supprimé", description: rapport.titre });
+    } catch (e) {
+      toast({
+        title: "Erreur",
+        description: e instanceof Error ? e.message : "Suppression impossible",
+        variant: "destructive",
+      });
+    }
   }
 
   async function handleGenerer() {
@@ -171,10 +196,20 @@ export function RapportsView() {
                 <Badge variant="secondary" className={`font-normal ${typeBadge(r.type)}`}>
                   {r.type}
                 </Badge>
-                <Button variant="outline" size="sm" onClick={() => handleExport(r)}>
+                <Button variant="outline" size="sm" onClick={() => void handleExport(r)}>
                   <Download className="size-4" />
-                  Télécharger
+                  PDF
                 </Button>
+                {canDelete && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600"
+                    onClick={() => void handleDelete(r)}
+                  >
+                    Supprimer
+                  </Button>
+                )}
               </div>
             </div>
           ))}

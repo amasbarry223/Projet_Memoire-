@@ -96,6 +96,24 @@ export const roleViews: Record<Role, ViewKey[]> = {
   ],
 };
 
+/** Seuls les administrateurs peuvent valider / rejeter / marquer incomplet un dossier. */
+export function canTraiterDossier(role: Role): boolean {
+  return role === "admin";
+}
+
+/** Candidat : peut soumettre si aucun dossier actif (En attente / Incomplet). */
+export function canSoumettreCandidature(
+  role: Role,
+  candidatures: { email: string; statut: StatutDossier }[],
+  sessionEmail: string
+): boolean {
+  if (role !== "candidat") return false;
+  const actifs: StatutDossier[] = ["En attente", "Incomplet"];
+  return !candidatures.some(
+    (c) => c.email === sessionEmail && actifs.includes(c.statut)
+  );
+}
+
 // Vue par défaut à la connexion selon le rôle
 export const defaultView: Record<Role, ViewKey> = {
   candidat: "candidatures",
@@ -204,6 +222,7 @@ export type PieceJustificative = {
   type: string;
   taille: string;
   present: boolean;
+  storage_path?: string;
 };
 
 export type ActionHistorique = {
@@ -266,6 +285,7 @@ export type Enseignant = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type Note = {
+  id?: string;
   etudiant: string;
   matiere: string;
   classe: string;
@@ -276,6 +296,7 @@ export type Note = {
 };
 
 export type Absence = {
+  id?: string;
   etudiant: string;
   classe: string;
   matiere: string;
@@ -299,6 +320,8 @@ export type Rapport = {
   type: "Mensuel" | "Hebdomadaire" | "Trimestriel" | "Ponctuel";
   taille: string;
   generePar: string;
+  fichierPath?: string;
+  tailleOctets?: number;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

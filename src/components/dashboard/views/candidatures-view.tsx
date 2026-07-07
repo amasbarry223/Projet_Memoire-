@@ -43,7 +43,7 @@ import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/view-store";
 import { useDataStore } from "@/lib/data-store";
 import { useAuthStore } from "@/lib/auth-store";
-import { type StatutDossier } from "@/components/dashboard/data";
+import { type StatutDossier, canTraiterDossier, canSoumettreCandidature } from "@/components/dashboard/data";
 import {
   PageHeader,
   Toolbar,
@@ -109,6 +109,10 @@ export function CandidaturesView() {
   const openDossier = useAppStore((s) => s.openDossier);
   const session = useAuthStore((s) => s.session);
   const candidatures = useDataStore((s) => s.candidatures);
+  const peutTraiter = session ? canTraiterDossier(session.role) : false;
+  const peutSoumettre = session
+    ? canSoumettreCandidature(session.role, candidatures, session.email)
+    : false;
   const [search, setSearch] = useState("");
   const [filtreStatut, setFiltreStatut] = useState<string>("Tous");
   const [filtreFiliere, setFiltreFiliere] = useState("Toutes");
@@ -237,10 +241,12 @@ export function CandidaturesView() {
               size="icon"
               className="size-8"
               onClick={(e) => e.stopPropagation()}
+              disabled={!peutTraiter}
             >
               <MoreVertical className="size-4" />
             </Button>
           </DropdownMenuTrigger>
+          {peutTraiter && (
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions sur le dossier</DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -282,6 +288,7 @@ export function CandidaturesView() {
               Rejeter
             </DropdownMenuItem>
           </DropdownMenuContent>
+          )}
         </DropdownMenu>
       </div>
     );
@@ -296,9 +303,9 @@ export function CandidaturesView() {
           badge="Module F3"
           description="Gestion des dossiers d'inscription soumis — suivi, validation et traitement des pièces justificatives."
           icon={FileText}
-          actionLabel={session?.role === "candidat" ? "Nouvelle candidature" : undefined}
+          actionLabel={peutSoumettre ? "Nouvelle candidature" : undefined}
           onAction={
-            session?.role === "candidat"
+            peutSoumettre
               ? () => openModal({ type: "candidature" })
               : undefined
           }

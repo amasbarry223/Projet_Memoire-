@@ -11,6 +11,8 @@ import {
   TrendingUp,
   Filter,
   CalendarX2,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import {
   Table,
@@ -82,12 +84,23 @@ export function SuiviView() {
 
   const allNotes = useDataStore((s) => s.notes);
   const allAbsences = useDataStore((s) => s.absences);
+  const deleteNote = useDataStore((s) => s.deleteNote);
+  const deleteAbsence = useDataStore((s) => s.deleteAbsence);
   const enseignants = useDataStore((s) => s.enseignants);
 
   const role = session?.role;
   const isEtudiant = role === "etudiant";
   const canSaisir = role === "enseignant" || role === "admin";
+  const canEdit = canSaisir;
   const fullName = session ? `${session.prenom} ${session.nom}` : "";
+
+  const periodeOptions = useMemo(() => {
+    const fromNotes = allNotes.map((n) => n.periode).filter(Boolean);
+    const base = ["Toutes", "Semestre 1", "Semestre 2", `Année ${new Date().getFullYear()}`];
+    return [...new Set([...base, ...fromNotes])];
+  }, [allNotes]);
+
+  const [notesPeriode, setNotesPeriode] = useState("Toutes");
 
   const monEnseignant =
     role === "enseignant"
@@ -136,7 +149,8 @@ export function SuiviView() {
     const matchSearch = n.etudiant.toLowerCase().includes(notesSearch.toLowerCase());
     const matchClasse = notesClasse === "Toutes" || n.classe === notesClasse;
     const matchMatiere = notesMatiere === "Toutes" || n.matiere === notesMatiere;
-    return matchSearch && matchClasse && matchMatiere;
+    const matchPeriode = notesPeriode === "Toutes" || n.periode === notesPeriode;
+    return matchSearch && matchClasse && matchMatiere && matchPeriode;
   });
   const notesPagination = usePagination(notesFiltered);
   const notesHasFilters =
@@ -287,7 +301,7 @@ export function SuiviView() {
 
         <TabsContent value="notes" className="mt-0 flex-1 data-[state=inactive]:hidden">
           <FullWidthSection
-            title="Grille de notes — Semestre 1"
+            title={`Grille de notes${notesPeriode !== "Toutes" ? ` — ${notesPeriode}` : ""}`}
             subtitle={filteredSubtitle(notesFiltered.length, notesHasFilters)}
             headerAction={
               <div className="flex items-center gap-2">
@@ -328,6 +342,24 @@ export function SuiviView() {
                       {classesNotes.map((c) => (
                         <SelectItem key={c} value={c}>
                           {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={notesPeriode}
+                    onValueChange={(v) => {
+                      setNotesPeriode(v);
+                      notesPagination.setPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="h-9 w-full sm:w-[140px]">
+                      <SelectValue placeholder="Période" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {periodeOptions.map((p) => (
+                        <SelectItem key={p} value={p}>
+                          {p}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -419,11 +451,12 @@ export function SuiviView() {
                           <TableHead className={tableHeadClass}>Coef.</TableHead>
                           <TableHead className={tableHeadClass}>Note</TableHead>
                           <TableHead className={tableHeadClass}>Période</TableHead>
+                          {canEdit && <TableHead className={tableHeadClass}>Actions</TableHead>}
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {notesPagination.paged.map((n, idx) => (
-                          <TableRow key={idx} className={tableRowClass}>
+                          <TableRow key={n.id ?? idx} className={tableRowClass}>
                             <TableCell className="font-medium text-gray-900">
                               {n.etudiant}
                             </TableCell>
@@ -440,6 +473,28 @@ export function SuiviView() {
                               </span>
                             </TableCell>
                             <TableCell className="text-sm text-gray-500">{n.periode}</TableCell>
+                            {canEdit && n.id && (
+                              <TableCell>
+                                <div className="flex gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8"
+                                    onClick={() => openModal({ type: "note", editId: n.id })}
+                                  >
+                                    <Pencil className="size-3.5" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8 text-red-600"
+                                    onClick={() => void deleteNote(n.id!)}
+                                  >
+                                    <Trash2 className="size-3.5" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            )}
                           </TableRow>
                         ))}
                       </TableBody>
@@ -620,11 +675,12 @@ export function SuiviView() {
                           <TableHead className={tableHeadClass}>Matière</TableHead>
                           <TableHead className={tableHeadClass}>Date</TableHead>
                           <TableHead className={tableHeadClass}>Justifiée</TableHead>
+                          {canEdit && <TableHead className={tableHeadClass}>Actions</TableHead>}
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {absencesPagination.paged.map((a, idx) => (
-                          <TableRow key={idx} className={tableRowClass}>
+                          <TableRow key={a.id ?? idx} className={tableRowClass}>
                             <TableCell className="font-medium text-gray-900">
                               {a.etudiant}
                             </TableCell>
@@ -638,6 +694,28 @@ export function SuiviView() {
                                 <StatusBadge label="Non justifiée" className="bg-red-50 text-red-500" />
                               )}
                             </TableCell>
+                            {canEdit && a.id && (
+                              <TableCell>
+                                <div className="flex gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8"
+                                    onClick={() => openModal({ type: "absence", editId: a.id })}
+                                  >
+                                    <Pencil className="size-3.5" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8 text-red-600"
+                                    onClick={() => void deleteAbsence(a.id!)}
+                                  >
+                                    <Trash2 className="size-3.5" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            )}
                           </TableRow>
                         ))}
                       </TableBody>
