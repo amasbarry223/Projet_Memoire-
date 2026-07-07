@@ -22,14 +22,31 @@ interface AuthState {
   isLoading: boolean;
   isInitialized: boolean;
   initError: string | null;
+  /** Session temporaire ouverte via un lien "mot de passe oublié" — l'app
+   * doit demander un nouveau mot de passe avant de laisser entrer dans le
+   * dashboard, plutôt que de traiter ce lien comme une connexion normale. */
+  passwordRecovery: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ ok: boolean; error?: string }>;
+  updatePassword: (newPassword: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => Promise<void>;
   initialize: () => Promise<void>;
   allowedViews: () => ViewKey[];
 }
 
 let initializePromise: Promise<void> | null = null;
+
+function isPasswordRecoveryUrl(): boolean {
+  if (typeof window === "undefined") return false;
+  const hash = window.location.hash.replace(/^#/, "");
+  if (!hash) return false;
+  return new URLSearchParams(hash).get("type") === "recovery";
+}
+
+function clearAuthHashFromUrl() {
+  if (typeof window === "undefined" || !window.location.hash) return;
+  window.history.replaceState(null, "", window.location.pathname + window.location.search);
+}
 
 async function withTimeout<T>(
   promise: Promise<T>,
@@ -72,6 +89,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isLoading: false,
   isInitialized: false,
   initError: null,
+  passwordRecovery: false,
 
   initialize: async () => {
     if (get().isInitialized) return;
@@ -98,7 +116,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
         resetSupabaseClient();
         const sb = await getSupabaseAsync();
-        sb.auth.onAuthStateChange(async () => {
+        sb.auth.onAuthStateChange(async (event) => {
+          if (event === "PASSWORD_RECOVERY") {
+            set({ passwordRecovery: true, session: null });
+            return;
+          }
+          if (get().passwordRecovery) return;
           try {
             const session = await loadSession();
             set({ session });
@@ -106,8 +129,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({ session: null });
           }
         });
-        const session = await loadSession();
-        set({ session });
+
+        if (isPasswordRecoveryUrl()) {
+          set({ passwordRecovery: true, session: null });
+        } else {
+          const session = await loadSession();
+          if (!get().passwordRecovery) {
+            set({ session });
+          }
+        }
       } catch (e) {
         set({
           session: null,
@@ -166,10 +196,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return { ok: true };
   },
 
+  updatePassword: async (newPassword) => {
+    if (newPassword.length < 8) {
+      return { ok: false, error: "Le mot de passe doit contenir au moins 8 caractères." };
+    }
+    const sb = await getSupabaseAsync();
+    const { error } = await sb.auth.updateUser({ password: newPassword });
+    if (error) return { ok: false, error: error.message };
+    clearAuthHashFromUrl();
+    const session = await loadSession();
+    set({ passwordRecovery: false, session });
+    return { ok: true };
+  },
+
   logout: async () => {
     const sb = await getSupabaseAsync();
     await sb.auth.signOut();
-    set({ session: null });
+    clearAuthHashFromUrl();
+    set({ session: null, passwordRecovery: false });
   },
 
   allowedViews: () => {

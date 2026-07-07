@@ -155,10 +155,6 @@ export function LoginView() {
             </Button>
           </form>
         </div>
-
-        <p className="mt-6 text-center text-xs text-white/60">
-          © 2024 ESGIC — Projet de mémoire · Vercel × Supabase × n8n × Claude
-        </p>
       </div>
     </div>
   );

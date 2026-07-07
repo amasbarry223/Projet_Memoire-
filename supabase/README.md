@@ -47,3 +47,12 @@ WHERE key = 'integrations';
 
 - **Paramètres pour non-admins** : la table `parametres` est protégée par RLS ; le fallback côté client masque gracieusement l'accès refusé.
 - **Libellés / couleurs UI** : constantes d'interface, pas des données métier persistées.
+
+### Mot de passe oublié (config Supabase)
+
+Pour que le lien reçu par email fonctionne :
+
+1. **Authentication → URL Configuration → Redirect URLs** : ajouter l'URL de l'app (ex. `http://localhost:3000/` et `https://projet-memoire-esgic.vercel.app/`).
+2. **SMTP / Email** : configurer l'envoi d'emails dans Supabase ; sinon `resetPasswordForEmail` peut réussir côté API sans qu'aucun email n'arrive.
+
+L'app affiche l'écran « Définir un nouveau mot de passe » lors de l'événement `PASSWORD_RECOVERY` (lien de réinitialisation).

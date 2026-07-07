@@ -6,6 +6,7 @@ import { useAuthStore } from "@/lib/auth-store";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Header } from "@/components/dashboard/header";
 import { LoginView } from "@/components/dashboard/login-view";
+import { UpdatePasswordView } from "@/components/dashboard/update-password-view";
 import { ModalHost } from "@/components/dashboard/modals/modal-host";
 import { DashboardView } from "@/components/dashboard/views/dashboard-view";
 import { CandidaturesView } from "@/components/dashboard/views/candidatures-view";
@@ -78,6 +79,7 @@ export default function Home() {
   const hasHydrated = useAuthHydrated();
   const session = useAuthStore((s) => s.session);
   const authInitError = useAuthStore((s) => s.initError);
+  const passwordRecovery = useAuthStore((s) => s.passwordRecovery);
   const initializeData = useDataStore((s) => s.initialize);
   const isDataLoading = useDataStore((s) => s.isLoading);
   const isDataInitialized = useDataStore((s) => s.isInitialized);
@@ -114,6 +116,12 @@ export default function Home() {
 
   if (authInitError) {
     return <ConfigErrorScreen message={authInitError} />;
+  }
+
+  // Lien "mot de passe oublié" suivi — on bloque l'accès normal tant que
+  // l'utilisateur n'a pas défini un nouveau mot de passe.
+  if (passwordRecovery) {
+    return <UpdatePasswordView />;
   }
 
   if (
