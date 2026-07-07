@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     if ("error" in auth) return auth.error;
 
     const { candidatureId } = await req.json();
-    if (!candidatureId) {
+    if (!candidatureId || !/^[a-zA-Z0-9_-]+$/.test(String(candidatureId))) {
       return NextResponse.json({ error: "candidatureId requis" }, { status: 400 });
     }
 
@@ -49,10 +49,13 @@ export async function POST(req: Request) {
       integrations.n8nUrl
     );
 
-    await admin
+    const { error: updateError } = await admin
       .from("candidatures")
       .update({ synthese_ia: result.synthese, completude: result.completude })
       .eq("id", row.id);
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
 
     await admin.rpc("log_audit", {
       p_action: "Analyse IA dossier",

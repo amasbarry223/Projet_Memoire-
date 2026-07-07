@@ -428,14 +428,15 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   updateEnseignant: async (id, e) => {
     const sb = getSupabase();
-    const { data: ens } = await sb.from("enseignants").select("id").or(`legacy_id.eq.${id},id.eq.${id}`).single();
-    if (!ens) return;
-    await sb.from("enseignants").update({
+    const { data: ens, error: findError } = await sb.from("enseignants").select("id").or(`legacy_id.eq.${id},id.eq.${id}`).single();
+    if (findError || !ens) throw findError ?? new Error("Enseignant introuvable");
+    const { error: updateError } = await sb.from("enseignants").update({
       nom: e.nom,
       prenom: e.prenom,
       email: e.email,
       statut: e.statut,
     }).eq("id", ens.id);
+    if (updateError) throw updateError;
     if (e.matieres || e.classes) {
       await sb.from("enseignant_matieres").delete().eq("enseignant_id", ens.id);
       await sb.from("enseignant_classes").delete().eq("enseignant_id", ens.id);

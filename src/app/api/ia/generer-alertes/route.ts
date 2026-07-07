@@ -105,6 +105,7 @@ export async function POST() {
 
     let created = 0;
     let cloturees = 0;
+    const echecs: string[] = [];
 
     for (const { candidate: a, etuId } of candidatesAvecEtuId) {
       const existing = (alertesOuvertes ?? []).find(
@@ -112,7 +113,7 @@ export async function POST() {
       );
       if (existing) continue;
 
-      await admin.from("alertes").insert({
+      const { error: insertError } = await admin.from("alertes").insert({
         legacy_id: `ALT-${Date.now()}-${created}`,
         etudiant_id: etuId,
         classe_nom: a.classe,
@@ -121,6 +122,10 @@ export async function POST() {
         statut: "Nouvelle",
         indicator_color: NIVEAU_COLOR[a.niveau] ?? "bg-orange-500",
       });
+      if (insertError) {
+        echecs.push(`création (${a.etudiantNom}): ${insertError.message}`);
+        continue;
+      }
       created++;
     }
 
@@ -131,7 +136,11 @@ export async function POST() {
       const type = motifType(al.motif);
       const typesActuels = typesActuelsParEtudiant.get(al.etudiant_id);
       if (type && !typesActuels?.has(type)) {
-        await admin.from("alertes").update({ statut: "Clôturée" }).eq("id", al.id);
+        const { error: closeError } = await admin.from("alertes").update({ statut: "Clôturée" }).eq("id", al.id);
+        if (closeError) {
+          echecs.push(`clôture (${al.id}): ${closeError.message}`);
+          continue;
+        }
         cloturees++;
       }
     }
@@ -139,10 +148,10 @@ export async function POST() {
     await admin.rpc("log_audit", {
       p_action: "Génération alertes IA",
       p_cible: `${created} alerte(s)`,
-      p_details: `Analyse automatique — ${created} nouvelle(s) alerte(s) créée(s), ${cloturees} clôturée(s) automatiquement.`,
+      p_details: `Analyse automatique — ${created} nouvelle(s) alerte(s) créée(s), ${cloturees} clôturée(s) automatiquement.${echecs.length ? ` ${echecs.length} échec(s).` : ""}`,
     });
 
-    return NextResponse.json({ ok: true, created, cloturees });
+    return NextResponse.json({ ok: true, created, cloturees, echecs: echecs.length ? echecs : undefined });
   } catch (e) {
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Erreur" },

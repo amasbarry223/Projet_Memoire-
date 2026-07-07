@@ -112,7 +112,7 @@ export function NoteModal() {
   async function handleSubmit() {
     const noteNum = parseFloat(note);
     const surNum = parseFloat(sur);
-    if (isNaN(noteNum) || isNaN(surNum) || noteNum < 0 || noteNum > surNum) {
+    if (isNaN(noteNum) || isNaN(surNum) || surNum <= 0 || noteNum < 0 || noteNum > surNum) {
       toast({
         title: "Note invalide",
         description: `La note doit être comprise entre 0 et ${sur}.`,

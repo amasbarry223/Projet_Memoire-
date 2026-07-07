@@ -7,7 +7,9 @@ const PUBLIC_API_PREFIXES = ["/api/n8n/webhook", "/api/health", "/api/config"];
 
 function isPublicApi(pathname: string) {
   if (pathname === "/api") return true;
-  return PUBLIC_API_PREFIXES.some((p) => pathname.startsWith(p));
+  // Égalité exacte du segment (pas un simple startsWith) : sans ça, une
+  // future route "/api/config-admin" contournerait l'auth par accident.
+  return PUBLIC_API_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 export async function middleware(request: NextRequest) {

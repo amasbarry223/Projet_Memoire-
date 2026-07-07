@@ -77,7 +77,7 @@ export async function DELETE(req: Request) {
     if ("error" in auth) return auth.error;
 
     const id = new URL(req.url).searchParams.get("id");
-    if (!id) {
+    if (!id || !/^[a-zA-Z0-9_-]+$/.test(id)) {
       return NextResponse.json({ error: "Identifiant requis" }, { status: 400 });
     }
 
