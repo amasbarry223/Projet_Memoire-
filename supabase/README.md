@@ -1,4 +1,4 @@
-# Supabase — ESGic / ScolaFlow
+# Supabase — ESGIC / ScolaFlow
 
 Projet distant : `xttajufueeacefrvxbrq`
 

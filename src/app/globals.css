@@ -54,7 +54,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  /* Bleu ESGic #0048C0 */
+  /* Bleu ESGIC #0048C0 */
   --primary: oklch(0.50 0.22 263);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
@@ -63,7 +63,7 @@
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  /* Rouge ESGic #F00000 */
+  /* Rouge ESGIC #F00000 */
   --destructive: oklch(0.60 0.24 27);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ClipboardEdit } from "lucide-react";
 import {
   Dialog,
@@ -76,28 +76,34 @@ export function NoteModal() {
     presetEtudiantId !== undefined &&
     etudiantsScope.some((e) => e.id === presetEtudiantId);
 
+  // En édition, on résout l'étudiant/la filière depuis la note ciblée.
+  // Le <DialogContent key={...}> plus bas force un remount (donc une
+  // réinitialisation propre de ces useState) à chaque changement de cible,
+  // au lieu de resynchroniser via un effet.
+  const editingEtudiant = editingNote
+    ? etudiants.find((e) => `${e.prenom} ${e.nom}` === editingNote.etudiant)
+    : undefined;
+  const editingFiliere = editingNote
+    ? filieres.find((f) => f.classes.some((c) => c.nom === editingNote.classe))
+    : undefined;
+
   const [etudiantId, setEtudiantId] = useState(
-    (presetInScope ? presetEtudiantId : undefined) ??
+    editingEtudiant?.id ??
+      (presetInScope ? presetEtudiantId : undefined) ??
       etudiantsScope[0]?.id ??
       ""
   );
-  const [filiereId, setFiliereId] = useState(filieresScope[0]?.id ?? "");
-  const [matiere, setMatiere] = useState(filieresScope[0]?.matieres[0]?.nom ?? "");
-  const [note, setNote] = useState("");
-  const [sur, setSur] = useState("20");
-  const [periode, setPeriode] = useState("Semestre 1");
-
-  useEffect(() => {
-    if (!isEdit || !editingNote) return;
-    const etu = etudiants.find((e) => `${e.prenom} ${e.nom}` === editingNote.etudiant);
-    if (etu) setEtudiantId(etu.id);
-    const fil = filieres.find((f) => f.classes.some((c) => c.nom === editingNote.classe));
-    if (fil) setFiliereId(fil.id);
-    setMatiere(editingNote.matiere);
-    setNote(editingNote.note !== null ? String(editingNote.note) : "");
-    setSur(String(editingNote.sur));
-    setPeriode(editingNote.periode);
-  }, [isEdit, editingNote, etudiants, filieres]);
+  const [filiereId, setFiliereId] = useState(
+    editingFiliere?.id ?? filieresScope[0]?.id ?? ""
+  );
+  const [matiere, setMatiere] = useState(
+    editingNote?.matiere ?? filieresScope[0]?.matieres[0]?.nom ?? ""
+  );
+  const [note, setNote] = useState(
+    editingNote && editingNote.note !== null ? String(editingNote.note) : ""
+  );
+  const [sur, setSur] = useState(editingNote ? String(editingNote.sur) : "20");
+  const [periode, setPeriode] = useState(editingNote?.periode ?? "Semestre 1");
 
   const filiereCourante =
     filieresScope.find((f) => f.id === filiereId) ?? filieresScope[0];
@@ -160,7 +166,7 @@ export function NoteModal() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && closeModal()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent key={editId ?? "new"} className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ClipboardEdit className="size-5 text-blue-500" />

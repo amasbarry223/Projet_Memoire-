@@ -32,6 +32,7 @@ import type {
 } from "@/components/dashboard/data";
 import { defaultParametres as DEFAULT_PARAMETRES } from "@/components/dashboard/data";
 import { useAuthStore } from "@/lib/auth-store";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import {
   uploadCandidaturePiece,
   deleteStorageFiles,
@@ -161,14 +162,17 @@ async function resolveEtudiantUuid(legacyOrUuid: string) {
   return data?.id ?? null;
 }
 
+// Compare le nom complet plutôt que de deviner où « prénom » s'arrête et où
+// « nom » commence — un split naïf sur le premier espace casse pour les
+// prénoms composés (ex. « Jean Paul Dupont »).
 async function findEtudiantByName(name: string) {
-  const sb = getSupabase();
-  const parts = name.trim().split(/\s+/);
-  if (parts.length < 2) return null;
-  const prenom = parts[0];
-  const nom = parts.slice(1).join(" ");
-  const { data } = await sb.from("etudiants").select("id").eq("prenom", prenom).eq("nom", nom).maybeSingle();
-  return data?.id ?? null;
+  const target = name.trim();
+  if (!target) return null;
+  const client = useDataStore
+    .getState()
+    .etudiants.find((e) => `${e.prenom} ${e.nom}` === target);
+  if (!client) return null;
+  return resolveEtudiantUuid(client.id);
 }
 
 function parseParametresRows(rows: { key: string; value: unknown }[]): AppParametres {
@@ -199,6 +203,8 @@ async function ensureParametresDefaults(sb: ReturnType<typeof getSupabase>) {
   );
 }
 
+let initializeDataPromise: Promise<void> | null = null;
+
 export const useDataStore = create<DataState>((set, get) => ({
   isLoading: false,
   isInitialized: false,
@@ -218,16 +224,30 @@ export const useDataStore = create<DataState>((set, get) => ({
   parametres: DEFAULT_PARAMETRES,
 
   initialize: async () => {
-    if (get().isInitialized || get().isLoading) return;
-    set({ isLoading: true, error: null });
-    try {
-      await get().refresh();
-      set({ isInitialized: true });
-    } catch (e) {
-      set({ error: e instanceof Error ? e.message : "Erreur de chargement" });
-    } finally {
-      set({ isLoading: false });
+    if (get().isInitialized) return;
+    if (initializeDataPromise) {
+      await initializeDataPromise;
+      return;
     }
+
+    initializeDataPromise = (async () => {
+      set({ isLoading: true, error: null });
+      try {
+        if (!isSupabaseConfigured()) {
+          throw new Error(
+            "Configuration Supabase manquante. Vérifiez les variables d'environnement."
+          );
+        }
+        await get().refresh();
+        set({ isInitialized: true });
+      } catch (e) {
+        set({ error: e instanceof Error ? e.message : "Erreur de chargement" });
+      } finally {
+        set({ isLoading: false });
+      }
+    })();
+
+    await initializeDataPromise;
   },
 
   refresh: async () => {
@@ -746,7 +766,13 @@ export const useDataStore = create<DataState>((set, get) => ({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ candidatureId: legacyId }),
-    }).then(() => get().refresh());
+    })
+      .then(() => get().refresh())
+      .catch(() => {
+        // Analyse IA en arrière-plan : un échec ne doit pas bloquer la
+        // soumission déjà persistée, mais on ne veut pas non plus une
+        // rejection de promesse non gérée.
+      });
 
     return legacyId;
   },

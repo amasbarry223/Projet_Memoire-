@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CalendarX2 } from "lucide-react";
 import {
   Dialog,
@@ -61,24 +61,32 @@ export function AbsenceModal() {
     presetEtudiantId !== undefined &&
     etudiantsScope.some((e) => e.id === presetEtudiantId);
 
-  const [etudiantId, setEtudiantId] = useState(
-    (presetInScope ? presetEtudiantId : undefined) ?? etudiantsScope[0]?.id ?? ""
-  );
-  const [matiere, setMatiere] = useState(matieresScope[0] ?? "");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [justifiee, setJustifiee] = useState(false);
-
-  useEffect(() => {
-    if (!isEdit || !editingAbsence) return;
-    const etu = etudiants.find((e) => `${e.prenom} ${e.nom}` === editingAbsence.etudiant);
-    if (etu) setEtudiantId(etu.id);
-    setMatiere(editingAbsence.matiere);
-    const iso = editingAbsence.date.includes("/")
+  // En édition, on résout l'étudiant/la date depuis l'absence ciblée. Le
+  // <DialogContent key={...}> plus bas force un remount (donc une
+  // réinitialisation propre de ces useState) à chaque changement de cible,
+  // au lieu de resynchroniser via un effet.
+  const editingEtudiant = editingAbsence
+    ? etudiants.find((e) => `${e.prenom} ${e.nom}` === editingAbsence.etudiant)
+    : undefined;
+  const editingDateIso = editingAbsence
+    ? editingAbsence.date.includes("/")
       ? editingAbsence.date.split("/").reverse().join("-")
-      : editingAbsence.date;
-    setDate(iso.length === 10 ? iso : new Date().toISOString().slice(0, 10));
-    setJustifiee(editingAbsence.justifiee);
-  }, [isEdit, editingAbsence, etudiants]);
+      : editingAbsence.date
+    : undefined;
+
+  const [etudiantId, setEtudiantId] = useState(
+    editingEtudiant?.id ??
+      (presetInScope ? presetEtudiantId : undefined) ??
+      etudiantsScope[0]?.id ??
+      ""
+  );
+  const [matiere, setMatiere] = useState(editingAbsence?.matiere ?? matieresScope[0] ?? "");
+  const [date, setDate] = useState(
+    editingDateIso && editingDateIso.length === 10
+      ? editingDateIso
+      : new Date().toISOString().slice(0, 10)
+  );
+  const [justifiee, setJustifiee] = useState(editingAbsence?.justifiee ?? false);
 
   const etudiantCourant = etudiantsScope.find((e) => e.id === etudiantId);
 
@@ -134,11 +142,11 @@ export function AbsenceModal() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && closeModal()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent key={editId ?? "new"} className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarX2 className="size-5 text-blue-500" />
-            Enregistrer une absence
+            {isEdit ? "Modifier l'absence" : "Enregistrer une absence"}
           </DialogTitle>
           <DialogDescription>
             Saisie par l&apos;enseignant — visible par le responsable et l&apos;étudiant (F4.3).

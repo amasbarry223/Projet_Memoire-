@@ -130,8 +130,13 @@ export function useNotifications() {
   const [readIds, setReadIds] = useState<string[]>([]);
 
   useEffect(() => {
+    // Lecture localStorage nécessairement différée dans un effet : un
+    // lazy initializer useState() serait exécuté pendant le rendu serveur
+    // (où localStorage n'existe pas) et produirait un mismatch d'hydratation
+    // puisque readIds influence le rendu (badges lus/non lus).
     try {
       const raw = localStorage.getItem("notifications_read");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (raw) setReadIds(JSON.parse(raw) as string[]);
     } catch {
       // ignore

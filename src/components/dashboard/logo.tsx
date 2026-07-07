@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-// Composant Logo réutilisable — affiche le vrai logo ESGic
+// Composant Logo réutilisable — affiche le vrai logo ESGIC
 // Le logo recadré fait 1728×840 (ratio ~2:1). On accepte une `height` et on
 // calcule la largeur automatiquement pour préserver les proportions.
 export function Logo({
@@ -27,7 +27,7 @@ export function Logo({
       >
         <Image
           src="/logo-esgic.png"
-          alt="ESGic"
+          alt="ESGIC"
           fill
           className="object-contain"
           sizes={`${width}px`}
@@ -36,7 +36,7 @@ export function Logo({
       </div>
       {showText && (
         <span className="text-xl font-bold text-gray-900">
-          ESG<span className="text-blue-500">ic</span>
+          ESG<span className="text-blue-500">IC</span>
         </span>
       )}
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/view-store";
 import { useAuthStore } from "@/lib/auth-store";
 import { Sidebar } from "@/components/dashboard/sidebar";
@@ -49,20 +49,58 @@ const views: Record<ViewKey, React.ComponentType> = {
   parametres: ParametresView,
 };
 
+function LoadingScreen({ message }: { message: string }) {
+  return (
+    <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">
+      {message}
+    </div>
+  );
+}
+
+function ConfigErrorScreen({ message }: { message: string }) {
+  return (
+    <div className="flex h-screen items-center justify-center bg-gray-50 px-4">
+      <div className="max-w-lg rounded-xl border border-red-200 bg-white p-6 text-center shadow-sm">
+        <h1 className="text-lg font-semibold text-red-700">Configuration requise</h1>
+        <p className="mt-3 text-sm text-gray-600">{message}</p>
+        <p className="mt-4 text-xs text-gray-500">
+          Sur Vercel : Settings → Environment Variables → ajoutez{" "}
+          <code className="rounded bg-gray-100 px-1">NEXT_PUBLIC_SUPABASE_URL</code> et{" "}
+          <code className="rounded bg-gray-100 px-1">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>,
+          puis redéployez.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const hasHydrated = useAuthHydrated();
   const session = useAuthStore((s) => s.session);
+  const authInitError = useAuthStore((s) => s.initError);
   const initializeData = useDataStore((s) => s.initialize);
   const isDataLoading = useDataStore((s) => s.isLoading);
+  const isDataInitialized = useDataStore((s) => s.isInitialized);
+  const dataError = useDataStore((s) => s.error);
   const view = useAppStore((s) => s.view);
   const selectedDossierId = useAppStore((s) => s.selectedDossierId);
   const candidatures = useDataStore((s) => s.candidatures);
+  const [dataLoadTimedOut, setDataLoadTimedOut] = useState(false);
 
   useEffect(() => {
     if (session) {
       void initializeData();
     }
   }, [session, initializeData]);
+
+  useEffect(() => {
+    if (!session || isDataInitialized || !isDataLoading) {
+      setDataLoadTimedOut(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setDataLoadTimedOut(true), 15000);
+    return () => window.clearTimeout(timer);
+  }, [session, isDataInitialized, isDataLoading]);
 
   // RBAC côté rendu : si la vue courante n'est pas autorisée pour le rôle,
   // on affiche la première vue autorisée (sans écrire dans le store pendant le rendu).
@@ -71,18 +109,28 @@ export default function Home() {
     !session || allowed.includes(view) ? view : allowed[0] ?? "dashboard";
 
   if (!hasHydrated) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">
-        Chargement…
-      </div>
-    );
+    return <LoadingScreen message="Chargement…" />;
   }
 
-  if (session && isDataLoading && candidatures.length === 0) {
+  if (authInitError) {
+    return <ConfigErrorScreen message={authInitError} />;
+  }
+
+  if (
+    session &&
+    isDataLoading &&
+    !isDataInitialized &&
+    !dataLoadTimedOut &&
+    candidatures.length === 0
+  ) {
+    return <LoadingScreen message="Chargement des données…" />;
+  }
+
+  if (session && dataError && !isDataInitialized && candidatures.length === 0) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-500">
-        Chargement des données…
-      </div>
+      <ConfigErrorScreen
+        message={`Impossible de charger les données : ${dataError}`}
+      />
     );
   }
 

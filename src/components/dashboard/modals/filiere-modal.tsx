@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { BookOpen, School, BookMarked, Pencil } from "lucide-react";
 import {
   Dialog,
@@ -43,44 +43,36 @@ export function FiliereModal() {
   const open = modal.type === "filiere";
   const isEdit = Boolean(editId);
 
-  const [filiereNom, setFiliereNom] = useState("");
-  const [filiereCode, setFiliereCode] = useState("");
-  const [filiereDesc, setFiliereDesc] = useState("");
+  // Résout l'entité en édition avant d'initialiser le formulaire. Le
+  // <DialogContent key={...}> plus bas force un remount (donc une
+  // réinitialisation propre de ces useState) à chaque changement de cible,
+  // au lieu de resynchroniser via un effet.
+  const editingFiliere =
+    editId && sub === "filiere" ? filieres.find((x) => x.id === editId) : undefined;
+  const editingClasse =
+    editId && sub === "classe"
+      ? filieres.find((x) => x.id === presetFiliereId)?.classes.find((x) => x.id === editId)
+      : undefined;
+  const editingMatiere =
+    editId && sub === "matiere"
+      ? filieres.find((x) => x.id === presetFiliereId)?.matieres.find((x) => x.id === editId)
+      : undefined;
+
+  const [filiereNom, setFiliereNom] = useState(editingFiliere?.nom ?? "");
+  const [filiereCode, setFiliereCode] = useState(editingFiliere?.code ?? "");
+  const [filiereDesc, setFiliereDesc] = useState(editingFiliere?.description ?? "");
   const [selectedFiliere, setSelectedFiliere] = useState(
     presetFiliereId ?? filieres[0]?.id ?? ""
   );
-  const [classeNom, setClasseNom] = useState("");
-  const [classeNiveau, setClasseNiveau] = useState("1ère année");
-  const [classeEffectif, setClasseEffectif] = useState("");
-  const [matiereNom, setMatiereNom] = useState("");
-  const [matiereCoef, setMatiereCoef] = useState("1");
-
-  useEffect(() => {
-    if (!open || !editId) return;
-    if (sub === "filiere") {
-      const f = filieres.find((x) => x.id === editId);
-      if (f) {
-        setFiliereNom(f.nom);
-        setFiliereCode(f.code);
-        setFiliereDesc(f.description);
-      }
-    } else if (sub === "classe") {
-      const f = filieres.find((x) => x.id === presetFiliereId);
-      const c = f?.classes.find((x) => x.id === editId);
-      if (c) {
-        setClasseNom(c.nom);
-        setClasseNiveau(c.niveau);
-        setClasseEffectif(String(c.effectif));
-      }
-    } else if (sub === "matiere") {
-      const f = filieres.find((x) => x.id === presetFiliereId);
-      const m = f?.matieres.find((x) => x.id === editId);
-      if (m) {
-        setMatiereNom(m.nom);
-        setMatiereCoef(String(m.coefficient));
-      }
-    }
-  }, [open, editId, sub, presetFiliereId, filieres]);
+  const [classeNom, setClasseNom] = useState(editingClasse?.nom ?? "");
+  const [classeNiveau, setClasseNiveau] = useState(editingClasse?.niveau ?? "1ère année");
+  const [classeEffectif, setClasseEffectif] = useState(
+    editingClasse ? String(editingClasse.effectif) : ""
+  );
+  const [matiereNom, setMatiereNom] = useState(editingMatiere?.nom ?? "");
+  const [matiereCoef, setMatiereCoef] = useState(
+    editingMatiere ? String(editingMatiere.coefficient) : "1"
+  );
 
   const config = {
     filiere: {
@@ -182,7 +174,7 @@ export function FiliereModal() {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && closeModal()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent key={`${sub}-${editId ?? "new"}`} className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Icon className="size-5 text-blue-500" />

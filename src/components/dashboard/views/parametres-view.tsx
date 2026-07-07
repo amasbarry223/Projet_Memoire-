@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Settings,
   Save,
@@ -94,9 +94,14 @@ export function ParametresView() {
   const [form, setForm] = useState<AppParametres>(stored);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
+  // Resynchronise le formulaire quand les paramètres chargés depuis Supabase
+  // changent (fin du chargement initial, ou après un enregistrement) — fait
+  // pendant le rendu plutôt que dans un effet pour éviter un rendu superflu.
+  const [prevStored, setPrevStored] = useState(stored);
+  if (stored !== prevStored) {
+    setPrevStored(stored);
     setForm(stored);
-  }, [stored]);
+  }
 
   async function handleSave() {
     setSaving(true);

@@ -4,6 +4,7 @@ import { create } from "zustand";
 import type { Role, ViewKey } from "@/components/dashboard/data";
 import { roleViews } from "@/components/dashboard/data";
 import { getSupabase } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 export type Session = {
   email: string;
@@ -16,6 +17,7 @@ interface AuthState {
   session: Session | null;
   isLoading: boolean;
   isInitialized: boolean;
+  initError: string | null;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   resetPassword: (email: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -23,9 +25,33 @@ interface AuthState {
   allowedViews: () => ViewKey[];
 }
 
+let initializePromise: Promise<void> | null = null;
+
+async function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  message: string
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), ms);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 async function loadSession(): Promise<Session | null> {
   const sb = getSupabase();
-  const { data: { user } } = await sb.auth.getUser();
+  const { data: { user } } = await withTimeout(
+    sb.auth.getUser(),
+    10000,
+    "Délai d'attente dépassé lors de la connexion à Supabase."
+  );
   if (!user) return null;
   const { data: profile } = await sb.from("profiles").select("*").eq("id", user.id).single();
   if (!profile) return null;
@@ -41,20 +67,61 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   isLoading: false,
   isInitialized: false,
+  initError: null,
 
   initialize: async () => {
     if (get().isInitialized) return;
-    set({ isLoading: true });
-    const sb = getSupabase();
-    sb.auth.onAuthStateChange(async () => {
-      const session = await loadSession();
-      set({ session });
-    });
-    const session = await loadSession();
-    set({ session, isInitialized: true, isLoading: false });
+    if (initializePromise) {
+      await initializePromise;
+      return;
+    }
+
+    initializePromise = (async () => {
+      set({ isLoading: true, initError: null });
+      try {
+        if (!isSupabaseConfigured()) {
+          set({
+            initError:
+              "Configuration Supabase manquante. Définissez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY sur Vercel.",
+          });
+          return;
+        }
+
+        const sb = getSupabase();
+        sb.auth.onAuthStateChange(async () => {
+          try {
+            const session = await loadSession();
+            set({ session });
+          } catch {
+            set({ session: null });
+          }
+        });
+        const session = await loadSession();
+        set({ session });
+      } catch (e) {
+        set({
+          session: null,
+          initError:
+            e instanceof Error
+              ? e.message
+              : "Impossible d'initialiser l'authentification.",
+        });
+      } finally {
+        set({ isInitialized: true, isLoading: false });
+      }
+    })();
+
+    await initializePromise;
   },
 
   login: async (email, password) => {
+    if (!isSupabaseConfigured()) {
+      return {
+        ok: false,
+        error:
+          "Configuration Supabase manquante. Contactez l'administrateur.",
+      };
+    }
     set({ isLoading: true });
     const sb = getSupabase();
     const { error } = await sb.auth.signInWithPassword({ email, password });

@@ -182,7 +182,7 @@ export type AppParametres = {
 
 export const defaultParametres: AppParametres = {
   etablissement: {
-    nom: "École Supérieure ESGic",
+    nom: "École Supérieure ESGIC",
     tel: "+223 20 22 33 44",
     email: "contact@esgic.ml",
     adresse: "Avenue de l'Indépendance, ACI 2000, Bamako",

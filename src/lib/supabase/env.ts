@@ -6,6 +6,10 @@ export function getSupabaseUrl(): string {
   );
 }
 
+export function isSupabaseConfigured(): boolean {
+  return Boolean(getSupabaseUrl() && getSupabasePublishableKey());
+}
+
 /** Clé publique côté client (publishable ou anon legacy). */
 export function getSupabasePublishableKey(): string {
   return (

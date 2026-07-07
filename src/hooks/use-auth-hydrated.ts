@@ -6,11 +6,18 @@ import { useAuthStore } from "@/lib/auth-store";
 /** Attend l'initialisation Supabase Auth avant le rendu authentifié. */
 export function useAuthHydrated() {
   const isInitialized = useAuthStore((s) => s.isInitialized);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(isInitialized);
 
   useEffect(() => {
-    useAuthStore.getState().initialize().then(() => setReady(true));
-  }, []);
+    if (isInitialized) {
+      setReady(true);
+      return;
+    }
+    void useAuthStore
+      .getState()
+      .initialize()
+      .finally(() => setReady(true));
+  }, [isInitialized]);
 
-  return isInitialized && ready;
+  return ready;
 }
