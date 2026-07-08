@@ -55,7 +55,7 @@ export function AbsenceModal() {
 
   const matieresScope = monEnseignant
     ? [...new Set(monEnseignant.matieres)]
-    : filieres.flatMap((f) => f.matieres.map((m) => m.nom));
+    : [...new Set(filieres.flatMap((f) => f.matieres.map((m) => m.nom)))];
 
   const presetInScope =
     presetEtudiantId !== undefined &&

@@ -3,6 +3,7 @@ import { requireSession } from "@/lib/api/auth";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 import { getSupabaseSecretKey, getSupabaseUrl } from "@/lib/supabase/env";
+import { logAuditServer } from "@/lib/api/audit";
 
 function adminClient() {
   return createClient<Database>(
@@ -40,6 +41,16 @@ export async function GET(req: Request) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    // Accès à des documents sensibles (pièces d'identité, relevés, rapports)
+    // — traçabilité R5, au même titre que les autres actions sensibles.
+    await logAuditServer(
+      admin,
+      `${auth.profile.prenom} ${auth.profile.nom}`,
+      "Téléchargement fichier",
+      path,
+      `Fichier téléchargé depuis le bucket "${bucket}".`
+    );
 
     return NextResponse.json({ url: data.signedUrl });
   } catch (e) {

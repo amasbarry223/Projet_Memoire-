@@ -5,6 +5,7 @@ import type { Database } from "@/lib/supabase/types";
 import { getSupabaseSecretKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { defaultParametres } from "@/components/dashboard/data";
 import { generateRapportPdf, formatTaille } from "@/lib/reports/pdf-generator";
+import { logAuditServer } from "@/lib/api/audit";
 
 type RapportType = "Mensuel" | "Hebdomadaire" | "Trimestriel" | "Ponctuel";
 
@@ -177,11 +178,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    await admin.rpc("log_audit", {
-      p_action: "Génération rapport",
-      p_cible: legacyId,
-      p_details: `${titre} — PDF ${taille} généré le ${today}.`,
-    });
+    await logAuditServer(
+      admin,
+      `${profile.prenom} ${profile.nom}`,
+      "Génération rapport",
+      legacyId,
+      `${titre} — PDF ${taille} généré le ${today}.`
+    );
 
     return NextResponse.json({ ok: true, id: legacyId, taille });
   } catch (e) {

@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { UserCog, Pencil, Shield, MoreVertical, Trash2, UserPlus, Users, Filter, Mail } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { UserCog, Pencil, Shield, MoreVertical, Trash2, UserPlus, Users, Filter, Mail, CheckCircle2, AlertCircle, X } from "lucide-react";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
   TableBody,
@@ -57,7 +58,8 @@ import {
 import { usePagination, DataTablePagination } from "./data-table-pagination";
 import { UtilisateurFormModal, type UtilisateurFormData } from "../modals/utilisateur-form-modal";
 import { UtilisateurDeleteDialog } from "../modals/utilisateur-delete-dialog";
-import { useToast } from "@/hooks/use-toast";
+
+type Feedback = { type: "success" | "error"; title: string; description: string };
 
 function initials(prenom: string, nom: string) {
   return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
@@ -79,9 +81,9 @@ function avatarGradient(role: Role) {
 }
 
 export function UtilisateursView() {
-  const { toast } = useToast();
   const session = useAuthStore((s) => s.session);
   const list = useDataStore((s) => s.utilisateurs);
+  const reloadUtilisateurs = useDataStore((s) => s.reloadUtilisateurs);
   const addUtilisateur = useDataStore((s) => s.addUtilisateur);
   const updateUtilisateur = useDataStore((s) => s.updateUtilisateur);
   const deleteUtilisateur = useDataStore((s) => s.deleteUtilisateur);
@@ -91,6 +93,23 @@ export function UtilisateursView() {
   const [editing, setEditing] = useState<Utilisateur | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState<Utilisateur | null>(null);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+
+  useEffect(() => {
+    void reloadUtilisateurs().catch((e) => {
+      setFeedback({
+        type: "error",
+        title: "Chargement impossible",
+        description: e instanceof Error ? e.message : "Impossible de charger les utilisateurs.",
+      });
+    });
+  }, [reloadUtilisateurs]);
+
+  useEffect(() => {
+    if (!feedback) return;
+    const timer = window.setTimeout(() => setFeedback(null), 6000);
+    return () => window.clearTimeout(timer);
+  }, [feedback]);
 
   const roles: ("Tous" | Role)[] = [
     "Tous",
@@ -109,7 +128,7 @@ export function UtilisateursView() {
     return matchSearch && matchRole;
   });
 
-  const pagination = usePagination(filtered);
+  const pagination = usePagination(filtered, 10);
 
   const hasActiveFilters = search.length > 0 || filtreRole !== "Tous";
 
@@ -198,18 +217,32 @@ export function UtilisateursView() {
     try {
       if (data.id) {
         await updateUtilisateur(data.id, data);
-        toast({ title: "Utilisateur modifié", description: `${data.prenom} ${data.nom} — Rôle : ${roleLabels[data.role]}.` });
+        setFeedback({
+          type: "success",
+          title: "Utilisateur modifié",
+          description: `${data.prenom} ${data.nom} — Rôle : ${roleLabels[data.role]}.`,
+        });
       } else {
         const { id: _id, ...rest } = data;
         void _id;
         await addUtilisateur(rest);
-        resetFilters();
-        toast({ title: "Utilisateur créé", description: `${data.prenom} ${data.nom} — Rôle : ${roleLabels[data.role]}.` });
+        setSearch(`${data.prenom} ${data.nom}`.trim());
+        setFiltreRole("Tous");
+        pagination.setPage(1);
+        setFeedback({
+          type: "success",
+          title: "Utilisateur créé",
+          description: `${data.prenom} ${data.nom} — Rôle : ${roleLabels[data.role]}.`,
+        });
       }
       setFormOpen(false);
       setEditing(null);
     } catch (e) {
-      toast({ title: "Erreur", description: e instanceof Error ? e.message : "Opération échouée", variant: "destructive" });
+      setFeedback({
+        type: "error",
+        title: "Erreur",
+        description: e instanceof Error ? e.message : "Opération échouée",
+      });
     }
   }
 
@@ -218,12 +251,16 @@ export function UtilisateursView() {
     if (!target) return;
     const result = await deleteUtilisateur(target.id);
     if (!result.ok) {
-      toast({ title: "Suppression refusée", description: result.error, variant: "destructive" });
+      setFeedback({ type: "error", title: "Suppression refusée", description: result.error ?? "Échec de la suppression." });
       setDeleteOpen(false);
       setDeleting(null);
       return;
     }
-    toast({ title: "Utilisateur supprimé", description: `${target.prenom} ${target.nom} a été supprimé.`, variant: "destructive" });
+    setFeedback({
+      type: "success",
+      title: "Utilisateur supprimé",
+      description: `${target.prenom} ${target.nom} a été supprimé.`,
+    });
     setDeleteOpen(false);
     setDeleting(null);
   }
@@ -241,6 +278,24 @@ export function UtilisateursView() {
           onAction={handleAdd}
         />
       </FullWidthHeader>
+
+      {feedback && (
+        <div className="shrink-0 px-3 pt-3 sm:px-4 lg:px-5">
+          <Alert variant={feedback.type === "success" ? "success" : "destructive"}>
+            {feedback.type === "success" ? <CheckCircle2 /> : <AlertCircle />}
+            <AlertTitle>{feedback.title}</AlertTitle>
+            <AlertDescription>{feedback.description}</AlertDescription>
+            <button
+              type="button"
+              onClick={() => setFeedback(null)}
+              aria-label="Fermer"
+              className="absolute right-3 top-3 text-current/60 hover:text-current"
+            >
+              <X className="size-4" />
+            </button>
+          </Alert>
+        </div>
+      )}
 
       <FullWidthKpiGrid cols={3}>
         <KpiCard

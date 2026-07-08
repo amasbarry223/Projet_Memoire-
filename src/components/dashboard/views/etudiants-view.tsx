@@ -64,7 +64,6 @@ import {
 } from "./shared";
 import { usePagination, DataTablePagination } from "./data-table-pagination";
 import { EtudiantFormModal } from "../modals/etudiant-form-modal";
-import { EtudiantDetailModal } from "../modals/etudiant-detail-modal";
 import { EtudiantDeleteDialog } from "../modals/etudiant-delete-dialog";
 import { useToast } from "@/hooks/use-toast";
 
@@ -89,6 +88,7 @@ function avatarGradient(e: Etudiant) {
 
 export function EtudiantsView() {
   const openModal = useAppStore((s) => s.openModal);
+  const openEtudiant = useAppStore((s) => s.openEtudiant);
   const { toast } = useToast();
 
   const filieresStore = useDataStore((s) => s.filieres);
@@ -101,8 +101,6 @@ export function EtudiantsView() {
   const [filiere, setFiliere] = useState("Toutes");
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Etudiant | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [viewing, setViewing] = useState<Etudiant | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState<Etudiant | null>(null);
 
@@ -153,14 +151,7 @@ export function EtudiantsView() {
   }
 
   function handleView(e: Etudiant) {
-    setViewing(e);
-    setDetailOpen(true);
-  }
-
-  function handleEditFromDetail() {
-    setEditing(viewing);
-    setDetailOpen(false);
-    setFormOpen(true);
+    openEtudiant(e.id);
   }
 
   function handleEdit(e: Etudiant) {
@@ -508,15 +499,6 @@ export function EtudiantsView() {
           setEditing(null);
         }}
         onSave={handleSave}
-      />
-      <EtudiantDetailModal
-        open={detailOpen}
-        etudiant={viewing}
-        onClose={() => {
-          setDetailOpen(false);
-          setViewing(null);
-        }}
-        onEdit={handleEditFromDetail}
       />
       <EtudiantDeleteDialog
         open={deleteOpen}

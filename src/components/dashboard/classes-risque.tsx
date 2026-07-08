@@ -1,27 +1,56 @@
 "use client";
 
+import { useMemo } from "react";
 import { AlertTriangle, TrendingDown } from "lucide-react";
 import { useDataStore } from "@/lib/data-store";
 import { useAppStore } from "@/lib/view-store";
+import { noteSur20 } from "./views/shared";
 
 export function ClassesARisque() {
   const etudiants = useDataStore((s) => s.etudiants);
+  const notes = useDataStore((s) => s.notes);
   const setView = useAppStore((s) => s.setView);
 
-  // Groupe par classe : moyenne et assiduité moyennes
+  // Moyenne réelle par étudiant, calculée depuis les vraies notes (comme
+  // dans Suivi/Rapports) — etudiants.moyenne est un champ saisi à la main,
+  // jamais resynchronisé, donc pas utilisable ici.
+  const moyenneParEtudiant = useMemo(() => {
+    const parEtudiant = new Map<string, { note: number | null; sur: number; coefficient: number }[]>();
+    for (const n of notes) {
+      const list = parEtudiant.get(n.etudiant) ?? [];
+      list.push(n);
+      parEtudiant.set(n.etudiant, list);
+    }
+    const result = new Map<string, number>();
+    for (const [etu, list] of parEtudiant) {
+      const notees = list.filter((n) => n.note !== null);
+      const sommeCoef = notees.reduce((s, n) => s + n.coefficient, 0);
+      if (sommeCoef === 0) continue;
+      const moyenne = notees.reduce((s, n) => s + noteSur20(n.note, n.sur) * n.coefficient, 0) / sommeCoef;
+      result.set(etu, moyenne);
+    }
+    return result;
+  }, [notes]);
+
+  // Groupe par classe : moyenne (uniquement les étudiants notés) et
+  // assiduité moyennes
   const parClasse = etudiants.reduce<
     Record<string, { moyennes: number[]; assiduites: number[]; count: number }>
   >((acc, e) => {
     if (!acc[e.classe]) {
       acc[e.classe] = { moyennes: [], assiduites: [], count: 0 };
     }
-    acc[e.classe].moyennes.push(e.moyenne);
+    const moyenneReelle = moyenneParEtudiant.get(`${e.prenom} ${e.nom}`);
+    if (moyenneReelle !== undefined) acc[e.classe].moyennes.push(moyenneReelle);
     acc[e.classe].assiduites.push(e.assiduite);
     acc[e.classe].count += 1;
     return acc;
   }, {});
 
   const classes = Object.entries(parClasse)
+    // Classes sans aucune note saisie : pas de moyenne réelle calculable,
+    // on ne peut pas les classer par risque de moyenne.
+    .filter(([, data]) => data.moyennes.length > 0)
     .map(([nom, data]) => ({
       nom,
       moyenne:

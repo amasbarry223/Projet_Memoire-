@@ -21,6 +21,21 @@ Cela lit `supabase_migrations.schema_migrations` et écrit un fichier `.sql` par
 
 ## Points d'attention
 
+### Migration `20260708000000_fix_audit_log_integrity.sql` — À APPLIQUER MANUELLEMENT
+
+La policy RLS `audit_insert` permettait à **n'importe quel utilisateur authentifié** (candidat, étudiant…) d'insérer directement une ligne dans `audit_log` avec un champ `utilisateur` totalement arbitraire — en contournant `log_audit()` qui résout l'auteur de façon fiable. N'importe qui pouvait donc falsifier le journal d'audit et usurper l'identité d'un admin.
+
+Cette migration restreint l'insertion directe (`WITH CHECK (false)`) — seule la fonction `log_audit()` (SECURITY DEFINER) et les routes API (client service-role, qui contourne la RLS) peuvent écrire dans cette table.
+
+**Cette migration doit être appliquée manuellement** (pas d'outil MCP/CLI authentifié disponible dans cette session) :
+
+```sql
+DROP POLICY IF EXISTS audit_insert ON audit_log;
+CREATE POLICY audit_insert ON audit_log FOR INSERT WITH CHECK (false);
+```
+
+Après application, vérifiez qu'une action normale (ex. modifier un étudiant) crée toujours bien une entrée dans le journal d'audit — `log_audit()` étant `SECURITY DEFINER`, elle devrait continuer de fonctionner normalement malgré la policy plus stricte, mais mieux vaut confirmer.
+
 ### Migration `20260707190000_fix_handle_new_user_trigger.sql`
 
 La création d'utilisateur (`Nouvel utilisateur`, mot de passe ou invitation par email) échouait avec `500 Database error creating new user` : le trigger `handle_new_user()` sur `auth.users` levait une exception non interceptée dès qu'il ne pouvait pas insérer dans `public.profiles`. Cette migration rend le trigger tolérant aux erreurs — `/api/users` fait de toute façon un upsert complet du profil juste après.

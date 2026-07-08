@@ -36,6 +36,10 @@ interface AppState {
   selectedDossierId: string | null;
   openDossier: (id: string) => void;
   closeDossier: () => void;
+  // ID de l'étudiant actuellement ouvert dans la vue "etudiants" (sous-vue détail)
+  selectedEtudiantId: string | null;
+  openEtudiant: (id: string) => void;
+  closeEtudiant: () => void;
   modal: ModalState;
   openModal: (m: ModalState) => void;
   closeModal: () => void;
@@ -56,6 +60,9 @@ export const useAppStore = create<AppState>((set) => ({
   selectedDossierId: null,
   openDossier: (id) => set({ selectedDossierId: id }),
   closeDossier: () => set({ selectedDossierId: null }),
+  selectedEtudiantId: null,
+  openEtudiant: (id) => set({ selectedEtudiantId: id }),
+  closeEtudiant: () => set({ selectedEtudiantId: null }),
   modal: { type: "none" },
   openModal: (modal) => set({ modal }),
   closeModal: () => set({ modal: { type: "none" } }),

@@ -5,6 +5,8 @@ import { getSupabaseSecretKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { requireRoleSession } from "@/lib/api/auth";
 import { analyseDossier, fetchIntegrations } from "@/lib/ia/analyse";
 import type { PieceJustificative } from "@/components/dashboard/data";
+import { legacyOrIdFilter } from "@/lib/legacy-id";
+import { logAuditServer } from "@/lib/api/audit";
 
 function adminClient() {
   return createClient<Database>(
@@ -28,7 +30,7 @@ export async function POST(req: Request) {
     const { data: row, error } = await admin
       .from("candidatures")
       .select("*")
-      .or(`legacy_id.eq.${candidatureId},id.eq.${candidatureId}`)
+      .or(legacyOrIdFilter(String(candidatureId)))
       .single();
 
     if (error || !row) {
@@ -57,11 +59,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    await admin.rpc("log_audit", {
-      p_action: "Analyse IA dossier",
-      p_cible: row.legacy_id,
-      p_details: `Synthèse générée — complétude ${result.completude} %.`,
-    });
+    await logAuditServer(
+      admin,
+      `${auth.profile.prenom} ${auth.profile.nom}`,
+      "Analyse IA dossier",
+      row.legacy_id,
+      `Synthèse générée — complétude ${result.completude} %.`
+    );
 
     return NextResponse.json(result);
   } catch (e) {

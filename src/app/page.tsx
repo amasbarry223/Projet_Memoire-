@@ -12,6 +12,7 @@ import { DashboardView } from "@/components/dashboard/views/dashboard-view";
 import { CandidaturesView } from "@/components/dashboard/views/candidatures-view";
 import { DossierDetailView } from "@/components/dashboard/views/dossier-detail-view";
 import { EtudiantsView } from "@/components/dashboard/views/etudiants-view";
+import { EtudiantDetailView } from "@/components/dashboard/views/etudiant-detail-view";
 import { EnseignantsView } from "@/components/dashboard/views/enseignants-view";
 import { SuiviView } from "@/components/dashboard/views/suivi-view";
 import { AlertesView } from "@/components/dashboard/views/alertes-view";
@@ -86,7 +87,9 @@ export default function Home() {
   const dataError = useDataStore((s) => s.error);
   const view = useAppStore((s) => s.view);
   const selectedDossierId = useAppStore((s) => s.selectedDossierId);
+  const selectedEtudiantId = useAppStore((s) => s.selectedEtudiantId);
   const candidatures = useDataStore((s) => s.candidatures);
+  const etudiants = useDataStore((s) => s.etudiants);
   const [dataLoadTimedOut, setDataLoadTimedOut] = useState(false);
 
   useEffect(() => {
@@ -158,6 +161,25 @@ export default function Home() {
             <Header />
             <main className="flex-1 overflow-y-auto">
               <DossierDetailView dossier={dossier} />
+            </main>
+          </div>
+          <ModalHost />
+        </div>
+      );
+    }
+  }
+
+  // Sous-vue détail d'étudiant — pleine largeur, padding réduit
+  if (safeView === "etudiants" && selectedEtudiantId) {
+    const etudiant = etudiants.find((e) => e.id === selectedEtudiantId);
+    if (etudiant) {
+      return (
+        <div className="flex h-screen bg-gray-50 text-gray-900 overflow-hidden">
+          <Sidebar />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Header />
+            <main className="flex-1 overflow-y-auto">
+              <EtudiantDetailView etudiant={etudiant} />
             </main>
           </div>
           <ModalHost />

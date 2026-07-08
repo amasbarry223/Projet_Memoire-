@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { getSupabase, getSupabaseAsync } from "@/lib/supabase/client";
 import type { Json } from "@/lib/supabase/types";
+import { legacyOrIdFilter } from "@/lib/legacy-id";
 import {
   mapAbsence,
   mapAlerte,
@@ -13,7 +14,6 @@ import {
   mapFiliere,
   mapNote,
   mapRapport,
-  mapUtilisateur,
 } from "@/lib/mappers";
 import type {
   Absence,
@@ -77,6 +77,7 @@ interface DataState {
   addUtilisateur: (u: Omit<Utilisateur, "id" | "derniereConnexion"> & { password?: string; inviteByEmail?: boolean }) => Promise<void>;
   updateUtilisateur: (id: string, u: Partial<Utilisateur>) => Promise<void>;
   deleteUtilisateur: (id: string) => Promise<{ ok: boolean; error?: string }>;
+  reloadUtilisateurs: () => Promise<void>;
 
   addFiliere: (f: { nom: string; code: string; description: string }) => Promise<void>;
   updateFiliere: (id: string, f: { nom: string; code: string; description: string }) => Promise<void>;
@@ -148,22 +149,63 @@ async function logAudit(action: string, cible: string, details: string) {
   await sb.rpc("log_audit", { p_action: action, p_cible: cible, p_details: details });
 }
 
-async function fetchUtilisateursFromDb() {
-  const sb = await getSupabaseAsync();
-  const { data, error } = await sb.from("profiles").select("*").order("nom");
-  if (error) throw error;
-  return (data ?? []).map(mapUtilisateur);
+async function fetchUtilisateursFromApi(): Promise<Utilisateur[]> {
+  const res = await fetch("/api/users", { credentials: "same-origin" });
+  const payload = (await res.json()) as {
+    error?: string;
+    utilisateurs?: Utilisateur[];
+  };
+  if (!res.ok) {
+    throw new Error(payload.error ?? "Impossible de charger les utilisateurs");
+  }
+  return payload.utilisateurs ?? [];
+}
+
+const MOIS_ABBR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
+
+// "Évolution des inscriptions" venait d'une table dashboard_charts semée
+// une fois à la création du projet et jamais mise à jour depuis — remplacé
+// par un vrai comptage des candidatures de l'année en cours, par mois.
+function computeInscriptionsParMois(rows: { date_soumission: string }[]) {
+  const year = new Date().getFullYear();
+  const counts = new Array(12).fill(0);
+  for (const r of rows) {
+    const d = new Date(r.date_soumission);
+    if (d.getFullYear() === year) counts[d.getMonth()]++;
+  }
+  return MOIS_ABBR.map((mois, i) => ({ mois, inscriptions: counts[i] }));
+}
+
+// Même limite que pour l'assiduité : pas de notion de "nombre de séances"
+// en base pour un vrai taux d'absentéisme. Approximation : absences non
+// justifiées du mois rapportées à l'effectif actif du moment.
+function computeAbsenteismeParMois(
+  rows: { date_absence: string; justifiee: boolean }[],
+  effectifActif: number
+) {
+  const year = new Date().getFullYear();
+  const counts = new Array(12).fill(0);
+  for (const r of rows) {
+    if (r.justifiee) continue;
+    const d = new Date(r.date_absence);
+    if (d.getFullYear() === year) counts[d.getMonth()]++;
+  }
+  const denom = effectifActif > 0 ? effectifActif : 1;
+  return MOIS_ABBR.map((mois, i) => ({
+    mois,
+    taux: Math.round((counts[i] / denom) * 1000) / 10,
+  }));
 }
 
 async function resolveFiliereUuid(legacyOrUuid: string) {
   const sb = getSupabase();
-  const { data } = await sb.from("filieres").select("id").or(`legacy_id.eq.${legacyOrUuid},id.eq.${legacyOrUuid}`).maybeSingle();
+  const { data } = await sb.from("filieres").select("id").or(legacyOrIdFilter(legacyOrUuid)).maybeSingle();
   return data?.id ?? null;
 }
 
 async function resolveClasseUuid(legacyOrUuid: string) {
   const sb = getSupabase();
-  const { data } = await sb.from("classes").select("id, nom, filiere_id, filieres(nom)").or(`legacy_id.eq.${legacyOrUuid},id.eq.${legacyOrUuid}`).maybeSingle();
+  const { data } = await sb.from("classes").select("id, nom, filiere_id, filieres(nom)").or(legacyOrIdFilter(legacyOrUuid)).maybeSingle();
   return data;
 }
 
@@ -190,7 +232,7 @@ async function assignMatieresEtClasses(
   for (const filiere of filieresConcernees) {
     for (const m of filiere.matieres.filter((x) => matieres.includes(x.nom))) {
       if (matiereNomsInseres.has(m.nom)) continue;
-      const { data: mat } = await sb.from("matieres").select("id").or(`legacy_id.eq.${m.id},id.eq.${m.id}`).maybeSingle();
+      const { data: mat } = await sb.from("matieres").select("id").or(legacyOrIdFilter(m.id)).maybeSingle();
       if (mat) {
         matiereNomsInseres.add(m.nom);
         await sb.from("enseignant_matieres").insert({ enseignant_id: enseignantId, matiere_id: mat.id });
@@ -198,7 +240,7 @@ async function assignMatieresEtClasses(
     }
     for (const c of filiere.classes.filter((x) => classes.includes(x.nom))) {
       if (classeNomsInseres.has(c.nom)) continue;
-      const { data: cl } = await sb.from("classes").select("id").or(`legacy_id.eq.${c.id},id.eq.${c.id}`).maybeSingle();
+      const { data: cl } = await sb.from("classes").select("id").or(legacyOrIdFilter(c.id)).maybeSingle();
       if (cl) {
         classeNomsInseres.add(c.nom);
         await sb.from("enseignant_classes").insert({ enseignant_id: enseignantId, classe_id: cl.id });
@@ -209,7 +251,7 @@ async function assignMatieresEtClasses(
 
 async function resolveEtudiantUuid(legacyOrUuid: string) {
   const sb = getSupabase();
-  const { data } = await sb.from("etudiants").select("id").or(`legacy_id.eq.${legacyOrUuid},id.eq.${legacyOrUuid}`).maybeSingle();
+  const { data } = await sb.from("etudiants").select("id").or(legacyOrIdFilter(legacyOrUuid)).maybeSingle();
   return data?.id ?? null;
 }
 
@@ -315,38 +357,38 @@ export const useDataStore = create<DataState>((set, get) => ({
       sb.from("etudiants").select("*, classes(nom, filieres(nom))").order("nom"),
       sb.from("enseignants").select("*, enseignant_matieres(matiere_id, matieres(nom)), enseignant_classes(classe_id, classes(nom))").order("nom"),
       sb.from("candidatures").select("*").order("date_soumission", { ascending: false }),
-      sb.from("profiles").select("*").order("nom"),
+      isAdmin ? fetchUtilisateursFromApi() : Promise.resolve([] as Utilisateur[]),
       sb.from("alertes").select("*, etudiants(prenom, nom)").order("date_alerte", { ascending: false }),
       sb.from("audit_log").select("*").order("created_at", { ascending: false }),
       sb.from("notes").select("*, etudiants(prenom, nom)").order("created_at", { ascending: false }),
       sb.from("absences").select("*, etudiants(prenom, nom)").order("date_absence", { ascending: false }),
       sb.from("rapports").select("*").order("date_generation", { ascending: false }),
-      sb.from("dashboard_charts").select("*"),
       isAdmin
         ? sb.from("parametres").select("key, value")
         : Promise.resolve({ data: null, error: null }),
     ] as const;
-    const [filieresRes, etudiantsRes, enseignantsRes, candidaturesRes, utilisateursRes, alertesRes, auditRes, notesRes, absencesRes, rapportsRes, chartsRes, parametresRes] = await Promise.all(queries);
+    const [filieresRes, etudiantsRes, enseignantsRes, candidaturesRes, utilisateurs, alertesRes, auditRes, notesRes, absencesRes, rapportsRes, parametresRes] = await Promise.all(queries);
 
-    if (utilisateursRes.error) throw utilisateursRes.error;
-
-    const charts = chartsRes.data ?? [];
-    const insc = charts.find((c) => c.key === "inscriptions");
-    const abs = charts.find((c) => c.key === "absenteisme");
+    const effectifActif = (etudiantsRes.data ?? []).filter((e) => e.statut === "Actif").length;
 
     set({
       filieres: (filieresRes.data ?? []).map((f) => mapFiliere(f as never)),
       etudiants: (etudiantsRes.data ?? []).map((e) => mapEtudiant(e as never)),
       enseignants: (enseignantsRes.data ?? []).map((e) => mapEnseignant(e as never)),
       candidatures: (candidaturesRes.data ?? []).map(mapCandidature),
-      utilisateurs: (utilisateursRes.data ?? []).map(mapUtilisateur),
+      utilisateurs,
       alertes: (alertesRes.data ?? []).map((a) => mapAlerte(a as never)),
       audit: (auditRes.data ?? []).map(mapAudit),
       notes: (notesRes.data ?? []).map((n) => mapNote(n as never)),
       absences: (absencesRes.data ?? []).map((a) => mapAbsence(a as never)),
       rapports: (rapportsRes.data ?? []).map(mapRapport),
-      inscriptionsParMois: (insc?.data as { mois: string; inscriptions: number }[]) ?? [],
-      absentéismeParMois: (abs?.data as { mois: string; taux: number }[]) ?? [],
+      inscriptionsParMois: computeInscriptionsParMois(
+        (candidaturesRes.data ?? []) as { date_soumission: string }[]
+      ),
+      absentéismeParMois: computeAbsenteismeParMois(
+        (absencesRes.data ?? []) as { date_absence: string; justifiee: boolean }[],
+        effectifActif
+      ),
       parametres: isAdmin && parametresRes.data
         ? parseParametresRows((parametresRes.data ?? []) as { key: string; value: unknown }[])
         : get().parametres ?? DEFAULT_PARAMETRES,
@@ -404,7 +446,7 @@ export const useDataStore = create<DataState>((set, get) => ({
       moyenne: e.moyenne,
       assiduite: e.assiduite,
       statut: e.statut,
-    }).or(`legacy_id.eq.${id},id.eq.${id}`);
+    }).or(legacyOrIdFilter(id));
     if (error) throw error;
     await logAudit("Modification étudiant", id, "Fiche étudiant mise à jour.");
     await get().refresh();
@@ -413,7 +455,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   deleteEtudiant: async (id) => {
     const sb = getSupabase();
     const etu = get().etudiants.find((x) => x.id === id);
-    const { error } = await sb.from("etudiants").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    const { error } = await sb.from("etudiants").delete().or(legacyOrIdFilter(id));
     if (error) throw error;
     await logAudit("Suppression étudiant", etu ? `${etu.prenom} ${etu.nom} (${etu.matricule})` : id, "Étudiant supprimé de l'établissement.");
     await get().refresh();
@@ -437,7 +479,7 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   updateEnseignant: async (id, e) => {
     const sb = getSupabase();
-    const { data: ens, error: findError } = await sb.from("enseignants").select("id").or(`legacy_id.eq.${id},id.eq.${id}`).single();
+    const { data: ens, error: findError } = await sb.from("enseignants").select("id").or(legacyOrIdFilter(id)).single();
     if (findError || !ens) throw findError ?? new Error("Enseignant introuvable");
     const { error: updateError } = await sb.from("enseignants").update({
       nom: e.nom,
@@ -460,10 +502,20 @@ export const useDataStore = create<DataState>((set, get) => ({
   deleteEnseignant: async (id) => {
     const sb = getSupabase();
     const ens = get().enseignants.find((x) => x.id === id);
-    const { error } = await sb.from("enseignants").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    const { error } = await sb.from("enseignants").delete().or(legacyOrIdFilter(id));
     if (error) throw error;
     await logAudit("Suppression enseignant", ens ? `${ens.prenom} ${ens.nom}` : id, "Enseignant supprimé, affectations retirées.");
     await get().refresh();
+  },
+
+  // Aucune vérification de rôle côté client ici : /api/users est déjà
+  // protégé par requireAdminSession() côté serveur. Un garde-fou client basé
+  // sur session.role pourrait échouer silencieusement (no-op) si ce cache
+  // est momentanément désynchronisé du rôle réel en base — la route reste
+  // la seule source de vérité, une réponse 403 remonte ici normalement.
+  reloadUtilisateurs: async () => {
+    const utilisateurs = await fetchUtilisateursFromApi();
+    set({ utilisateurs });
   },
 
   addUtilisateur: async (u) => {
@@ -473,43 +525,27 @@ export const useDataStore = create<DataState>((set, get) => ({
       credentials: "same-origin",
       body: JSON.stringify(u),
     });
-    const payload = (await res.json()) as {
-      error?: string;
-      utilisateur?: Utilisateur;
-    };
+    const payload = (await res.json()) as { error?: string };
     if (!res.ok) {
       throw new Error(payload.error ?? "Échec création utilisateur");
     }
     // La route /api/users journalise déjà la création côté serveur — un
     // second appel ici créerait une entrée d'audit dupliquée.
-    if (payload.utilisateur) {
-      set((state) => {
-        const exists = state.utilisateurs.some((x) => x.id === payload.utilisateur!.id);
-        const utilisateurs = exists
-          ? state.utilisateurs.map((x) =>
-              x.id === payload.utilisateur!.id ? payload.utilisateur! : x
-            )
-          : [...state.utilisateurs, payload.utilisateur!];
-        return { utilisateurs };
-      });
-    }
-    const utilisateurs = await fetchUtilisateursFromDb();
-    set({ utilisateurs });
+    await get().reloadUtilisateurs();
   },
 
   updateUtilisateur: async (id, u) => {
-    const sb = await getSupabaseAsync();
-    const { error } = await sb.from("profiles").update({
-      email: u.email,
-      nom: u.nom,
-      prenom: u.prenom,
-      role: u.role,
-      statut: u.statut,
-    }).or(`legacy_id.eq.${id},id.eq.${id}`);
-    if (error) throw error;
-    await logAudit("Modification compte", id, u.role ? `Rôle mis à jour → ${u.role}.` : "Compte modifié.");
-    const utilisateurs = await fetchUtilisateursFromDb();
-    set({ utilisateurs });
+    const res = await fetch("/api/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ id, ...u }),
+    });
+    const payload = (await res.json()) as { error?: string };
+    if (!res.ok) {
+      throw new Error(payload.error ?? "Échec modification utilisateur");
+    }
+    await get().reloadUtilisateurs();
   },
 
   deleteUtilisateur: async (id) => {
@@ -527,8 +563,7 @@ export const useDataStore = create<DataState>((set, get) => ({
       return { ok: false, error: (err as { error?: string }).error ?? "Échec suppression" };
     }
     // La route DELETE /api/users journalise déjà côté serveur.
-    const utilisateurs = await fetchUtilisateursFromDb();
-    set({ utilisateurs });
+    await get().reloadUtilisateurs();
     return { ok: true };
   },
 
@@ -543,7 +578,7 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   updateFiliere: async (id, f) => {
     const sb = getSupabase();
-    const { error } = await sb.from("filieres").update({ nom: f.nom, code: f.code, description: f.description }).or(`legacy_id.eq.${id},id.eq.${id}`);
+    const { error } = await sb.from("filieres").update({ nom: f.nom, code: f.code, description: f.description }).or(legacyOrIdFilter(id));
     if (error) throw error;
     await logAudit("Modification filière", f.nom, `Filière mise à jour (code ${f.code}).`);
     await get().refresh();
@@ -562,7 +597,7 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   updateClasse: async (filiereId, classeId, c) => {
     const sb = getSupabase();
-    const { error } = await sb.from("classes").update({ nom: c.nom, niveau: c.niveau }).or(`legacy_id.eq.${classeId},id.eq.${classeId}`);
+    const { error } = await sb.from("classes").update({ nom: c.nom, niveau: c.niveau }).or(legacyOrIdFilter(classeId));
     if (error) throw error;
     await logAudit("Modification classe", c.nom, `Classe mise à jour dans la filière.`);
     await get().refresh();
@@ -581,7 +616,7 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   updateMatiere: async (filiereId, matiereId, m) => {
     const sb = getSupabase();
-    const { error } = await sb.from("matieres").update({ nom: m.nom, coefficient: m.coefficient }).or(`legacy_id.eq.${matiereId},id.eq.${matiereId}`);
+    const { error } = await sb.from("matieres").update({ nom: m.nom, coefficient: m.coefficient }).or(legacyOrIdFilter(matiereId));
     if (error) throw error;
     await logAudit("Modification matière", m.nom, `Matière mise à jour (coef. ${m.coefficient}).`);
     await get().refresh();
@@ -590,7 +625,7 @@ export const useDataStore = create<DataState>((set, get) => ({
   deleteFiliere: async (id) => {
     const sb = getSupabase();
     const f = get().filieres.find((x) => x.id === id);
-    const { error } = await sb.from("filieres").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    const { error } = await sb.from("filieres").delete().or(legacyOrIdFilter(id));
     if (error) throw error;
     await logAudit("Suppression filière", f?.nom ?? id, "Filière et ses classes/matières supprimées.");
     await get().refresh();
@@ -600,7 +635,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     const sb = getSupabase();
     const f = get().filieres.find((x) => x.id === filiereId);
     const c = f?.classes.find((x) => x.id === classeId);
-    const { error } = await sb.from("classes").delete().or(`legacy_id.eq.${classeId},id.eq.${classeId}`);
+    const { error } = await sb.from("classes").delete().or(legacyOrIdFilter(classeId));
     if (error) throw error;
     await logAudit("Suppression classe", c?.nom ?? classeId, `Classe retirée de la filière ${f?.nom ?? ""}.`);
     await get().refresh();
@@ -610,7 +645,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     const sb = getSupabase();
     const f = get().filieres.find((x) => x.id === filiereId);
     const m = f?.matieres.find((x) => x.id === matiereId);
-    const { error } = await sb.from("matieres").delete().or(`legacy_id.eq.${matiereId},id.eq.${matiereId}`);
+    const { error } = await sb.from("matieres").delete().or(legacyOrIdFilter(matiereId));
     if (error) throw error;
     await logAudit("Suppression matière", m?.nom ?? matiereId, `Matière retirée de la filière ${f?.nom ?? ""}.`);
     await get().refresh();
@@ -627,17 +662,27 @@ export const useDataStore = create<DataState>((set, get) => ({
     if (action === "rejeter" && options?.motif) details = `Motif : ${options.motif}`;
     if (action === "incomplet" && options?.piecesManquantes?.length) details = `Pièces manquantes : ${options.piecesManquantes.join(", ")}`;
     const historique: ActionHistorique[] = [...dossier.historique, { action: actionLabel[action], date: now(), auteur: currentAuthor() }];
-    const { error } = await sb.from("candidatures").update({ statut, historique }).or(`legacy_id.eq.${id},id.eq.${id}`);
+    const { error } = await sb.from("candidatures").update({ statut, historique }).or(legacyOrIdFilter(id));
     if (error) throw error;
     await logAudit(actionLabel[action], id, details);
     await get().refresh();
+
+    // Notification n8n (email validation/rejet) — uniquement pour ces deux
+    // décisions, pas pour "incomplet" (relance de pièces, cas différent).
+    if (action === "valider" || action === "rejeter") {
+      void fetch("/api/n8n/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "candidature_traitee", candidatureId: id }),
+      }).catch(() => {});
+    }
   },
 
   traiterAlerte: async (id, nouveauStatut, commentaire) => {
     const sb = getSupabase();
     const alerte = get().alertes.find((a) => a.id === id);
     if (!alerte) return;
-    const { error } = await sb.from("alertes").update({ statut: nouveauStatut }).or(`legacy_id.eq.${id},id.eq.${id}`);
+    const { error } = await sb.from("alertes").update({ statut: nouveauStatut }).or(legacyOrIdFilter(id));
     if (error) throw error;
     await logAudit(
       nouveauStatut === "Clôturée" ? "Clôture alerte" : "Prise en charge alerte",
@@ -836,6 +881,15 @@ export const useDataStore = create<DataState>((set, get) => ({
         // rejection de promesse non gérée.
       });
 
+    // Notification n8n (email de confirmation) — best-effort, gérée
+    // entièrement côté serveur car le déclencheur peut être un candidat qui
+    // n'a pas accès à parametres.notifications côté client.
+    void fetch("/api/n8n/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "candidature_soumise", candidatureId: legacyId }),
+    }).catch(() => {});
+
     return legacyId;
   },
 
@@ -848,7 +902,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     if (paths.length > 0) {
       await deleteStorageFiles(CANDIDATURES_BUCKET, paths);
     }
-    const { error } = await sb.from("candidatures").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    const { error } = await sb.from("candidatures").delete().or(legacyOrIdFilter(id));
     if (error) throw error;
     await logAudit("Suppression candidature", id, "Dossier candidature supprimé.");
     await get().refresh();
@@ -889,7 +943,7 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   deleteAlerte: async (id) => {
     const sb = getSupabase();
-    const { error } = await sb.from("alertes").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    const { error } = await sb.from("alertes").delete().or(legacyOrIdFilter(id));
     if (error) throw error;
     await logAudit("Suppression alerte", id, "Alerte supprimée.");
     await get().refresh();
@@ -913,7 +967,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     if (rapport?.fichierPath) {
       await deleteStorageFiles(RAPPORTS_BUCKET, [rapport.fichierPath]);
     }
-    const { error } = await sb.from("rapports").delete().or(`legacy_id.eq.${id},id.eq.${id}`);
+    const { error } = await sb.from("rapports").delete().or(legacyOrIdFilter(id));
     if (error) throw error;
     await logAudit("Suppression rapport", id, "Rapport supprimé.");
     await get().refresh();

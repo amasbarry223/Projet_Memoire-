@@ -4,6 +4,8 @@ import type { Database } from "@/lib/supabase/types";
 import { getSupabaseSecretKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { requireAdminSession } from "@/lib/api/auth";
 import { mapUtilisateur } from "@/lib/mappers";
+import { legacyOrIdFilter } from "@/lib/legacy-id";
+import { logAuditServer } from "@/lib/api/audit";
 
 function adminClient() {
   return createClient<Database>(
@@ -11,6 +13,75 @@ function adminClient() {
     getSupabaseSecretKey(),
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
+}
+
+export async function GET() {
+  try {
+    const auth = await requireAdminSession();
+    if ("error" in auth) return auth.error;
+
+    const sb = adminClient();
+    const { data, error } = await sb
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({
+      utilisateurs: (data ?? []).map(mapUtilisateur),
+    });
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Erreur" }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const auth = await requireAdminSession();
+    if ("error" in auth) return auth.error;
+
+    const body = await req.json();
+    const { id, email, nom, prenom, role, statut } = body;
+    if (!id) {
+      return NextResponse.json({ error: "Identifiant requis" }, { status: 400 });
+    }
+
+    const sb = adminClient();
+    const { data: profile, error } = await sb
+      .from("profiles")
+      .update({
+        ...(email !== undefined ? { email } : {}),
+        ...(nom !== undefined ? { nom } : {}),
+        ...(prenom !== undefined ? { prenom } : {}),
+        ...(role !== undefined ? { role } : {}),
+        ...(statut !== undefined ? { statut } : {}),
+      })
+      .or(legacyOrIdFilter(id))
+      .select()
+      .single();
+
+    if (error || !profile) {
+      return NextResponse.json(
+        { error: error?.message ?? "Utilisateur introuvable" },
+        { status: 400 }
+      );
+    }
+
+    await logAuditServer(
+      sb,
+      `${auth.profile.prenom} ${auth.profile.nom}`,
+      "Modification compte",
+      profile.email,
+      role ? `Rôle mis à jour → ${role}.` : "Compte modifié."
+    );
+
+    return NextResponse.json({ ok: true, utilisateur: mapUtilisateur(profile) });
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Erreur" }, { status: 500 });
+  }
 }
 
 export async function POST(req: Request) {
@@ -75,11 +146,13 @@ export async function POST(req: Request) {
       );
     }
 
-    await sb.rpc("log_audit", {
-      p_action: "Création compte",
-      p_cible: email,
-      p_details: `Compte créé par ${auth.profile.prenom} ${auth.profile.nom} — rôle ${role}.`,
-    });
+    await logAuditServer(
+      sb,
+      `${auth.profile.prenom} ${auth.profile.nom}`,
+      "Création compte",
+      email,
+      `Compte créé — rôle ${role}.`
+    );
 
     return NextResponse.json({ ok: true, utilisateur: mapUtilisateur(profile) });
   } catch (e) {
@@ -101,7 +174,7 @@ export async function DELETE(req: Request) {
     const { data: profile, error: lookupError } = await sb
       .from("profiles")
       .select("id, email, prenom, nom")
-      .or(`legacy_id.eq.${id},id.eq.${id}`)
+      .or(legacyOrIdFilter(id))
       .maybeSingle();
     if (lookupError) {
       return NextResponse.json({ error: lookupError.message }, { status: 400 });
@@ -119,11 +192,13 @@ export async function DELETE(req: Request) {
     const { error } = await sb.auth.admin.deleteUser(profile.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-    await sb.rpc("log_audit", {
-      p_action: "Suppression compte",
-      p_cible: `${profile.prenom} ${profile.nom}`,
-      p_details: `Compte supprimé par ${auth.profile.prenom} ${auth.profile.nom}.`,
-    });
+    await logAuditServer(
+      sb,
+      `${auth.profile.prenom} ${auth.profile.nom}`,
+      "Suppression compte",
+      `${profile.prenom} ${profile.nom}`,
+      "Compte supprimé."
+    );
 
     return NextResponse.json({ ok: true });
   } catch (e) {

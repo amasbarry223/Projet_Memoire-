@@ -4,6 +4,9 @@ import type { Database } from "@/lib/supabase/types";
 import { getSupabaseSecretKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { requireRoleSession } from "@/lib/api/auth";
 import { detectAlertesLocales, fetchIntegrations, motifType } from "@/lib/ia/analyse";
+import { legacyOrIdFilter } from "@/lib/legacy-id";
+import { logAuditServer } from "@/lib/api/audit";
+import { fetchNotificationsConfig, sendN8nEvent } from "@/lib/api/notify-n8n";
 
 function adminClient() {
   return createClient<Database>(
@@ -94,7 +97,7 @@ export async function POST() {
       const { data: etu } = await admin
         .from("etudiants")
         .select("id")
-        .or(`legacy_id.eq.${a.etudiantId},id.eq.${a.etudiantId}`)
+        .or(legacyOrIdFilter(a.etudiantId))
         .maybeSingle();
       if (!etu) continue;
       candidatesAvecEtuId.push({ candidate: a, etuId: etu.id });
@@ -106,6 +109,7 @@ export async function POST() {
     let created = 0;
     let cloturees = 0;
     const echecs: string[] = [];
+    const nouvellesAlertes: (typeof candidates)[number][] = [];
 
     for (const { candidate: a, etuId } of candidatesAvecEtuId) {
       const existing = (alertesOuvertes ?? []).find(
@@ -127,6 +131,7 @@ export async function POST() {
         continue;
       }
       created++;
+      nouvellesAlertes.push(a);
     }
 
     // Clôture automatique des alertes dont le critère a disparu — on ne
@@ -145,11 +150,32 @@ export async function POST() {
       }
     }
 
-    await admin.rpc("log_audit", {
-      p_action: "Génération alertes IA",
-      p_cible: `${created} alerte(s)`,
-      p_details: `Analyse automatique — ${created} nouvelle(s) alerte(s) créée(s), ${cloturees} clôturée(s) automatiquement.${echecs.length ? ` ${echecs.length} échec(s).` : ""}`,
-    });
+    // Digest n8n (Paramètres → Notifications → "Alertes hebdomadaires") —
+    // ce toggle n'était câblé nulle part jusqu'ici. La cadence "hebdo" vient
+    // de la planification du workflow n8n qui appelle cette route (Schedule
+    // Trigger côté n8n) ; ici on ne fait que respecter l'interrupteur avant
+    // d'envoyer le résumé.
+    const notifications = await fetchNotificationsConfig(admin);
+    if (notifications.alertesHebdo && integrations.n8nUrl?.trim() && nouvellesAlertes.length > 0) {
+      await sendN8nEvent(integrations.n8nUrl.trim(), "alertes_digest", {
+        created,
+        cloturees,
+        alertes: nouvellesAlertes.map((a) => ({
+          etudiant: a.etudiantNom,
+          classe: a.classe,
+          niveau: a.niveau,
+          motif: a.motif,
+        })),
+      });
+    }
+
+    await logAuditServer(
+      admin,
+      `${auth.profile.prenom} ${auth.profile.nom}`,
+      "Génération alertes IA",
+      `${created} alerte(s)`,
+      `Analyse automatique — ${created} nouvelle(s) alerte(s) créée(s), ${cloturees} clôturée(s) automatiquement.${echecs.length ? ` ${echecs.length} échec(s).` : ""}`
+    );
 
     return NextResponse.json({ ok: true, created, cloturees, echecs: echecs.length ? echecs : undefined });
   } catch (e) {
