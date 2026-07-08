@@ -13,7 +13,6 @@ import {
   mapEtudiant,
   mapFiliere,
   mapNote,
-  mapRapport,
 } from "@/lib/mappers";
 import type {
   Absence,
@@ -41,7 +40,6 @@ import {
   uploadCandidaturePiece,
   deleteStorageFiles,
   CANDIDATURES_BUCKET,
-  RAPPORTS_BUCKET,
 } from "@/lib/supabase/storage";
 
 interface DataState {
@@ -126,6 +124,7 @@ interface DataState {
   deleteAlerte: (id: string) => Promise<void>;
   genererAlertesIA: () => Promise<{ ok: boolean; created?: number; error?: string }>;
   deleteRapport: (id: string) => Promise<void>;
+  reloadRapports: () => Promise<void>;
   downloadSignedUrl: (bucket: string, path: string) => Promise<string>;
   genererRapport: (options: {
     type: Rapport["type"];
@@ -159,6 +158,22 @@ async function fetchUtilisateursFromApi(): Promise<Utilisateur[]> {
     throw new Error(payload.error ?? "Impossible de charger les utilisateurs");
   }
   return payload.utilisateurs ?? [];
+}
+
+async function fetchRapportsFromApi(): Promise<Rapport[]> {
+  const res = await fetch("/api/rapports", { credentials: "same-origin" });
+  const payload = (await res.json()) as {
+    error?: string;
+    rapports?: Rapport[];
+  };
+  if (!res.ok) {
+    throw new Error(payload.error ?? "Impossible de charger les rapports");
+  }
+  return payload.rapports ?? [];
+}
+
+function canManageRapports(role: string | undefined) {
+  return role === "admin" || role === "responsable";
 }
 
 const MOIS_ABBR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
@@ -362,12 +377,14 @@ export const useDataStore = create<DataState>((set, get) => ({
       sb.from("audit_log").select("*").order("created_at", { ascending: false }),
       sb.from("notes").select("*, etudiants(prenom, nom)").order("created_at", { ascending: false }),
       sb.from("absences").select("*, etudiants(prenom, nom)").order("date_absence", { ascending: false }),
-      sb.from("rapports").select("*").order("date_generation", { ascending: false }),
+      canManageRapports(session?.role)
+        ? fetchRapportsFromApi()
+        : Promise.resolve([] as Rapport[]),
       isAdmin
         ? sb.from("parametres").select("key, value")
         : Promise.resolve({ data: null, error: null }),
     ] as const;
-    const [filieresRes, etudiantsRes, enseignantsRes, candidaturesRes, utilisateurs, alertesRes, auditRes, notesRes, absencesRes, rapportsRes, parametresRes] = await Promise.all(queries);
+    const [filieresRes, etudiantsRes, enseignantsRes, candidaturesRes, utilisateurs, alertesRes, auditRes, notesRes, absencesRes, rapports, parametresRes] = await Promise.all(queries);
 
     const effectifActif = (etudiantsRes.data ?? []).filter((e) => e.statut === "Actif").length;
 
@@ -381,7 +398,7 @@ export const useDataStore = create<DataState>((set, get) => ({
       audit: (auditRes.data ?? []).map(mapAudit),
       notes: (notesRes.data ?? []).map((n) => mapNote(n as never)),
       absences: (absencesRes.data ?? []).map((a) => mapAbsence(a as never)),
-      rapports: (rapportsRes.data ?? []).map(mapRapport),
+      rapports,
       inscriptionsParMois: computeInscriptionsParMois(
         (candidaturesRes.data ?? []) as { date_soumission: string }[]
       ),
@@ -962,15 +979,23 @@ export const useDataStore = create<DataState>((set, get) => ({
   },
 
   deleteRapport: async (id) => {
-    const sb = getSupabase();
-    const rapport = get().rapports.find((r) => r.id === id);
-    if (rapport?.fichierPath) {
-      await deleteStorageFiles(RAPPORTS_BUCKET, [rapport.fichierPath]);
+    const res = await fetch(`/api/rapports?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      credentials: "same-origin",
+    });
+    const payload = (await res.json()) as { error?: string };
+    if (!res.ok) {
+      throw new Error(payload.error ?? "Échec suppression rapport");
     }
-    const { error } = await sb.from("rapports").delete().or(legacyOrIdFilter(id));
-    if (error) throw error;
-    await logAudit("Suppression rapport", id, "Rapport supprimé.");
-    await get().refresh();
+    const rapports = await fetchRapportsFromApi();
+    set({ rapports });
+  },
+
+  reloadRapports: async () => {
+    const session = useAuthStore.getState().session;
+    if (!canManageRapports(session?.role)) return;
+    const rapports = await fetchRapportsFromApi();
+    set({ rapports });
   },
 
   downloadSignedUrl: async (bucket, path) => {
@@ -993,7 +1018,8 @@ export const useDataStore = create<DataState>((set, get) => ({
       if (!res.ok) {
         return { ok: false, error: data.error ?? "Échec de la génération" };
       }
-      await get().refresh();
+      const rapports = await fetchRapportsFromApi();
+      set({ rapports });
       return { ok: true };
     } catch (e) {
       return {

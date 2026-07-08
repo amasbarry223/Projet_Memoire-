@@ -6,6 +6,8 @@ import { getSupabaseSecretKey, getSupabaseUrl } from "@/lib/supabase/env";
 import { defaultParametres } from "@/components/dashboard/data";
 import { generateRapportPdf, formatTaille } from "@/lib/reports/pdf-generator";
 import { logAuditServer } from "@/lib/api/audit";
+import { mapRapport } from "@/lib/mappers";
+import { legacyOrIdFilter } from "@/lib/legacy-id";
 
 type RapportType = "Mensuel" | "Hebdomadaire" | "Trimestriel" | "Ponctuel";
 
@@ -15,6 +17,105 @@ function adminClient() {
     getSupabaseSecretKey(),
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
+}
+
+async function requireRapportStaff() {
+  const sb = await createClient();
+  const {
+    data: { user },
+  } = await sb.auth.getUser();
+  if (!user) {
+    return { error: NextResponse.json({ error: "Non authentifié" }, { status: 401 }) };
+  }
+  const { data: profile } = await sb
+    .from("profiles")
+    .select("role, prenom, nom")
+    .eq("id", user.id)
+    .single();
+  if (!profile || !["admin", "responsable"].includes(profile.role)) {
+    return { error: NextResponse.json({ error: "Accès refusé" }, { status: 403 }) };
+  }
+  return { profile };
+}
+
+export async function GET() {
+  try {
+    const auth = await requireRapportStaff();
+    if ("error" in auth) return auth.error;
+
+    const admin = adminClient();
+    const { data, error } = await admin
+      .from("rapports")
+      .select("*")
+      .order("date_generation", { ascending: false });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({
+      rapports: (data ?? []).map(mapRapport),
+    });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Erreur serveur" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const auth = await requireRapportStaff();
+    if ("error" in auth) return auth.error;
+
+    const id = new URL(req.url).searchParams.get("id");
+    if (!id) {
+      return NextResponse.json({ error: "Identifiant requis" }, { status: 400 });
+    }
+
+    const admin = adminClient();
+    const { data: rapport, error: lookupError } = await admin
+      .from("rapports")
+      .select("id, legacy_id, titre, fichier_path")
+      .or(legacyOrIdFilter(id))
+      .maybeSingle();
+
+    if (lookupError) {
+      return NextResponse.json({ error: lookupError.message }, { status: 400 });
+    }
+    if (!rapport) {
+      return NextResponse.json({ error: "Rapport introuvable" }, { status: 404 });
+    }
+
+    if (rapport.fichier_path) {
+      await admin.storage.from("rapports").remove([rapport.fichier_path]);
+    }
+
+    const { error: deleteError } = await admin
+      .from("rapports")
+      .delete()
+      .eq("id", rapport.id);
+
+    if (deleteError) {
+      return NextResponse.json({ error: deleteError.message }, { status: 400 });
+    }
+
+    await logAuditServer(
+      admin,
+      `${auth.profile.prenom} ${auth.profile.nom}`,
+      "Suppression rapport",
+      rapport.legacy_id ?? rapport.id,
+      `Rapport supprimé : ${rapport.titre}.`
+    );
+
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Erreur serveur" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: Request) {

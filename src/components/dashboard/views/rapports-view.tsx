@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { BarChart3, FileText, Download, Sparkles, Calendar, BrainCircuit, Users, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BarChart3, FileText, Download, Sparkles, Calendar, BrainCircuit, Users, TrendingUp, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useDataStore } from "@/lib/data-store";
@@ -15,6 +15,7 @@ import {
   FullWidthKpiGrid,
   FullWidthSection,
   KpiCard,
+  EmptyState,
 } from "./shared";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,6 +35,7 @@ function typeBadge(type: string) {
 export function RapportsView() {
   const { toast } = useToast();
   const rapports = useDataStore((s) => s.rapports);
+  const reloadRapports = useDataStore((s) => s.reloadRapports);
   const genererRapport = useDataStore((s) => s.genererRapport);
   const deleteRapport = useDataStore((s) => s.deleteRapport);
   const downloadSignedUrl = useDataStore((s) => s.downloadSignedUrl);
@@ -41,6 +43,11 @@ export function RapportsView() {
   const canDelete = session?.role === "admin" || session?.role === "responsable";
   const etudiants = useDataStore((s) => s.etudiants);
   const [generating, setGenerating] = useState(false);
+
+  useEffect(() => {
+    void reloadRapports().catch(() => undefined);
+  }, [reloadRapports]);
+
   const tauxAssiduite =
     etudiants.length === 0
       ? 0
@@ -204,9 +211,10 @@ export function RapportsView() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-red-600"
+                    className="text-red-600 hover:text-red-700"
                     onClick={() => void handleDelete(r)}
                   >
+                    <Trash2 className="size-4" />
                     Supprimer
                   </Button>
                 )}
@@ -214,6 +222,19 @@ export function RapportsView() {
             </div>
           ))}
         </div>
+        {rapports.length === 0 && (
+          <EmptyState
+            icon={FileText}
+            title="Aucun rapport"
+            description="Générez un rapport mensuel pour commencer. Les documents sont stockés en base de données."
+            action={
+              <Button variant="outline" size="sm" onClick={() => void handleGenerer()} disabled={generating}>
+                <BarChart3 className="size-4" />
+                Générer un rapport
+              </Button>
+            }
+          />
+        )}
       </FullWidthSection>
     </FullWidthPage>
   );
