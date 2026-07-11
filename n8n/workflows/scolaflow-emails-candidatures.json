@@ -1,0 +1,304 @@
+{
+  "name": "ScolaFlow — Emails candidatures + digest alertes",
+  "meta": {
+    "description": "Reçoit les événements Next.js (candidature_soumise, candidature_traitee, alertes_digest), envoie un email, puis journalise dans n8n_events via /api/n8n/webhook."
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scolaflow-notify",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wh-trigger",
+      "name": "Webhook ScolaFlow",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "scolaflow-notify"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body?.type ?? $json.type }}",
+                    "rightValue": "candidature_soumise",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "soumise"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body?.type ?? $json.type }}",
+                    "rightValue": "candidature_traitee",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "traitee"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body?.type ?? $json.type }}",
+                    "rightValue": "alertes_digest",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "digest"
+            }
+          ]
+        },
+        "options": { "fallbackOutput": "extra" }
+      },
+      "id": "sw-type",
+      "name": "Switch type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "to",
+              "value": "={{ $json.body?.candidature?.email ?? $json.candidature?.email }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "subject",
+              "value": "=Confirmation de candidature — {{ $json.body?.candidature?.filiere ?? $json.candidature?.filiere }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "text",
+              "value": "=Bonjour {{ $json.body?.candidature?.prenom ?? $json.candidature?.prenom }} {{ $json.body?.candidature?.nom ?? $json.candidature?.nom }},\n\nNous avons bien reçu votre candidature ({{ $json.body?.candidature?.id ?? $json.candidature?.id }}) pour la filière {{ $json.body?.candidature?.filiere ?? $json.candidature?.filiere }}.\n\nStatut actuel : {{ $json.body?.candidature?.statut ?? $json.candidature?.statut }}.\n\nL'équipe ESGIC / ScolaFlow",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "event_type",
+              "value": "candidature_soumise",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-soumise",
+      "name": "Composer confirmation",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [520, 100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1",
+              "name": "to",
+              "value": "={{ $json.body?.candidature?.email ?? $json.candidature?.email }}",
+              "type": "string"
+            },
+            {
+              "id": "b2",
+              "name": "subject",
+              "value": "=Décision candidature — {{ $json.body?.candidature?.statut ?? $json.candidature?.statut }}",
+              "type": "string"
+            },
+            {
+              "id": "b3",
+              "name": "text",
+              "value": "=Bonjour {{ $json.body?.candidature?.prenom ?? $json.candidature?.prenom }} {{ $json.body?.candidature?.nom ?? $json.candidature?.nom }},\n\nVotre dossier {{ $json.body?.candidature?.id ?? $json.candidature?.id }} ({{ $json.body?.candidature?.filiere ?? $json.candidature?.filiere }}) a été traité.\n\nDécision : {{ $json.body?.candidature?.statut ?? $json.candidature?.statut }}.\n\nL'équipe ESGIC / ScolaFlow",
+              "type": "string"
+            },
+            {
+              "id": "b4",
+              "name": "event_type",
+              "value": "candidature_traitee",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-traitee",
+      "name": "Composer décision",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1",
+              "name": "to",
+              "value": "responsable@esgic.local",
+              "type": "string"
+            },
+            {
+              "id": "c2",
+              "name": "subject",
+              "value": "=Digest alertes pédagogiques — {{ ($json.body?.created ?? $json.created) || 0 }} nouvelle(s)",
+              "type": "string"
+            },
+            {
+              "id": "c3",
+              "name": "text",
+              "value": "=Digest ScolaFlow\n\nNouvelles alertes : {{ $json.body?.created ?? $json.created }}\nClôturées auto : {{ $json.body?.cloturees ?? $json.cloturees }}\n\nDétail :\n{{ JSON.stringify($json.body?.alertes ?? $json.alertes ?? [], null, 2) }}",
+              "type": "string"
+            },
+            {
+              "id": "c4",
+              "name": "event_type",
+              "value": "alertes_digest",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-digest",
+      "name": "Composer digest",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [520, 500]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@esgic.local",
+        "toEmail": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "text": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "email-send",
+      "name": "Envoyer email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [780, 300],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "notes": "Configurer une credential SMTP / Gmail dans n8n. Si absente, le flux continue quand même vers le callback (onError)."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/n8n/webhook",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-n8n-secret",
+              "value": "REPLACE_WITH_N8N_WEBHOOK_SECRET"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workflow_name\": \"ScolaFlow — Emails candidatures + digest alertes\",\n  \"event_type\": \"{{ $json.event_type }}\",\n  \"to\": \"{{ $json.to }}\",\n  \"subject\": \"{{ $json.subject }}\"\n}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "http-callback",
+      "name": "Journaliser n8n_events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 300],
+      "onError": "continueRegularOutput",
+      "notes": "Si n8n est dans Docker et Next.js sur l'hôte, utilise host.docker.internal:3000."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": true }",
+        "options": {}
+      },
+      "id": "respond-ok",
+      "name": "Répondre OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1300, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"ok\": false, \"error\": \"type inconnu\" }",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "respond-400",
+      "name": "Répondre 400",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [520, 700]
+    }
+  ],
+  "connections": {
+    "Webhook ScolaFlow": {
+      "main": [[{ "node": "Switch type", "type": "main", "index": 0 }]]
+    },
+    "Switch type": {
+      "main": [
+        [{ "node": "Composer confirmation", "type": "main", "index": 0 }],
+        [{ "node": "Composer décision", "type": "main", "index": 0 }],
+        [{ "node": "Composer digest", "type": "main", "index": 0 }],
+        [{ "node": "Répondre 400", "type": "main", "index": 0 }]
+      ]
+    },
+    "Composer confirmation": {
+      "main": [[{ "node": "Envoyer email", "type": "main", "index": 0 }]]
+    },
+    "Composer décision": {
+      "main": [[{ "node": "Envoyer email", "type": "main", "index": 0 }]]
+    },
+    "Composer digest": {
+      "main": [[{ "node": "Envoyer email", "type": "main", "index": 0 }]]
+    },
+    "Envoyer email": {
+      "main": [[{ "node": "Journaliser n8n_events", "type": "main", "index": 0 }]]
+    },
+    "Journaliser n8n_events": {
+      "main": [[{ "node": "Répondre OK", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "tags": [{ "name": "scolaflow" }, { "name": "memoire" }]
+}

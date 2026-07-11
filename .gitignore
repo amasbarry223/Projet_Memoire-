@@ -53,3 +53,8 @@ server.log
 # Skills directory
 /skills/
 .vercel
+
+# Local MCP tokens / agent scratch
+.cursor/mcp.json
+.zscripts/create-n8n-workflow.mjs
+.zscripts/sdk-ref.txt
